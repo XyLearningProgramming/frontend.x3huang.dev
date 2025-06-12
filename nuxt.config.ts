@@ -10,6 +10,25 @@ export default defineNuxtConfig({
     '@nuxt/image',
     '@nuxt/scripts',
     '@nuxt/test-utils',
-    '@nuxt/ui'
-  ]
+    '@nuxt/ui',
+    '@artmizu/nuxt-prometheus',
+  ],
+  fonts: {
+    families: [
+      {
+        name: 'Roboto',
+        weights: [400, 700],
+        // styles, subsets, etc., if needed
+      }
+    ],
+    providers: {
+      google: false,
+      googleicons: false,
+    }
+  },
+  prometheus: {
+    verbose: false,
+    prometheusPath: "/metrics",
+    prefix: "",
+  }
 })
