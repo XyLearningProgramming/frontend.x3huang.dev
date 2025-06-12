@@ -4,7 +4,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: {{ .Values.tlsCertificate.name }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Values.namespace }}
   labels:
     app: {{ include "frontend.fullname" . }}
   annotations:

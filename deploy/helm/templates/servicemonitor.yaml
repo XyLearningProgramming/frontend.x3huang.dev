@@ -13,7 +13,7 @@ spec:
     # If Prometheus is in the same namespace, you can either omit namespaceSelector (defaults to same namespace),
     # or explicitly:
     matchNames:
-      - {{ .Release.Namespace }}  # if templating in Helm; else the namespace where Service lives
+      - {{ .Values.namespace }}  # if templating in Helm; else the namespace where Service lives
   endpoints:
     - port: http
       path: /metrics
