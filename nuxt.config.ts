@@ -30,5 +30,13 @@ export default defineNuxtConfig({
     verbose: false,
     prometheusPath: "/metrics",
     prefix: "",
-  }
+  },
+  ...(process.env.POSTGRES_URL
+    ? {
+      database: {
+        type: 'postgres',
+        url: process.env.POSTGRES_URL,
+      },
+    }
+    : {}),
 })

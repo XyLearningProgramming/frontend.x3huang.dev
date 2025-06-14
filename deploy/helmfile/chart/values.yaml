@@ -5,21 +5,14 @@
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
 
-domain: x3huang.dev
-
 tlsCertificate:
-  name: x3huang.dev-tls
-  from: cert-manager/x3huang.dev
   type: kubernetes.io/tls
 
 
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
-  repository: nginx
   # This sets the pull policy for images.
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
@@ -71,16 +64,7 @@ ingress:
   className: traefik
   annotations:
     kubernetes.io/ingress.class: traefik
-    traefik.ingress.kubernetes.io/router.middlewares: $-block-metrics@kubernetescrd
-  hosts:
-    - host: x3huang.dev
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls:
-   - secretName: x3huang.dev-tls
-     hosts:
-       - x3huang.dev
+  path: /
 
 resources:
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -88,10 +72,11 @@ resources:
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   limits:
-    cpu: 1
-    memory: 512Mi
+    cpu: 400m
+    memory: 128Mi
   requests:
-    memory: 64Mi
+    cpu: 100m
+    memory: 32Mi
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
@@ -105,11 +90,11 @@ readinessProbe:
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
-  enabled: false
+  enabled: true
   minReplicas: 1
-  maxReplicas: 100
+  maxReplicas: 3
   targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 99
 
 # Additional volumes on the output Deployment definition.
 volumes: {}
@@ -130,3 +115,6 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+middleware:
+  name: block-metrics

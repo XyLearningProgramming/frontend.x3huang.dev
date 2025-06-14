@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "frontend.fullname" . }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "frontend.labels" . | nindent 4 }}
 spec:
@@ -39,8 +39,11 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.IMAGE_REPOSITORY }}:{{ .Values.IMAGE_TAG | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: POSTGRES_URL
+              value: {{ .Values.POSTGRES_URL }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}

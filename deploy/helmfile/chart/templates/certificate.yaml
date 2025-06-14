@@ -3,12 +3,12 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ .Values.tlsCertificate.name }}
-  namespace: {{ .Values.namespace }}
+  name: {{ .Values.DOMAIN }}-tls
+  namespace: {{ .Release.Namespace }}
   labels:
     app: {{ include "frontend.fullname" . }}
   annotations:
-    replicator.v1.mittwald.de/replicate-from: {{ .Values.tlsCertificate.from }}
+    replicator.v1.mittwald.de/replicate-from: cert-manager/{{ .Values.DOMAIN }}-tls
 type: {{ .Values.tlsCertificate.type }}
 data:
   tls.key: ""
