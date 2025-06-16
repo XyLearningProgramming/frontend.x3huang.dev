@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       ci_run_id:
-        description: 'CI workflow run ID (optional; if omitted, use latest successful on main)'
+        description: 'CI workflow run ID (optional; if omitted, use latest successful on current branch)'
         required: false
   workflow_run:
     workflows: [CI Pipeline]
@@ -13,7 +13,11 @@ on:
     branches:
       - main
 
+env:
+  HELMFILE_FILE_PATH: ./deploy/helmfile/helmfile.yaml.gotmpl
+      
 jobs:
+        
   on-failure:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
@@ -49,12 +53,12 @@ jobs:
           name: output
           path: .output
       # When manually dispatched with no run ID: pick latest successful CI with the same commit
-      - name: Download latest successful artifact on main
+      - name: Download latest successful artifact on current branch
         if: ${{ github.event_name == 'workflow_dispatch' && !github.event.inputs.ci_run_id }}
         uses: dawidd6/action-download-artifact@v10
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: CI Pipeline.yml        # adjust if your CI file name differs
+          workflow: ci.yml        # adjust if your CI file name differs
           commit: ${{ github.sha }}
           name: output
           path: .output
@@ -76,13 +80,14 @@ jobs:
           docker push $IMAGE_REPOSITORY:$IMAGE_TAG
         # ensure Dockerfile copies from .output as above
 
-      - name: Set up kubeconfig
-        run: |
-          echo '${{ secrets.KUBE_CONFIG_DATA }}' | base64 --decode > $HOME/.kube/config
-          chmod 600 $HOME/.kube/config
-
       - name: Helmfile init
         uses: XyLearningProgramming/helm.x3huang.dev/.github/actions/helmfile-init@main
+
+      - name: Set up kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo '${{ secrets.KUBE_CONFIG_DATA }}' | base64 --decode > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
 
       - name: Dry‑run (Diff) before Apply
         uses: helmfile/helmfile-action@v2.0.4
@@ -98,4 +103,4 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
           POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
         with:
-          helmfile-args: apply --environment prod -f ./deploy/helmfile/helmfile.yaml.gotmpl
+          helmfile-args: apply --environment prod
