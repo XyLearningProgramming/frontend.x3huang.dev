@@ -7,7 +7,7 @@ metadata:
   labels:
     {{- include "frontend.labels" . | nindent 4 }}
   annotations:
-    traefik.ingress.kubernetes.io/router.middlewares: {{ .Values.DOMAIN }}-{{ .Values.middleware.name }}@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ .Values.middleware.name }}@kubernetescrd
     {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
