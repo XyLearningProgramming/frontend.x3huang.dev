@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       ci_run_id:
-        description: 'CI workflow run ID (optional; if omitted, use latest successful on main)'
+        description: 'CI workflow run ID (optional; if omitted, use latest successful on current branch)'
         required: false
   workflow_run:
     workflows: [CI Pipeline]
@@ -49,12 +49,12 @@ jobs:
           name: output
           path: .output
       # When manually dispatched with no run ID: pick latest successful CI with the same commit
-      - name: Download latest successful artifact on main
+      - name: Download latest successful artifact on current branch
         if: ${{ github.event_name == 'workflow_dispatch' && !github.event.inputs.ci_run_id }}
         uses: dawidd6/action-download-artifact@v10
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: CI Pipeline.yml        # adjust if your CI file name differs
+          workflow: ci.yml        # adjust if your CI file name differs
           commit: ${{ github.sha }}
           name: output
           path: .output
