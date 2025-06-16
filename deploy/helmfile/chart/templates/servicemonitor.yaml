@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "frontend.fullname" . }}-servicemonitor
+  labels:
+    {{- include "frontend.labels" . | nindent 4 }}
+spec:
+  # Select the Service by matching its labels
+  selector:
+    matchLabels:
+      {{- include "frontend.selectorLabels" . | nindent 6 }}
+  namespaceSelector:
+    # If Prometheus is in the same namespace, you can either omit namespaceSelector (defaults to same namespace),
+    # or explicitly:
+    matchNames:
+      - {{ .Release.Namespace }}  # if templating in Helm; else the namespace where Service lives
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 57s
+      # optional: scrapeTimeout, scheme (http/https), relabelings, metricRelabelings, honorLabels, etc.

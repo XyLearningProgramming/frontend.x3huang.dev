@@ -1,0 +1,101 @@
+name: CD Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      ci_run_id:
+        description: 'CI workflow run ID (optional; if omitted, use latest successful on main)'
+        required: false
+  workflow_run:
+    workflows: [CI Pipeline]
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  on-failure:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - run: echo 'The triggering workflow failed, deployment skipped.' && exit 1
+  deploy:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' || 
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    # require manual approval in GitHub → Settings → Environments → production
+    environment: prod
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Download artifact when triggered by workflow_run (use that run's ID)
+      - name: Download artifact from CI run
+        if: ${{ github.event_name == 'workflow_run' }}
+        uses: dawidd6/action-download-artifact@v10
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          run_id: ${{ github.event.workflow_run.id }}
+          name: output
+          path: .output
+      # When manually dispatched: if user supplied ci_run_id, use it
+      - name: Download artifact by provided run ID
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ci_run_id }}
+        uses: dawidd6/action-download-artifact@v10
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          run_id: ${{ github.event.inputs.ci_run_id }}
+          name: output
+          path: .output
+      # When manually dispatched with no run ID: pick latest successful CI with the same commit
+      - name: Download latest successful artifact on main
+        if: ${{ github.event_name == 'workflow_dispatch' && !github.event.inputs.ci_run_id }}
+        uses: dawidd6/action-download-artifact@v10
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: CI Pipeline.yml        # adjust if your CI file name differs
+          commit: ${{ github.sha }}
+          name: output
+          path: .output
+      # Now .output/ contains the compiled output from CI
+
+      - name: Log in to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY_HOST }}    # e.g. ghcr.io
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build and push Docker image
+        # using github.sha as tag
+        run: |
+          export IMAGE_REPOSITORY=${{ secrets.IMAGE_NAME }}
+          export IMAGE_TAG=${{ github.sha }}
+          docker build -t $IMAGE_REPOSITORY:$IMAGE_TAG .
+          docker push $IMAGE_REPOSITORY:$IMAGE_TAG
+        # ensure Dockerfile copies from .output as above
+
+      - name: Set up kubeconfig
+        run: |
+          echo '${{ secrets.KUBE_CONFIG_DATA }}' | base64 --decode > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Helmfile init
+        uses: XyLearningProgramming/helm.x3huang.dev/.github/actions/helmfile-init@main
+
+      - name: Dry‑run (Diff) before Apply
+        uses: helmfile/helmfile-action@v2.0.4
+        with:
+          helmfile-args: diff --environment prod --detailed-exitcode
+        continue-on-error: true
+        # This acts as a dry‑run check :contentReference[oaicite:9]{index=9}
+
+      - name: Apply Changes
+        uses: helmfile/helmfile-action@v2.0.4
+        env:
+          IMAGE_REPOSITORY: ${{ secrets.IMAGE_NAME }}
+          IMAGE_TAG: ${{ github.sha }}
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+        with:
+          helmfile-args: apply --environment prod -f ./deploy/helmfile/helmfile.yaml.gotmpl
