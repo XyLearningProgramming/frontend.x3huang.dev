@@ -84,10 +84,6 @@ jobs:
       - name: Helmfile init
         uses: XyLearningProgramming/helm.x3huang.dev/.github/actions/helmfile-init@main
 
-      - name: Set up postgres url
-        run: |
-          export POSTGRES_URL='${{ secrets.POSTGRES_URL }}'
-      
       - name: Dry‑run (Diff) before Apply
         uses: helmfile/helmfile-action@v2.0.4
         with:
@@ -97,5 +93,9 @@ jobs:
 
       - name: Apply Changes
         uses: helmfile/helmfile-action@v2.0.4
+        env:
+          IMAGE_REPOSITORY: ${{ secrets.IMAGE_NAME }}
+          IMAGE_TAG: ${{ github.sha }}
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
         with:
-          helmfile-args: apply --environment prod
+          helmfile-args: apply --environment prod -f ./deploy/helmfile/helmfile.yaml.gotmpl
