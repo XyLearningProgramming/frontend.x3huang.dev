@@ -42,21 +42,10 @@ jobs:
       - name: Build project
         run: pnpm build
 
-      # --- DEBUGGING ---
-      - name: Debug after build (show hidden)
-        run: |
-          echo "PWD: $(pwd)"
-          ls -la
-          ls -Ra
-          if [ -d .output ]; then
-            echo ".output exists; contents:"; ls -R .output
-          else
-            echo ".output not found"
-          fi
-
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: output
           path: .output
+          include-hidden-files: true
           retention-days: 30
