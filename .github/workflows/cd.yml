@@ -76,13 +76,13 @@ jobs:
           docker push $IMAGE_REPOSITORY:$IMAGE_TAG
         # ensure Dockerfile copies from .output as above
 
+      - name: Helmfile init
+        uses: XyLearningProgramming/helm.x3huang.dev/.github/actions/helmfile-init@main
+      
       - name: Set up kubeconfig
         run: |
           echo '${{ secrets.KUBE_CONFIG_DATA }}' | base64 --decode > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
-
-      - name: Helmfile init
-        uses: XyLearningProgramming/helm.x3huang.dev/.github/actions/helmfile-init@main
 
       - name: Dry‑run (Diff) before Apply
         uses: helmfile/helmfile-action@v2.0.4
