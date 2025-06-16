@@ -26,6 +26,9 @@ export default defineNuxtConfig({
       googleicons: false,
     }
   },
+  nitro: {
+    preset: "node-server",
+  },
   prometheus: {
     verbose: false,
     prometheusPath: "/metrics",
