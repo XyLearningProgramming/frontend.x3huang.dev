@@ -13,7 +13,11 @@ on:
     branches:
       - main
 
+env:
+  HELMFILE_FILE_PATH: ./deploy/helmfile/helmfile.yaml.gotmpl
+      
 jobs:
+        
   on-failure:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
@@ -78,7 +82,7 @@ jobs:
 
       - name: Helmfile init
         uses: XyLearningProgramming/helm.x3huang.dev/.github/actions/helmfile-init@main
-      
+
       - name: Set up kubeconfig
         run: |
           echo '${{ secrets.KUBE_CONFIG_DATA }}' | base64 --decode > $HOME/.kube/config
@@ -98,4 +102,4 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
           POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
         with:
-          helmfile-args: apply --environment prod -f ./deploy/helmfile/helmfile.yaml.gotmpl
+          helmfile-args: apply --environment prod
