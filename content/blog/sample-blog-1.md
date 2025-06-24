@@ -1,18 +1,12 @@
 ---
-title: 'Sample Meta Title | Blog'
-description: "Sample meta description, it gets added on share cards"
-headline: 'Sample Blog Title'
-excerpt: "Sample excerpt, appears in blog cards"
+title: 'Getting Started with Nuxt 3 and Content'
+excerpt: "A comprehensive guide to building modern blogs with Nuxt 3 and Nuxt Content"
 date: '2023-02-28T12:00:00'
-dateUpdated: ''
+published: true
 author: 'Sample Author'
-authorUrl: 'https://example.com/'
-socialImage:
-    src: '/img/blog/sample.webp'
-    mime: 'webp'
-    alt: 'Mountain'
-    width: 1200
-    height: 630
+tags: ['nuxt', 'vue', 'web-development']
+image: '/img/blog/sample.webp'
+readTime: 5
 ---
 
 This is a sample blog post.

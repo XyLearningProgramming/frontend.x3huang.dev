@@ -1,18 +1,12 @@
 ---
-title: 'Sample Meta Title | Blog'
-description: "Sample meta description, it gets added on share cards"
-headline: 'Sample Blog Title 3'
-excerpt: "Sample excerpt, appears in blog cards"
-date: '3023-02-28T12:00:00'
-dateUpdated: ''
+title: 'JavaScript ES6+ Features You Should Know'
+excerpt: "Master modern JavaScript features including arrow functions, destructuring, and async/await"
+date: '2023-04-15T12:00:00'
+published: true
 author: 'Sample Author'
-authorUrl: 'https://example.com/'
-socialImage:
-    src: '/img/blog/sample.webp'
-    mime: 'webp'
-    alt: 'Mountain'
-    width: 1200
-    height: 630
+tags: ['javascript', 'es6', 'programming']
+image: '/img/blog/sample.webp'
+readTime: 8
 ---
 
 This is a sample blog post.

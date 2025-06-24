@@ -34,6 +34,9 @@ export default defineNuxtConfig({
   // },
   nitro: {
     preset: "node-server",
+    routeRules: {
+      '/.well-known/**': { headers: { 'Access-Control-Allow-Origin': '*' } }
+    }
   },
   prometheus: {
     verbose: false,
@@ -49,6 +52,7 @@ export default defineNuxtConfig({
         },
       }
       : {}),        // https://content.nuxtjs.org/api/configuration
+    // @ts-ignore - highlight config is valid but not in types
     highlight: {
       theme: 'github-dark',
       preload: ['java', 'javascript']
@@ -64,6 +68,13 @@ export default defineNuxtConfig({
           }
         ]
       ]
+    },
+    // Component mapping to fix inline code issue
+    renderer: {
+      alias: {
+        code: 'ProseCodeInline',  // Map inline code to ProseCodeInline
+        pre: 'ProsePre'          // Map pre blocks to ProsePre
+      }
     }
   },
 })

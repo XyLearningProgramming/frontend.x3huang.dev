@@ -1,46 +1,41 @@
 <template>
-    <component :is="props.type"
-        :class="[
-            'px-section_x_sm py-section_y_sm sm:px-section_x sm:py-section_y relative',
-            props.fullHeight ? 'full-height' : '',
-            props.forcedHeight ? 'full-height--forced' : ''
-        ]"
-        :id="props.id"
-    >
-        <slot />
-    </component>
+  <component 
+    :is="props.type"
+    :class="[
+      'px-6 py-8 sm:px-8 sm:py-12 relative',
+      'bg-light-bg dark:bg-dark-bg',
+      'text-light-text dark:text-dark-text',
+      props.fullHeight ? 'min-h-screen' : '',
+      props.surface ? 'bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-lg' : '',
+      props.centered ? 'flex items-center justify-center' : ''
+    ]"
+    :id="props.id"
+  >
+    <slot />
+  </component>
 </template>
 
 <script setup>
 const props = defineProps({
-    id: {
-        type: String,
-        required: true
-    },
-    type: {
-        type: String,
-        default: 'section'
-    },
-    fullHeight: {
-        type: Boolean,
-        required: false,
-        default: false
-    },
-    forcedHeight: {
-        type: Boolean,
-        required: false,
-        default: false
-    }
-});
+  id: {
+    type: String,
+    required: true
+  },
+  type: {
+    type: String,
+    default: 'section'
+  },
+  fullHeight: {
+    type: Boolean,
+    default: false
+  },
+  surface: {
+    type: Boolean,
+    default: false
+  },
+  centered: {
+    type: Boolean,
+    default: false
+  }
+})
 </script>
-
-<style scoped>
-.full-height.full-height--forced {
-    height: calc(100vh - theme('spacing.nav'));
-}
-@screen md {
-    .full-height:not(.full-height--forced) {
-        height: calc(100vh - theme('spacing.nav'));
-    }
-}
-</style>

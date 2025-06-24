@@ -1,18 +1,12 @@
 ---
-title: 'Sample Meta Title | Blog'
-description: "Sample meta description, it gets added on share cards"
-headline: 'Sample Blog Title 2'
-excerpt: "Sample excerpt, appears in blog cards"
-date: '2023-02-28T12:00:00'
-dateUpdated: ''
+title: 'Building Responsive Layouts with Tailwind CSS'
+excerpt: "Learn how to create beautiful, responsive designs using Tailwind CSS utility classes"
+date: '2023-03-01T12:00:00'
+published: true
 author: 'Sample Author'
-authorUrl: 'https://example.com/'
-socialImage:
-    src: '/img/blog/sample.webp'
-    mime: 'webp'
-    alt: 'Mountain'
-    width: 1200
-    height: 630
+tags: ['css', 'tailwind', 'responsive-design']
+image: '/img/blog/sample.webp'
+readTime: 7
 ---
 
 This is a sample blog post.

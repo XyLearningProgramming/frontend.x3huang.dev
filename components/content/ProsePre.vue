@@ -11,7 +11,7 @@
             <div class="copy-container">
                 <button
                     @click="copy(code)"
-                    class="p-1 text-background border rounded-md border-background hover:border-brand_primary hover:bg-brand_primary hover:text-background"
+                    class="p-1 text-white border rounded-md border-gray-600 hover:border-light-accent hover:bg-light-accent dark:hover:border-dark-accent dark:hover:bg-dark-accent hover:text-white"
                 >
                     <IconsCheck v-if="copied" class="w-5 h-5" width="20" height="20" />
                     <IconsCopy v-else class="w-5 h-5" width="20" height="20" />
@@ -54,12 +54,13 @@ const languageText = computed(() => (props.language ? languageMap[props.language
 
 <style scoped>
 .container {
-    @apply w-full my-6 rounded-md bg-black border border-brand_primary/50 pt-8 relative overflow-hidden;
+    @apply w-full my-6 rounded-md bg-black border border-light-accent/50 dark:border-dark-accent/50 pt-8 relative overflow-hidden;
 }
 :slotted(pre) {
-    @apply flex overflow-x-auto px-4 pb-4 text-sm;
+    @apply overflow-x-auto px-4 pb-4 text-sm;
     line-height: 1.625;
     counter-reset: lines;
+    white-space: pre;
 }
 @screen md {
     :slotted(pre) {
@@ -81,7 +82,7 @@ const languageText = computed(() => (props.language ? languageMap[props.language
     @apply flex;
 }
 .filename-text {
-    @apply absolute top-0 left-4 py-1 text-xs text-background/75;
+    @apply absolute top-0 left-4 py-1 text-xs text-white/75;
 }
 @screen md {
     .filename-text {
@@ -89,23 +90,33 @@ const languageText = computed(() => (props.language ? languageMap[props.language
     }
 }
 .language-text {
-    @apply absolute right-0 top-0 bg-brand_primary text-background px-2 py-1 rounded-bl-md;
+    @apply absolute right-0 top-0 bg-light-accent dark:bg-dark-accent text-white px-2 py-1 rounded-bl-md;
 }
 :slotted(pre code) {
-    @apply w-full flex flex-col;
+    @apply w-full;
+    white-space: pre;
+    display: block;
 }
-:slotted(pre code .line) {
-    @apply inline-table;
+:deep(.line) {
+    display: block !important;
     min-height: 1rem;
+    white-space: pre-wrap;
+}
+
+:slotted(pre code .line) {
+    display: block !important;
+    min-height: 1rem;
+    white-space: pre-wrap;
 }
 :slotted(pre code .line::before) {
-    @apply w-4 mr-6 inline-block text-left;
+    @apply mr-6 inline-block text-right;
     counter-increment: lines;
     content: counter(lines);
     color: rgba(115, 138, 148, 0.4);
+    min-width: 2rem;
 }
 :slotted(pre code .highlight) {
-    @apply block -mx-4 pr-4 pl-3 border-l-4 border-brand_primary;
+    @apply block -mx-4 pr-4 pl-3 border-l-4 border-light-accent dark:border-dark-accent;
     content: '';
     background-color: #363b46;
 }

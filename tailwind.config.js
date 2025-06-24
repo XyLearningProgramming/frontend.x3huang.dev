@@ -9,14 +9,28 @@ module.exports = {
     `App.{js,ts,vue}`,
     `app.{js,ts,vue}`
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        'brand_primary': '#124BCF',
-        'brand_secondary': '#5eceeb',
-        'brand_secondary_saturated': '#5eceeb',
-        'typography_primary': '#000000',
-        'background': '#ffffff'
+        light: {
+          bg: '#fdf6e3',
+          surface: '#eee8d5',
+          border: '#d3af86',
+          text: '#657b83',
+          'text-strong': '#073642',
+          accent: '#268bd2',
+          secondary: '#2aa198'
+        },
+        dark: {
+          bg: '#002b36',
+          surface: '#073642',
+          border: '#586e75',
+          text: '#839496',
+          'text-strong': '#fdf6e3',
+          accent: '#268bd2',
+          secondary: '#2aa198'
+        }
       },
       fontSize: {
         'xxs': '0.5rem',

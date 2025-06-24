@@ -109,7 +109,7 @@ p {
 }
 
 .blog-breadcrumb>li a {
-  @apply text-brand_primary;
+  @apply text-light-accent dark:text-dark-accent;
 }
 
 .blog-breadcrumb>li a:hover {
@@ -125,5 +125,12 @@ p {
 /* Blog Links */
 
 .blog-content :not(h1):not(h2):not(h3):not(h4):not(h5) a {
-  @apply underline font-bold text-brand_primary;
+  @apply underline font-bold text-light-accent dark:text-dark-accent;
+}
+
+/* Code Block Line Fix */
+.line {
+  display: block !important;
+  min-height: 1rem;
+  white-space: pre-wrap;
 }

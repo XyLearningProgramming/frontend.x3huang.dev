@@ -1,5 +1,5 @@
 ---
-title: 'Sample Meta Title | Blog'
+title: 'Sample Meta Title | Blog 6'
 description: "Sample meta description, it gets added on share cards"
 headline: 'Sample Blog Title 6'
 excerpt: "Sample excerpt, appears in blog cards"
