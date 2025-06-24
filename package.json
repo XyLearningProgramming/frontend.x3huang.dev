@@ -24,7 +24,7 @@
   "devDependencies": {
     "@nuxt/content": "^3.6.1",
     "@nuxt/eslint": "^1.4.1",
-    "@nuxtjs/tailwindcss": "7.0.0-beta.0",
+    "@nuxtjs/tailwindcss": "^6.13.0",
     "nuxt": "^3.17.5",
     "rehype-external-links": "^3.0.0"
   },
