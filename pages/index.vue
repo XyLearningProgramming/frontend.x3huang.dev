@@ -1,13 +1,6 @@
-<script setup lang="ts">
-const { data: home } = await useAsyncData(() => queryCollection('content').path('/').first())
-
-useSeoMeta({
-  title: home.value?.title,
-  description: home.value?.description
-})
-</script>
-
 <template>
-  <ContentRenderer v-if="home" :value="home" />
-  <div v-else>Home not found</div>
+  <div class="flex flex-col items-center justify-center" style="height: 100vh">
+    <h1 class="text-center">Welcome to the blog starter!</h1>
+    <NuxtLink to="/blog/">Read the blog!</NuxtLink>
+  </div>
 </template>
