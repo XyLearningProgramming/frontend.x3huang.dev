@@ -2,10 +2,8 @@
   <div class="min-h-screen bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text">
     <div class="max-w-4xl mx-auto py-8 px-4">
       <!-- Back button -->
-      <NuxtLink 
-        :to="returnPath" 
-        class="inline-flex items-center text-light-accent dark:text-dark-accent hover:underline mb-8"
-      >
+      <NuxtLink :to="returnPath"
+        class="inline-flex items-center text-light-accent dark:text-dark-accent hover:underline mb-8">
         ← Back to {{ returnTitle }}
       </NuxtLink>
 
@@ -15,19 +13,16 @@
           <h1 class="text-4xl font-bold text-light-text-strong dark:text-dark-text-strong mb-4">
             {{ post.title }}
           </h1>
-          
+
           <div class="flex items-center gap-4 text-sm text-light-text dark:text-dark-text mb-6">
             <time>{{ formatDate(post.date) }}</time>
             <span v-if="post.author">by {{ post.author }}</span>
             <span v-if="post.readTime">{{ post.readTime }} min read</span>
           </div>
-          
+
           <div v-if="post.tags && post.tags.length" class="flex flex-wrap gap-2 mb-6">
-            <span 
-              v-for="tag in post.tags" 
-              :key="tag"
-              class="px-3 py-1 text-xs bg-light-border dark:bg-dark-border rounded-full"
-            >
+            <span v-for="tag in post.tags" :key="tag"
+              class="px-3 py-1 text-xs bg-light-border dark:bg-dark-border rounded-full">
               {{ tag }}
             </span>
           </div>
@@ -59,7 +54,7 @@ onMounted(() => {
   if (import.meta.client) {
     const savedReturnPath = sessionStorage.getItem('blogReturnPath')
     const savedReturnTitle = sessionStorage.getItem('blogReturnTitle')
-    
+
     if (savedReturnPath) {
       returnPath.value = savedReturnPath
       returnTitle.value = savedReturnTitle || 'Previous Page'
@@ -69,7 +64,7 @@ onMounted(() => {
       if (referrer) {
         const referrerUrl = new URL(referrer)
         const referrerPath = referrerUrl.pathname
-        
+
         if (referrerPath === '/timeline') {
           returnPath.value = '/timeline'
           returnTitle.value = 'Timeline'
@@ -86,7 +81,7 @@ onMounted(() => {
         }
       }
     }
-    
+
     // Clear the saved return path after using it
     sessionStorage.removeItem('blogReturnPath')
     sessionStorage.removeItem('blogReturnTitle')
@@ -104,7 +99,7 @@ const generateSlug = (title: string) => {
 }
 
 // Fetch all posts to find the one with matching slug
-const { data: allPosts } = await useAsyncData('all-posts', () => 
+const { data: allPosts } = await useAsyncData('all-posts', () =>
   queryCollection('blog').all()
 )
 
@@ -136,7 +131,7 @@ const formatDate = (dateString: string) => {
 useHead({
   title: computed(() => post.value?.title || 'Blog Post'),
   meta: [
-    { name: 'description', content: computed(() => post.value?.excerpt || 'Blog post content') }
+    { name: 'description', content: computed(() => post.value?.description || 'Blog post content') }
   ]
 })
 </script>

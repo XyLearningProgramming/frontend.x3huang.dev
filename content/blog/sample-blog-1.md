@@ -1,6 +1,6 @@
 ---
 title: 'Getting Started with Nuxt 3 and Content'
-excerpt: "A comprehensive guide to building modern blogs with Nuxt 3 and Nuxt Content"
+description: "A comprehensive guide to building modern blogs with Nuxt 3 and Nuxt Content"
 date: '2023-02-28T12:00:00'
 published: true
 author: 'Sample Author'

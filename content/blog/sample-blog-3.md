@@ -1,6 +1,6 @@
 ---
 title: 'JavaScript ES6+ Features You Should Know'
-excerpt: "Master modern JavaScript features including arrow functions, destructuring, and async/await"
+description: "Master modern JavaScript features including arrow functions, destructuring, and async/await"
 date: '2023-04-15T12:00:00'
 published: true
 author: 'Sample Author'

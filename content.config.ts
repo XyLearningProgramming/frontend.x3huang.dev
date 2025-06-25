@@ -8,7 +8,7 @@ export default defineContentConfig({
       schema: z.object({
         title: z.string().optional(),
         headline: z.string().optional(),
-        excerpt: z.string().optional(),
+        description: z.string().optional(),
         date: z.string(),
         published: z.boolean().default(true),
         tags: z.array(z.string()).optional(),
@@ -23,7 +23,8 @@ export default defineContentConfig({
       schema: z.object({
         title: z.string(),
         description: z.string().optional(),
-        published: z.boolean().default(true)
+        published: z.boolean().default(true),
+        tags: z.array(z.string()).optional(),
       })
     })
   }

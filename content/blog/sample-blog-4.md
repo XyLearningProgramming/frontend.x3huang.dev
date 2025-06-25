@@ -2,7 +2,6 @@
 title: 'Sample Meta Title | Blog 4'
 description: "Sample meta description, it gets added on share cards"
 headline: 'Sample Blog Title 4'
-excerpt: "Sample excerpt, appears in blog cards"
 date: '3023-02-28T12:00:00'
 dateUpdated: ''
 author: 'Sample Author'

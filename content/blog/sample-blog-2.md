@@ -1,6 +1,6 @@
 ---
 title: 'Building Responsive Layouts with Tailwind CSS'
-excerpt: "Learn how to create beautiful, responsive designs using Tailwind CSS utility classes"
+description: "Learn how to create beautiful, responsive designs using Tailwind CSS utility classes"
 date: '2023-03-01T12:00:00'
 published: true
 author: 'Sample Author'

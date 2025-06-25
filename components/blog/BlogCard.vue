@@ -1,23 +1,18 @@
 <template>
-  <article 
+  <article
     class="bg-light-surface dark:bg-dark-surface rounded-lg p-6 border border-light-border dark:border-dark-border hover:shadow-lg transition-shadow cursor-pointer"
-    @click="selectPost(post)"
-  >
+    @click="selectPost(post)">
     <div class="flex justify-between items-start mb-3">
       <h2 class="text-xl font-semibold text-light-text-strong dark:text-dark-text-strong">{{ post.title }}</h2>
       <time class="text-sm text-light-text dark:text-dark-text">{{ formatDate(post.date) }}</time>
     </div>
-    
-    <p v-if="post.excerpt" class="text-light-text dark:text-dark-text mb-4">{{ post.excerpt }}</p>
-    
+
+    <p v-if="post.description" class="text-light-text dark:text-dark-text mb-4">{{ post.description }}</p>
+
     <div v-if="post.tags && post.tags.length" class="flex flex-wrap gap-2">
-      <NuxtLink
-        v-for="tag in post.tags" 
-        :key="tag"
-        :to="`/tags/${encodeURIComponent(tag)}`"
+      <NuxtLink v-for="tag in post.tags" :key="tag" :to="`/tags/${encodeURIComponent(tag)}`"
         class="px-2 py-1 text-xs bg-light-border dark:bg-dark-border rounded-full hover:bg-light-accent dark:hover:bg-dark-accent hover:text-white transition-colors"
-        @click.stop
-      >
+        @click.stop>
         {{ tag }}
       </NuxtLink>
     </div>
@@ -48,7 +43,7 @@ const selectPost = (post: any) => {
     sessionStorage.setItem('blogReturnPath', currentPath)
     sessionStorage.setItem('blogReturnTitle', currentTitle)
   }
-  
+
   const slug = generateSlug(post.title)
   navigateTo(`/blog/${slug}`)
 }
