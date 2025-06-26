@@ -89,6 +89,19 @@ jobs:
           echo '${{ secrets.KUBE_CONFIG_DATA }}' | base64 --decode > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
 
+      - name: Upsert Kubernetes secret
+        env:
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+        run: |
+          # Ensure namespace exists
+          kubectl create namespace frontend > /dev/null 2>&1 || true
+          # Create or update secrets
+          kubectl create secret generic helmfile-secret-frontend \
+            --from-literal=POSTGRES_URL="$POSTGRES_URL" \
+            --namespace=frontend \
+            --save-config \
+            --dry-run=client -o yaml | kubectl apply -f -
+
       - name: Dry‑run (Diff) before Apply
         uses: helmfile/helmfile-action@v2.0.4
         with:
