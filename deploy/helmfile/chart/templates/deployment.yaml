@@ -42,11 +42,15 @@ spec:
           image: "{{ .Values.IMAGE_REPOSITORY }}:{{ .Values.IMAGE_TAG | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
+            {{/* look up the Secret object in-cluster */}}
+            {{- $secret := lookup "v1" "Secret" .Release.Namespace "helmfile-secret-frontend" }}
+            {{- if and $secret (index $secret.data "POSTGRES_URL") }}
             - name: POSTGRES_URL
               valueFrom:
                 secretKeyRef:
                   name: helmfile-secret-frontend
                   key: POSTGRES_URL
+            {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
