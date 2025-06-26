@@ -42,10 +42,7 @@ spec:
           image: "{{ .Values.IMAGE_REPOSITORY }}:{{ .Values.IMAGE_TAG | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            {{-- try to fetch the secret object from the cluster --}}
-            {{-- .Release.Namespace is the namespace you’re deploying into --}}
-            {{-- lookup returns nil if the secret doesn’t exist --}}
-            {{-- if it exists AND data.POSTGRES_URL is set, use valueFrom --}}
+            {{/* look up the Secret object in-cluster */}}
             {{- $secret := lookup "v1" "Secret" .Release.Namespace "helmfile-secret-frontend" }}
             {{- if and $secret (index $secret.data "POSTGRES_URL") }}
             - name: POSTGRES_URL
