@@ -15,7 +15,9 @@ on:
 
 env:
   HELMFILE_FILE_PATH: ./deploy/helmfile/helmfile.yaml.gotmpl
-      
+  IMAGE_REPOSITORY: ${{ secrets.IMAGE_NAME }}
+  IMAGE_TAG: ${{ github.sha }}
+
 jobs:
         
   on-failure:
@@ -74,8 +76,6 @@ jobs:
       - name: Build and push Docker image
         # using github.sha as tag
         run: |
-          export IMAGE_REPOSITORY=${{ secrets.IMAGE_NAME }}
-          export IMAGE_TAG=${{ github.sha }}
           docker build -t $IMAGE_REPOSITORY:$IMAGE_TAG .
           docker push $IMAGE_REPOSITORY:$IMAGE_TAG
         # ensure Dockerfile copies from .output as above
@@ -98,9 +98,5 @@ jobs:
 
       - name: Apply Changes
         uses: helmfile/helmfile-action@v2.0.4
-        env:
-          IMAGE_REPOSITORY: ${{ secrets.IMAGE_NAME }}
-          IMAGE_TAG: ${{ github.sha }}
-          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
         with:
           helmfile-args: apply --environment prod

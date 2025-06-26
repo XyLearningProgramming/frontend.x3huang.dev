@@ -3,31 +3,40 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
   devtools: { enabled: true },
   modules: [
+    '@artmizu/nuxt-prometheus',
     '@nuxt/content',
     '@nuxt/eslint',
-    '@nuxt/fonts',
-    '@nuxt/icon',
-    '@nuxt/image',
-    '@nuxt/scripts',
-    '@nuxt/test-utils',
-    '@nuxt/ui',
-    '@artmizu/nuxt-prometheus',
+    '@nuxtjs/tailwindcss',
   ],
-  fonts: {
-    families: [
-      {
-        name: 'Roboto',
-        weights: [400, 700],
-        // styles, subsets, etc., if needed
-      }
-    ],
-    providers: {
-      google: false,
-      googleicons: false,
+  css: ['/assets/css/main.css'],
+  ssr: true,
+  experimental: {
+    payloadExtraction: false
+  },
+  router: {
+    options: {
+      strict: false
     }
   },
+  sourcemap: false,
+  // fonts: {
+  //   families: [
+  //     {
+  //       name: 'Roboto',
+  //       weights: [400, 700],
+  //       // styles, subsets, etc., if needed
+  //     }
+  //   ],
+  //   providers: {
+  //     google: false,
+  //     googleicons: false,
+  //   }
+  // },
   nitro: {
     preset: "node-server",
+    routeRules: {
+      '/.well-known/**': { headers: { 'Access-Control-Allow-Origin': '*' } }
+    }
   },
   prometheus: {
     verbose: false,
@@ -42,6 +51,30 @@ export default defineNuxtConfig({
           url: process.env.POSTGRES_URL,
         },
       }
-      : {}),
+      : {}),        // https://content.nuxtjs.org/api/configuration
+    // @ts-ignore - highlight config is valid but not in types
+    highlight: {
+      theme: 'github-dark',
+      preload: ['java', 'javascript']
+    },
+    markdown: {
+      // https://github.com/rehypejs/rehype-external-links
+      rehypePlugins: [
+        [
+          'rehype-external-links',
+          {
+            target: '_blank',
+            rel: 'noopener noreferer'
+          }
+        ]
+      ]
+    },
+    // Component mapping to fix inline code issue
+    renderer: {
+      alias: {
+        code: 'ProseCodeInline',  // Map inline code to ProseCodeInline
+        pre: 'ProsePre'          // Map pre blocks to ProsePre
+      }
+    }
   },
 })

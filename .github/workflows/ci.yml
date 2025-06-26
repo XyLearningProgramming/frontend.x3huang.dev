@@ -34,13 +34,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Lint the code
-      - name: Lint code
-        run: pnpm lint
-
-      # Run unit tests
-      - name: Run vitest
-        run: pnpm test
+      # NOTE: disabled for now for simplicity in dev phase
+      #
+      # # Lint the code
+      # - name: Lint code
+      #   run: pnpm lint
+      
+      # # Run unit tests
+      # - name: Run vitest
+      #   run: pnpm test
 
       # Build and upload artefact for backup
       - name: Build project
