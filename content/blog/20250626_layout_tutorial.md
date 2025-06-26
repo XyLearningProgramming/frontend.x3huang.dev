@@ -1,7 +1,9 @@
 ---
 title: 'Typesetting and Layout Demo for Myself'
 description: "TOC, Code, Image, Title, Paragraph"
+headline: 'Typesetting and Layout'
 date: '2025-06-26T12:00:00'
+dateUpdated: ''
 published: true
 author: 'Xinyu'
 tags: ['layout', 'web-development']
