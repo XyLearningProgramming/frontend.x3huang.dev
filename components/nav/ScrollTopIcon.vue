@@ -1,35 +1,50 @@
 <template>
     <div
-        :class="[
-            'fixed flex flex-col items-center w-12 sm:w-section_x z-20 bottom-[50px] right-0 text-typography_primary bg-brand_primary/90 transform duration-150 rounded-tl-md rounded-bl-md',
-            isVisible ? '' : 'translate-x-full'
-        ]"
+        v-show="isVisible"
+        class="bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-lg p-3 shadow-lg transition-all duration-300 hover:shadow-xl cursor-pointer"
+        @click="scrollToTop"
+        aria-label="Scroll to Top"
     >
-        <a href="#" aria-label="Scroll to Top" class="flex flex-col items-center py-1 text-center">
-            <span class="text-xxs leading-xxs uppercase font-highlight sm:w-6/12">Scroll to Top</span>
-            <IconsArrowUp class="w-4 h-4" width="16" height="16"/>
-        </a>
+        <div class="flex flex-col items-center text-light-text dark:text-dark-text hover:text-light-accent dark:hover:text-dark-accent transition-colors">
+            <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+            </svg>
+            <span class="text-xs font-medium">Top</span>
+        </div>
     </div>
 </template>
 
 <script setup>
-// Scroll handling
-import { onUnmounted, ref, nextTick } from 'vue';
-const isVisible = ref(false);
+import { onMounted, onUnmounted, ref } from 'vue'
+
+const isVisible = ref(false)
+
 const handleScroll = () => {
-    // Only run the code if we are on the client
-    if (typeof window !== 'undefined') {
-        const st = window.pageYOffset || document.documentElement.scrollTop;
-        isVisible.value = st > window.innerHeight / 2;
+    if (import.meta.client) {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+        isVisible.value = scrollTop > 300
     }
-};
-if (typeof window !== 'undefined') {
-    window.addEventListener('scroll', handleScroll);
-    nextTick(() => handleScroll());
 }
-onUnmounted(() => {
-    if (typeof window !== 'undefined') {
-        window.removeEventListener('scroll', handleScroll);
+
+const scrollToTop = () => {
+    if (import.meta.client) {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        })
     }
-});
+}
+
+onMounted(() => {
+    if (import.meta.client) {
+        window.addEventListener('scroll', handleScroll)
+        handleScroll() // Initial check
+    }
+})
+
+onUnmounted(() => {
+    if (import.meta.client) {
+        window.removeEventListener('scroll', handleScroll)
+    }
+})
 </script>

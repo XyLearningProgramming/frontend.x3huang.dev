@@ -6,11 +6,14 @@
       aria-label="Expand the table of contents"
     >
       <h3 class="text-lg font-semibold text-light-text-strong dark:text-dark-text-strong">Table of Contents</h3>
-      <IconsChevronDown 
+      <svg 
         :class="['w-5 h-5 transform transition-transform text-light-text dark:text-dark-text', isVisible ? '' : 'rotate-180']" 
-        width="20" 
-        height="20"
-      />
+        fill="none" 
+        stroke="currentColor" 
+        viewBox="0 0 24 24"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      </svg>
     </header>
     
     <ul v-if="links" :class="['space-y-2', isVisible ? 'block' : 'hidden']">

@@ -16,15 +16,9 @@ Welcome to my personal blog! This is where I share my thoughts, experiences, and
 - **JavaScript & TypeScript** - Deep dives into language features and patterns
 - **Vue & Nuxt** - Framework-specific tips, tricks, and real-world applications
 
-### Personal Projects
-- **Case Studies** - Detailed breakdowns of projects I've worked on
-- **Problem Solving** - How I approach and solve technical challenges
-- **Learning Journey** - Documenting my growth as a developer
-- **Open Source** - Contributions and insights from the open source community
-
 ## My Background
 
-I'm a passionate developer who believes in continuous learning and sharing knowledge with the community. This blog serves as both a personal knowledge base and a way to give back to the developer community that has taught me so much.
+I'm a passionate developer who believes in continuous learning and sharing knowledge. This blog serves as both a personal knowledge base and a way to give back to the developer community that has taught me so much.
 
 ### Current Focus Areas
 - Modern web development with Vue.js and Nuxt

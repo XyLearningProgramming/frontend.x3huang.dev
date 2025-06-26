@@ -1,26 +1,26 @@
 {
     "Sample Author": {
-        "@context": "http://www.schema.org",
+        "@context": "http://x3huang.dev",
         "@type": "Person",
-        "@id": "https://example.com/",
-        "name": "Sample Author",
-        "alternateName": "Sample Author",
-        "nationality": "Nationality",
-        "gender": "Gender",
-        "jobTitle": "Job Title",
+        "@id": "https://x3huang.dev/",
+        "name": "Xinyu",
+        "alternateName": "Xinyu Huang",
+        "nationality": "China",
+        "gender": "Male",
+        "jobTitle": "Programmer",
         "worksFor": [
             {
                 "@type": "Organization",
-                "name": "Sample Organization",
+                "name": "Placeholder",
                 "sameAs": [
-                    "https://www.sample-organization.com/"
+                    "https://www.placeholder-company.com/"
                 ]
             }
         ],
-        "url": "https://example.com/",
-        "image": "https://example.com/meta-img.jpg",
+        "url": "https://x3huang.dev/",
+        "image": "https://x3huang.dev/favicon/public/android-chrome-512x512.png",
         "sameAs": [
-            "https://example.com/"
+            "https://x3huang.dev/"
         ]
     }
 }

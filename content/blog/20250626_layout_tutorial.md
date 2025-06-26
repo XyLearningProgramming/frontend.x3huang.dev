@@ -1,17 +1,18 @@
 ---
-title: 'Sample Meta Title | Blog 5'
-description: "Sample meta description, it gets added on share cards"
-headline: 'Sample Blog Title 5'
-date: '3023-02-28T12:00:00'
-dateUpdated: ''
-author: 'Sample Author'
-authorUrl: 'https://example.com/'
+title: 'Typesetting and Layout Demo for Myself'
+description: "TOC, Code, Image, Title, Paragraph"
+date: '2025-06-26T12:00:00'
+published: true
+author: 'Xinyu'
+tags: ['layout', 'web-development']
+image: '/img/blog/sample.webp'
 socialImage:
     src: '/img/blog/sample.webp'
     mime: 'webp'
     alt: 'Mountain'
     width: 1200
     height: 630
+readTime: 5
 ---
 
 This is a sample blog post.

@@ -45,7 +45,7 @@ const selectPost = (post: any) => {
   }
 
   const slug = generateSlug(post.title)
-  navigateTo(`/blog/${slug}`)
+  navigateTo(`/blogs/${slug}`)
 }
 
 const getCurrentPageTitle = () => {
