@@ -90,7 +90,7 @@ export default defineNuxtConfig({
   content: {
     database: {
       type: 'postgres',
-      url: process.env.POSTGRES_URL || "",
+      url: process.env.POSTGRES_URL || "postgres_url_default",
     }, // https://content.nuxtjs.org/api/configuration
     // @ts-ignore - highlight config is valid but not in types
     highlight: {
