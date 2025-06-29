@@ -16,7 +16,7 @@
           Loading...
         </div>
         <div v-else-if="!aboutContent" class="text-red-500">
-          About page not found. Available pages: {{allPages.map((p: any) => p._path || p.path).join(', ')}}
+          About page not found. Available pages: {{allPages.map((p: any) => p.path || p).join(', ')}}
           <pre class="mt-2 text-xs">{{ JSON.stringify(allPages, null, 2) }}</pre>
         </div>
         <div v-else
