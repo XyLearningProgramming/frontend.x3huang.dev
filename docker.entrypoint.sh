@@ -20,9 +20,9 @@ REAL_URL="\"$POSTGRES_URL\""
 
 echo "Entrypoint: Script started. Checking for configuration placeholder..."
 
-# Find the file(s) containing the placeholder. The `find` command is robust.
-# Using a loop to handle cases where the placeholder might appear in multiple chunks.
-find /app/server/chunks -type f -name "*.mjs" -print0 | while IFS= read -r -d '' file; do
+# Find the file(s) containing the placeholder.
+# This version is POSIX-compliant and works in minimal shells like ash.
+find /app/server/chunks -type f -name "*.mjs" | while IFS= read -r file; do
     # Use grep's quiet mode (-q) to check if the file contains the placeholder
     if grep -q "$PLACEHOLDER" "$file"; then
         echo "Entrypoint: Found placeholder in $file. Performing substitution..."

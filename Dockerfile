@@ -9,8 +9,8 @@ ENV HOST=0.0.0.0
 
 EXPOSE 80
 
-COPY ./entrypoint.sh /app/
+COPY ./docker.entrypoint.sh /app/
 # Set the entrypoint to our new script
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["/app/docker.entrypoint.sh"]
 
 CMD ["node", "/app/server/index.mjs"]
