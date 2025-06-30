@@ -1,15 +1,21 @@
 <template>
   <!-- Toggle hint button when sidebar is hidden -->
-  <button 
+  <Card
     v-if="!isExpanded"
+    tag="button"
     @click="toggleSidebar"
-    class="fixed left-4 top-4 z-50 p-2 bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+    class="fixed left-4 top-4 z-50 shadow-lg hover:shadow-xl"
+    variant="default"
+    padding="sm"
+    radius="lg"
+    hover
+    clickable
     title="Show sidebar"
   >
     <svg class="w-5 h-5 text-light-text dark:text-dark-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
     </svg>
-  </button>
+  </Card>
 
   <aside
     :class="[
@@ -33,13 +39,22 @@
       <!-- Navigation -->
       <nav class="space-y-4">
         <NuxtLink to="/" :class="getLinkClass('/')">
+          Home
+        </NuxtLink>
+        <NuxtLink to="/blogs" :class="getLinkClass('/blogs')">
           Blogs
         </NuxtLink>
-        <NuxtLink to="/tags" :class="getLinkClass('/tags')">
+        <NuxtLink to="/blogs/tags" :class="getLinkClass('/blogs/tags')">
           Tags
         </NuxtLink>
-        <NuxtLink to="/timeline" :class="getLinkClass('/timeline')">
+        <NuxtLink to="/blogs/timeline" :class="getLinkClass('/blogs/timeline')">
           Timeline
+        </NuxtLink>
+        <NuxtLink to="/tools" :class="getLinkClass('/tools')">
+          Tools
+        </NuxtLink>
+        <NuxtLink to="/contact" :class="getLinkClass('/contact')">
+          Contact
         </NuxtLink>
         <NuxtLink to="/about" :class="getLinkClass('/about')">
           About
@@ -57,12 +72,19 @@
       <!-- Icons and Theme Toggle -->
       <div class="flex justify-between items-center">
         <!-- Theme Toggle -->
-        <button @click="toggleTheme"
-          class="p-2 rounded-lg bg-light-bg dark:bg-dark-bg hover:bg-light-border dark:hover:bg-dark-border transition-colors"
+        <Card
+          tag="button"
+          @click="toggleTheme"
+          class="bg-light-bg dark:bg-dark-bg hover:bg-light-border dark:hover:bg-dark-border"
+          variant="minimal"
+          padding="sm"
+          radius="lg"
+          hover
+          clickable
           title="Toggle theme">
           <span v-if="isDark">🌞</span>
           <span v-else>🌙</span>
-        </button>
+        </Card>
 
         <!-- Social Icons -->
         <div class="flex space-x-3">
@@ -78,6 +100,7 @@
 </template>
 
 <script setup lang="ts">
+import Card from '~/components/ui/Card.vue'
 import IconsGithub from './icons/github.vue'
 import IconsLinkedin from './icons/linkedin.vue'
 import IconsTwitter from './icons/twitter.vue'

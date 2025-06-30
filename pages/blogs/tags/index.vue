@@ -15,10 +15,17 @@
         <div v-else-if="allTags.length === 0" class="text-red-500 mb-4">No tags found</div>
 
         <div v-else class="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <NuxtLink v-for="tag in allTags" :key="tag" :to="`/tags/${encodeURIComponent(tag)}`"
-            class="bg-light-surface dark:bg-dark-surface p-4 rounded-lg border border-light-border dark:border-dark-border hover:shadow-lg transition-shadow block">
-            <h4 class="font-semibold text-light-text-strong dark:text-dark-text-strong">{{ tag }}</h4>
-            <p class="text-sm text-light-text dark:text-dark-text">{{ getTagCount(tag) }} posts</p>
+          <NuxtLink v-for="tag in allTags" :key="tag" :to="`/blogs/tags/${encodeURIComponent(tag)}`" class="block h-full">
+            <Card
+              variant="default"
+              padding="md"
+              radius="lg"
+              hover
+              clickable
+              class="h-full flex flex-col justify-between">
+              <h4 class="font-semibold text-light-text-strong dark:text-dark-text-strong">{{ tag }}</h4>
+              <p class="text-sm text-light-text dark:text-dark-text">{{ getTagCount(tag) }} posts</p>
+            </Card>
           </NuxtLink>
         </div>
       </main>
@@ -27,6 +34,7 @@
 </template>
 
 <script setup lang="ts">
+import Card from '~/components/ui/Card.vue'
 
 // Fetch all posts to get tags
 const { data: finalPosts } = await useAsyncData('blog-posts-tags', () =>
@@ -37,7 +45,7 @@ const { data: finalPosts } = await useAsyncData('blog-posts-tags', () =>
 const allTags = computed(() => {
   if (!finalPosts.value) return []
 
-  const tags = new Set()
+  const tags: Set<string> = new Set()
   finalPosts.value.forEach(post => {
     if (post.tags) {
       post.tags.forEach(tag => tags.add(tag))

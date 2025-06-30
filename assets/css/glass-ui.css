@@ -1,0 +1,74 @@
+/* Glass UI Global Styles */
+
+/* Text shadow utilities */
+.text-shadow-strong {
+  text-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.8),
+    0 4px 8px rgba(0, 0, 0, 0.6),
+    0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+.text-shadow-medium {
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.8),
+    0 2px 4px rgba(0, 0, 0, 0.6),
+    0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.text-shadow-light {
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.6),
+    0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Prose styling for content over backgrounds */
+.prose-white {
+  --tw-prose-body: rgba(255, 255, 255, 0.9);
+  --tw-prose-headings: rgba(255, 255, 255, 1);
+  --tw-prose-links: rgba(255, 255, 255, 0.8);
+  --tw-prose-bold: rgba(255, 255, 255, 1);
+  --tw-prose-counters: rgba(255, 255, 255, 0.7);
+  --tw-prose-bullets: rgba(255, 255, 255, 0.7);
+  --tw-prose-hr: rgba(255, 255, 255, 0.3);
+  --tw-prose-quotes: rgba(255, 255, 255, 0.9);
+  --tw-prose-quote-borders: rgba(255, 255, 255, 0.3);
+  --tw-prose-code: rgba(255, 255, 255, 0.9);
+  --tw-prose-pre-code: rgba(255, 255, 255, 0.9);
+  --tw-prose-pre-bg: rgba(0, 0, 0, 0.5);
+}
+
+/* Glass card utility classes */
+.glass-primary {
+  @apply bg-white/10 backdrop-blur-md border-white/20;
+}
+
+.glass-secondary {
+  @apply bg-white/20 backdrop-blur-sm border-white/30;
+}
+
+.glass-subtle {
+  @apply bg-white/5 backdrop-blur-sm border-white/10;
+}
+
+.glass-hover {
+  @apply transition-all duration-300 hover:bg-white/20 hover:scale-105;
+}
+
+/* Background blur for blog pages */
+.bg-blur {
+  filter: blur(8px);
+  transform: scale(1.1);
+}
+
+/* White text utility for glass UI */
+.text-glass {
+  @apply text-white drop-shadow-lg;
+}
+
+.text-glass-muted {
+  @apply text-white/80 drop-shadow-lg;
+}
+
+.text-glass-subtle {
+  @apply text-white/60 drop-shadow-lg;
+}

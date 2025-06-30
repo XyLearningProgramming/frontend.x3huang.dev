@@ -47,7 +47,7 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@nuxtjs/tailwindcss',
   ],
-  css: ['/assets/css/main.css'],
+  css: ['/assets/css/main.css', '/assets/css/glass-ui.css'],
   ssr: true,
   experimental: {
     payloadExtraction: false
@@ -56,6 +56,14 @@ export default defineNuxtConfig({
     options: {
       strict: false
     }
+  },
+  routeRules: {
+    '/metrics': {
+      prerender: false, // Disable prerendering for this route
+      headers: {
+        'cache-control': 'no-cache', // Prevent caching of the response
+      },
+    },
   },
   sourcemap: false,
   // fonts: {

@@ -1,17 +1,17 @@
 <template>
-  <article
-    class="bg-light-surface dark:bg-dark-surface rounded-lg p-6 border border-light-border dark:border-dark-border hover:shadow-lg transition-shadow cursor-pointer"
-    @click="selectPost(post)">
+  <article 
+    class="glass-primary rounded-lg p-6 glass-hover cursor-pointer"
+    @click="selectPost">
     <div class="flex justify-between items-start mb-3">
-      <h2 class="text-xl font-semibold text-light-text-strong dark:text-dark-text-strong">{{ post.title }}</h2>
-      <time class="text-sm text-light-text dark:text-dark-text">{{ formatDate(post.date) }}</time>
+      <h2 class="text-xl font-semibold text-glass">{{ props.post.title }}</h2>
+      <time class="text-sm text-glass-muted">{{ formatDate(props.post.date) }}</time>
     </div>
 
-    <p v-if="post.description" class="text-light-text dark:text-dark-text mb-4">{{ post.description }}</p>
+    <p v-if="props.post.description" class="text-glass-muted mb-4">{{ props.post.description }}</p>
 
-    <div v-if="post.tags && post.tags.length" class="flex flex-wrap gap-2">
-      <NuxtLink v-for="tag in post.tags" :key="tag" :to="`/tags/${encodeURIComponent(tag)}`"
-        class="px-2 py-1 text-xs bg-light-border dark:bg-dark-border rounded-full hover:bg-light-accent dark:hover:bg-dark-accent hover:text-white transition-colors"
+    <div v-if="props.post.tags && props.post.tags.length" class="flex flex-wrap gap-2">
+      <NuxtLink v-for="tag in props.post.tags" :key="tag" :to="`/blogs/tags/${encodeURIComponent(tag)}`"
+        class="px-2 py-1 text-xs glass-secondary rounded-full hover:bg-white/30 text-glass-muted hover:text-glass transition-all duration-200"
         @click.stop>
         {{ tag }}
       </NuxtLink>
@@ -20,6 +20,8 @@
 </template>
 
 <script setup lang="ts">
+// Removed GlassCard import - using direct element with glass classes
+
 interface Props {
   post: any
 }
@@ -35,7 +37,9 @@ const generateSlug = (title: string) => {
     .trim()
 }
 
-const selectPost = (post: any) => {
+const selectPost = () => {
+  console.log('BlogCard clicked, navigating to post:', props.post.title)
+  
   // Save current page to history stack before navigating
   if (import.meta.client) {
     const currentPath = useRoute().fullPath
@@ -44,17 +48,19 @@ const selectPost = (post: any) => {
     sessionStorage.setItem('blogReturnTitle', currentTitle)
   }
 
-  const slug = generateSlug(post.title)
+  const slug = generateSlug(props.post.title)
+  console.log('Generated slug:', slug)
   navigateTo(`/blogs/${slug}`)
 }
 
 const getCurrentPageTitle = () => {
   const route = useRoute()
   if (route.path === '/') return 'Latest Posts'
-  if (route.path === '/timeline') return 'Timeline'
-  if (route.path === '/tags') return 'Tags'
+  if (route.path === '/blogs' || route.path === '/blogs/') return 'Latest Posts'
+  if (route.path === '/blogs/timeline') return 'Timeline'
+  if (route.path === '/blogs/tags') return 'Tags'
   if (route.path === '/about') return 'About'
-  if (route.path.startsWith('/tags/')) {
+  if (route.path.startsWith('/blogs/tags/')) {
     const tag = route.params.tag as string
     return `Posts tagged: ${decodeURIComponent(tag)}`
   }
