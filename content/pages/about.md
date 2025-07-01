@@ -28,7 +28,7 @@ If you find the content helpful, consider:
 
 ### Recent Updates
 
-- **2025.6** - Vibe coded site again with consistent style
+- **2025.6** - Refactored this site again with consistent style
 
 ---
 

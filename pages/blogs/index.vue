@@ -1,5 +1,5 @@
 <template>
-  <BackgroundLayout container-width="wide">
+  <BackgroundLayout container-width="wide" overlay-intensity="heavy" blur-background>
     <PageHeader 
       title="Latest Blog Posts" 
       description="Technical articles, insights, and thoughts on my software development journey." 

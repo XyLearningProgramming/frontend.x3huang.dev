@@ -6,7 +6,7 @@
     <div class="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
 
     <!-- Photo notes -->
-    <div v-if="currentBackground?.note" class="absolute bottom-4 left-4 right-4 md:left-6 md:right-auto md:max-w-md">
+    <div v-if="currentBackground?.note" class="absolute bottom-4 left-4 md:left-6 md:max-w-md">
       <div class="bg-black/30 backdrop-blur-sm rounded-lg p-3 text-white border border-white/20">
         <h4 v-if="currentBackground.title" class="font-medium text-sm mb-1">{{ currentBackground.title }}</h4>
         <p class="text-xs text-white/90">{{ currentBackground.note }}</p>
@@ -37,9 +37,12 @@
         <div class="relative">
           <div class="absolute inset-0 bg-black/20 rounded-2xl blur-xl"></div>
           <p
-            class="relative text-xl md:text-2xl text-white max-w-2xl mx-auto leading-relaxed drop-shadow-xl text-shadow-medium px-6 py-4">
-            {{ profile.motto }}<br>
-            <!-- {{ profile.subtitle }} -->
+            class="relative text-lg md:text-xl text-white/90 max-w-2xl mx-auto leading-relaxed drop-shadow-xl text-shadow-medium px-6 py-2">
+            {{ profile.subtitle }}
+          </p>
+          <p
+            class="relative text-xl md:text-2xl text-white max-w-2xl mx-auto leading-relaxed drop-shadow-xl text-shadow-medium px-6 py-4 whitespace-nowrap">
+            {{ profile.motto }}
           </p>
         </div>
       </div>
@@ -74,11 +77,11 @@ import Card from '~/components/ui/Card.vue'
 // ========== CUSTOMIZABLE CONTENT ==========
 // Profile Information
 const profile = {
-  name: 'Xinyu Huang',
-  initials: 'XH',
+  name: 'HUANG Xinyu 黄昕宇',
+  initials: 'HXY',
   image: '/images/profile.png',
-  motto: 'Software developer hit by joys and woes of the craft.',
-  // subtitle: 'Building digital experiences one line of code at a time.',
+  motto: 'Code with passion, learn for life, run freely, and read deeply.',
+  subtitle: 'Fullstack developer, self-hosting, building this site.',
   welcomeMessage: 'Welcome to my digital space powered by vue, nuxt, and nuxt content'
 }
 
@@ -99,7 +102,7 @@ const navigationCards = [
   {
     title: 'About',
     icon: '👋',
-    description: 'Learn more about me',
+    description: 'More about this site and me',
     route: '/about'
   },
   {

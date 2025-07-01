@@ -1,13 +1,5 @@
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-br from-light-accent/20 to-dark-accent/20 dark:from-dark-accent/30 dark:to-light-accent/30 bg-cover bg-center bg-no-repeat relative"
-    :style="{ backgroundImage: currentBackground ? `url(${currentBackground.url})` : 'none' }">
-    <!-- Background overlay for better readability -->
-    <div class="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
-    
-    <!-- Main content -->
-    <div class="relative z-10 min-h-screen">
-      <div class="max-w-6xl mx-auto py-8 px-8">
+  <BackgroundLayout container-width="wide" overlay-intensity="heavy" blur-background>
         <!-- Header -->
         <div class="text-center mb-12">
           <h1 class="text-4xl font-bold text-white mb-4 drop-shadow-2xl text-shadow-strong">
@@ -76,21 +68,13 @@
             Back to Home
           </NuxtLink>
         </div>
-      </div>
-    </div>
-  </div>
+  </BackgroundLayout>
 </template>
 
 <script setup lang="ts">
 import Card from '~/components/ui/Card.vue'
 import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
-
-const { currentBackground, initializeBackground } = useBackgroundGallery()
-
-// Initialize background on mount
-onMounted(() => {
-  initializeBackground()
-})
+import BackgroundLayout from '~/components/layouts/BackgroundLayout.vue'
 
 useHead({
   title: 'Developer Tools - Xinyu Huang',

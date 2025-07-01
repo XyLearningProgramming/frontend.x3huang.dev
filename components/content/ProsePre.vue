@@ -54,49 +54,93 @@ const languageText = computed(() => (props.language ? languageMap[props.language
 
 <style scoped>
 .container {
-    @apply w-full my-6 rounded-md bg-black border border-light-accent/50 dark:border-dark-accent/50 pt-8 relative overflow-hidden;
+    margin-top: 1.25rem;
+    margin-bottom: 1.25rem;
+    padding-top: 1.5rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
 :slotted(pre) {
-    @apply overflow-x-auto px-4 pb-4 text-sm;
+    overflow-x: auto;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
     line-height: 1.625;
     counter-reset: lines;
     white-space: pre;
+    background-color: transparent !important;
 }
+
 @screen md {
     :slotted(pre) {
-        @apply text-base;
+        font-size: 1rem;
     }
 }
-.container pre > code .line {
-    @apply break-words;
-}
-.bottom-container {
-    @apply absolute right-0 bottom-4 pr-2 pb-2;
-}
-@screen md {
-    .bottom-container {
-        @apply top-10;
-    }
-}
-.copy-container {
-    @apply flex;
-}
-.filename-text {
-    @apply absolute top-0 left-4 py-1 text-xs text-white/75;
-}
-@screen md {
-    .filename-text {
-        @apply text-sm;
-    }
-}
-.language-text {
-    @apply absolute right-0 top-0 bg-light-accent dark:bg-dark-accent text-white px-2 py-1 rounded-bl-md;
-}
+
 :slotted(pre code) {
-    @apply w-full;
+    width: 100%;
     white-space: pre;
     display: block;
+    background-color: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    color: rgba(255, 255, 255, 0.85);
 }
+
+.container pre > code .line {
+    word-wrap: break-word;
+}
+
+.bottom-container {
+    position: absolute;
+    right: 0;
+    bottom: 1rem;
+    padding-right: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+@screen md {
+    .bottom-container {
+        top: 2.5rem;
+    }
+}
+
+.copy-container {
+    display: flex;
+}
+
+.filename-text {
+    position: absolute;
+    top: 0;
+    left: 1rem;
+    padding: 0.25rem 0;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+@screen md {
+    .filename-text {
+        font-size: 0.875rem;
+    }
+}
+
+.language-text {
+    position: absolute;
+    right: 0;
+    top: 0;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.85);
+    padding: 0.25rem 0.5rem;
+    border-bottom-left-radius: 0.375rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: none;
+    border-right: none;
+}
+
 :deep(.line) {
     display: block !important;
     min-height: 1rem;
@@ -108,16 +152,31 @@ const languageText = computed(() => (props.language ? languageMap[props.language
     min-height: 1rem;
     white-space: pre-wrap;
 }
+
 :slotted(pre code .line::before) {
-    @apply mr-6 inline-block text-right;
+    margin-right: 1.5rem;
+    display: inline-block;
+    text-align: right;
     counter-increment: lines;
     content: counter(lines);
     color: rgba(115, 138, 148, 0.4);
     min-width: 2rem;
 }
+
+:slotted(pre code .line:empty::before),
+:slotted(pre code .line:not(:has(span))::before) {
+    display: none !important;
+    counter-increment: none;
+}
+
 :slotted(pre code .highlight) {
-    @apply block -mx-4 pr-4 pl-3 border-l-4 border-light-accent dark:border-dark-accent;
+    display: block;
+    margin-left: -1.25rem;
+    margin-right: -1.25rem;
+    padding-right: 1.25rem;
+    padding-left: 1rem;
+    border-left: 4px solid rgba(255, 255, 255, 0.2);
     content: '';
-    background-color: #363b46;
+    background-color: rgba(255, 255, 255, 0.05);
 }
 </style>

@@ -1,26 +1,18 @@
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-br from-light-accent/20 to-dark-accent/20 dark:from-dark-accent/30 dark:to-light-accent/30 bg-cover bg-center bg-no-repeat relative"
-    :style="{ backgroundImage: currentBackground ? `url(${currentBackground.url})` : 'none' }">
-    <!-- Background overlay for better readability -->
-    <div class="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
-    
-    <!-- Main content -->
-    <div class="relative z-10 min-h-screen">
-      <div class="max-w-4xl mx-auto py-8 px-8">
+  <BackgroundLayout container-width="normal" overlay-intensity="heavy" blur-background>
         <!-- Loading state -->
         <div v-if="!allPages" class="text-center py-12">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white/60 mx-auto mb-4"></div>
-          <p class="text-white drop-shadow-lg">Loading...</p>
+          <p class="text-glass ">Loading...</p>
         </div>
 
         <!-- Error state -->
         <div v-else-if="error" class="text-center py-12">
           <div class="bg-white/10 backdrop-blur-md border-white/20 rounded-lg p-6 mb-4">
-            <h2 class="text-2xl font-bold mb-2 text-white drop-shadow-lg">Error Loading Content</h2>
-            <p class="text-white/80 drop-shadow-lg">{{ error }}</p>
+            <h2 class="text-2xl font-bold mb-2 text-glass ">Error Loading Content</h2>
+            <p class="text-glass-muted ">{{ error }}</p>
           </div>
-          <NuxtLink to="/" class="inline-flex items-center gap-2 text-white hover:text-white/80 transition-colors drop-shadow-lg">
+          <NuxtLink to="/" class="inline-flex items-center gap-2 text-glass hover:text-glass-muted transition-colors ">
             <IconsArrowLeft class="w-4 h-4" />
             Back to Home
           </NuxtLink>
@@ -29,24 +21,24 @@
         <!-- About content not found -->
         <div v-else-if="!aboutContent" class="text-center py-12">
           <div class="bg-white/10 backdrop-blur-md border-white/20 rounded-lg p-6 mb-6">
-            <h2 class="text-2xl font-bold text-white mb-4 drop-shadow-lg">
+            <h2 class="text-2xl font-bold text-glass mb-4 ">
               About Page Not Found
             </h2>
-            <p class="text-white/80 mb-4 drop-shadow-lg">
+            <p class="text-glass-muted mb-4 ">
               The about page content could not be loaded.
             </p>
             <details class="text-left max-w-2xl mx-auto mb-6">
-              <summary class="cursor-pointer text-white/80 hover:text-white transition-colors">
+              <summary class="cursor-pointer text-glass-muted hover:text-glass transition-colors">
                 Debug Information
               </summary>
               <div class="mt-2 p-4 bg-black/20 backdrop-blur-sm rounded-lg">
-                <p class="text-sm mb-2 text-white/80">Available pages:</p>
-                <p class="text-xs font-mono text-white/60">{{allPages?.map((p: any) => p.path || p).join(', ')}}</p>
-                <pre class="mt-2 text-xs overflow-auto text-white/60">{{ JSON.stringify(allPages, null, 2) }}</pre>
+                <p class="text-sm mb-2 text-glass-muted">Available pages:</p>
+                <p class="text-xs font-mono text-glass/60">{{allPages?.map((p: any) => p.path || p).join(', ')}}</p>
+                <pre class="mt-2 text-xs overflow-auto text-glass/60">{{ JSON.stringify(allPages, null, 2) }}</pre>
               </div>
             </details>
           </div>
-          <NuxtLink to="/" class="inline-flex items-center gap-2 text-white hover:text-white/80 transition-colors drop-shadow-lg">
+          <NuxtLink to="/" class="inline-flex items-center gap-2 text-glass hover:text-glass-muted transition-colors ">
             <IconsArrowLeft class="w-4 h-4" />
             Back to Home
           </NuxtLink>
@@ -57,19 +49,19 @@
           <!-- Content with blog-style layout -->
           <article class="prose prose-lg max-w-none">
             <header class="mb-8 text-center">
-              <h1 class="text-4xl font-bold text-white mb-4 drop-shadow-2xl text-shadow-strong">
+              <h1 class="text-4xl font-bold text-glass mb-4 drop-shadow-2xl text-shadow-strong">
                 {{ aboutContent.title || 'About' }}
               </h1>
               <div v-if="aboutContent.description" class="relative">
                 <div class="absolute inset-0 bg-black/20 rounded-2xl blur-xl"></div>
-                <p class="relative text-lg text-white max-w-2xl mx-auto leading-relaxed drop-shadow-xl text-shadow-medium px-6 py-4">
+                <p class="relative text-lg text-glass max-w-2xl mx-auto leading-relaxed drop-shadow-xl text-shadow-medium px-6 py-4">
                   {{ aboutContent.description }}
                 </p>
               </div>
             </header>
 
             <div class="bg-white/10 backdrop-blur-md border-white/20 rounded-lg p-6 mb-8">
-              <div class="text-white prose-white">
+              <div class="text-glass prose-white">
                 <ContentRenderer :value="aboutContent" />
               </div>
             </div>
@@ -90,7 +82,7 @@
               href="/resume.pdf" 
               target="_blank" 
               rel="noopener noreferrer"
-              class="inline-flex items-center gap-2 px-4 py-2 bg-light-accent dark:bg-dark-accent text-white rounded-lg hover:opacity-90 transition-opacity whitespace-nowrap"
+              class="inline-flex items-center gap-2 px-4 py-2 bg-light-accent dark:bg-dark-accent text-glass rounded-lg hover:opacity-90 transition-opacity whitespace-nowrap"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -103,26 +95,18 @@
           <!-- Back navigation -->
           <div class="text-center mt-8">
             <NuxtLink to="/"
-              class="inline-flex items-center gap-2 text-white hover:text-white/80 transition-colors drop-shadow-lg">
+              class="inline-flex items-center gap-2 text-glass hover:text-glass-muted transition-colors ">
               <IconsArrowLeft class="w-4 h-4" />
               Back to Home
             </NuxtLink>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
+  </BackgroundLayout>
 </template>
 
 <script setup lang="ts">
 import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
-
-const { currentBackground, initializeBackground } = useBackgroundGallery()
-
-// Initialize background on mount
-onMounted(() => {
-  initializeBackground()
-})
+import BackgroundLayout from '~/components/layouts/BackgroundLayout.vue'
 
 // Fetch about content using queryCollection from pages collection
 const { data: allPages, error } = await useAsyncData('all-pages', () =>

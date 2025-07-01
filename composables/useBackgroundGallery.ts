@@ -8,8 +8,8 @@ export const useBackgroundGallery = () => {
   const backgroundImages: BackgroundImage[] = [
     {
       url: '/images/bg_20250630.jpg',
-      note: "Zhenru Temple, photographed by Yu",
-      title: "Petals cradle the echoes of a temple's chime",
+      note: "Petals cradle the echoes of a temple's chime",
+      title: "Zhenru Temple, photographed by Yu",
     },
     // Add more background images here as needed
     // {

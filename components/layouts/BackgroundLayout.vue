@@ -21,7 +21,7 @@
     <div :class="overlayClass"></div>
     
     <!-- Photo notes -->
-    <div v-if="showPhotoNote && currentBackground?.note" class="absolute bottom-4 left-4 right-4 md:left-6 md:right-auto md:max-w-md">
+    <div v-if="showPhotoNote && currentBackground?.note" class="absolute bottom-4 left-4 md:left-6 md:max-w-md">
       <div class="bg-black/30 backdrop-blur-sm rounded-lg p-3 text-white border border-white/20">
         <h4 v-if="currentBackground.title" class="font-medium text-sm mb-1">{{ currentBackground.title }}</h4>
         <p class="text-xs text-white/90">{{ currentBackground.note }}</p>

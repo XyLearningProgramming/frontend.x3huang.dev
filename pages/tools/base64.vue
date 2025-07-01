@@ -1,5 +1,5 @@
 <template>
-  <BackgroundLayout container-width="normal">
+  <BackgroundLayout container-width="normal" overlay-intensity="heavy" blur-background>
     <PageHeader 
       title="Base64 Encoder/Decoder" 
       description="Encode and decode Base64 strings quickly and easily." 

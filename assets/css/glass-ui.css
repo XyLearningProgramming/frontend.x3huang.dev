@@ -26,15 +26,239 @@
   --tw-prose-body: rgba(255, 255, 255, 0.9);
   --tw-prose-headings: rgba(255, 255, 255, 1);
   --tw-prose-links: rgba(255, 255, 255, 0.8);
-  --tw-prose-bold: rgba(255, 255, 255, 1);
+  --tw-prose-bold: rgba(255, 255, 255, 0.55);
+  --tw-prose-counters: rgba(255, 255, 255, 0.5);
+  --tw-prose-bullets: rgba(255, 255, 255, 0.5);
+  --tw-prose-hr: rgba(255, 255, 255, 0.3);
+  --tw-prose-quotes: rgba(255, 255, 255, 0.9);
+  --tw-prose-quote-borders: rgba(255, 255, 255, 0.3);
+  --tw-prose-code: rgba(255, 255, 255, 0.85);
+  --tw-prose-pre-code: rgba(255, 255, 255, 0.85);
+  --tw-prose-pre-bg: rgba(0, 0, 0, 0.5);
+}
+
+.prose-glass {
+  --tw-prose-body: rgba(255, 255, 255, 0.9);
+  --tw-prose-headings: rgba(255, 255, 255, 1);
+  --tw-prose-links: rgba(255, 255, 255, 0.8);
+  --tw-prose-bold: rgba(255, 255, 255, 0.75);
   --tw-prose-counters: rgba(255, 255, 255, 0.7);
   --tw-prose-bullets: rgba(255, 255, 255, 0.7);
   --tw-prose-hr: rgba(255, 255, 255, 0.3);
   --tw-prose-quotes: rgba(255, 255, 255, 0.9);
   --tw-prose-quote-borders: rgba(255, 255, 255, 0.3);
-  --tw-prose-code: rgba(255, 255, 255, 0.9);
-  --tw-prose-pre-code: rgba(255, 255, 255, 0.9);
+  --tw-prose-code: rgba(255, 255, 255, 0.85);
+  --tw-prose-pre-code: rgba(255, 255, 255, 0.85);
   --tw-prose-pre-bg: rgba(0, 0, 0, 0.5);
+}
+
+/* Enhanced content rendering with better spacing and typography */
+.prose-glass,
+.prose-white {
+  line-height: 1.6;
+  max-width: none;
+}
+
+/* Improved heading spacing - more space above than below */
+.prose-glass h1,
+.prose-white h1 {
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  font-size: 1.875rem;
+  /* 30px */
+  line-height: 1.3;
+}
+
+.prose-glass h2,
+.prose-white h2 {
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 1.5rem;
+  /* 24px */
+  line-height: 1.3;
+}
+
+.prose-glass h3,
+.prose-white h3 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 1.25rem;
+  /* 20px */
+  line-height: 1.4;
+}
+
+.prose-glass h4,
+.prose-white h4 {
+  margin-top: 1.25rem;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+  font-size: 1.125rem;
+  /* 18px */
+  line-height: 1.4;
+}
+
+.prose-glass h5,
+.prose-white h5,
+.prose-glass h6,
+.prose-white h6 {
+  margin-top: 1rem;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+  font-size: 1rem;
+  /* 16px */
+  line-height: 1.4;
+}
+
+/* Better paragraph spacing */
+.prose-glass p,
+.prose-white p {
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.65;
+}
+
+/* First paragraph after heading should have less top margin */
+.prose-glass h1+p,
+.prose-white h1+p,
+.prose-glass h2+p,
+.prose-white h2+p,
+.prose-glass h3+p,
+.prose-white h3+p,
+.prose-glass h4+p,
+.prose-white h4+p,
+.prose-glass h5+p,
+.prose-white h5+p,
+.prose-glass h6+p,
+.prose-white h6+p {
+  margin-top: 0.25rem;
+}
+
+/* List spacing */
+.prose-glass ul,
+.prose-white ul,
+.prose-glass ol,
+.prose-white ol {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.prose-glass li,
+.prose-white li {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  line-height: 1.6;
+}
+
+/* Nested lists */
+.prose-glass li>ul,
+.prose-white li>ul,
+.prose-glass li>ol,
+.prose-white li>ol {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Block quotes */
+.prose-glass blockquote,
+.prose-white blockquote {
+  margin-top: 1.6rem;
+  margin-bottom: 1.6rem;
+  padding-left: 1rem;
+  border-left: 0.25rem solid rgba(255, 255, 255, 0.3);
+  font-style: italic;
+}
+
+/* Code blocks */
+.prose-glass pre,
+.prose-white pre {
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.25rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  background-color: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Code inside pre blocks */
+.prose-glass pre code,
+.prose-white pre code {
+  background-color: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.875rem;
+}
+
+/* Inline code */
+.prose-glass code,
+.prose-white code {
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.9em;
+  font-weight: 400;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Tables */
+.prose-glass table,
+.prose-white table {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  width: 100%;
+  table-layout: auto;
+  text-align: left;
+}
+
+.prose-glass th,
+.prose-white th {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  font-weight: 600;
+}
+
+.prose-glass td,
+.prose-white td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Links */
+.prose-glass a,
+.prose-white a {
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.5);
+  text-underline-offset: 0.2em;
+  transition: all 0.2s ease;
+}
+
+.prose-glass a:hover,
+.prose-white a:hover {
+  text-decoration-color: rgba(255, 255, 255, 0.8);
+}
+
+/* Horizontal rules */
+.prose-glass hr,
+.prose-white hr {
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Strong/Bold text - more subtle contrast */
+.prose-glass strong,
+.prose-white strong,
+.prose-glass b,
+.prose-white b {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.95);
 }
 
 /* Glass card utility classes */
@@ -56,8 +280,7 @@
 
 /* Background blur for blog pages */
 .bg-blur {
-  filter: blur(8px);
-  transform: scale(1.1);
+  filter: blur(4px);
 }
 
 /* White text utility for glass UI */
