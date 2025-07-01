@@ -17,6 +17,7 @@
   "dependencies": {
     "@artmizu/nuxt-prometheus": "^2.5.0",
     "@vueuse/core": "^13.4.0",
+    "@wxperia/liquid-glass-vue": "^1.0.9",
     "better-sqlite3": "^12.1.0",
     "pg": "^8.16.0"
   },

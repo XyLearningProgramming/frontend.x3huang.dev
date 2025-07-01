@@ -12,7 +12,7 @@
         <div class="mb-8">
           <!-- Back to tags link -->
           <NuxtLink 
-            to="/tags" 
+            to="/blogs/tags" 
             class="inline-flex items-center text-light-accent dark:text-dark-accent hover:underline mb-4"
           >
             ← Back to All Tags

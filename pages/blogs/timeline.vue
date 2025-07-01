@@ -10,20 +10,18 @@
         isExpanded && !isMobile ? 'ml-64' : 'ml-0'
       ]">
         <h1 class="text-3xl font-bold text-light-text-strong dark:text-dark-text-strong mb-8">Timeline</h1>
-        
+
         <div v-if="!timelineYears" class="text-red-500 mb-4">Loading timeline...</div>
         <div v-else-if="timelineYears.length === 0" class="text-red-500 mb-4">No posts found</div>
-        
+
         <div v-else class="space-y-6">
-          <div v-for="year in timelineYears" :key="year" class="border-l-2 border-light-accent dark:border-dark-accent pl-6">
+          <div v-for="year in timelineYears" :key="year"
+            class="border-l-2 border-light-accent dark:border-dark-accent pl-6">
             <h2 class="text-2xl font-bold text-light-text-strong dark:text-dark-text-strong mb-4">{{ year }}</h2>
             <div class="space-y-3">
-              <div 
-                v-for="post in getPostsByYear(year)" 
-                :key="post._path"
+              <div v-for="post in getPostsByYear(year)" :key="post.path"
                 class="cursor-pointer hover:text-light-accent dark:hover:text-dark-accent transition-colors"
-                @click="selectPost(post)"
-              >
+                @click="selectPost(post)">
                 <div class="flex justify-between">
                   <span class="font-medium">{{ post.title }}</span>
                   <span class="text-sm text-light-text dark:text-dark-text">{{ formatDate(post.date) }}</span>
@@ -40,20 +38,20 @@
 <script setup lang="ts">
 
 // Fetch all posts
-const { data: finalPosts } = await useAsyncData('blog-posts-timeline', () => 
+const { data: finalPosts } = await useAsyncData('blog-posts-timeline', () =>
   queryCollection('blog').all()
 )
 
 // Computed properties
 const timelineYears = computed(() => {
   if (!finalPosts.value) return []
-  
-  const years = new Set()
+
+  const years: Set<number> = new Set()
   finalPosts.value.forEach(post => {
     const year = new Date(post.date).getFullYear()
     years.add(year)
   })
-  
+
   return Array.from(years).sort((a: any, b: any) => b - a)
 })
 
@@ -73,7 +71,7 @@ const selectPost = (post: any) => {
     sessionStorage.setItem('blogReturnPath', '/timeline')
     sessionStorage.setItem('blogReturnTitle', 'Timeline')
   }
-  
+
   const slug = generateSlug(post.title)
   navigateTo(`/blogs/${slug}`)
 }

@@ -6,6 +6,13 @@
 
 <style scoped>
 .inline-code {
-  @apply px-1.5 py-0.5 bg-light-border dark:bg-dark-border text-light-text-strong dark:text-dark-text-strong rounded text-sm font-mono;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.9em;
+  font-weight: 400;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
 }
 </style>

@@ -76,22 +76,33 @@ p {
   @apply mt-4;
 }
 
-/* Blog Content */
+/* Blog Content - Updated for better reading experience */
 
 .blog-content>p+p,
 .blog-content>ul+p,
 .blog-content>ol+p,
 .blog-content>p+ul,
 .blog-content>p+ol {
-  @apply mt-4;
+  @apply mt-3;
 }
 
-/* Blog Body */
+/* Blog Body - Improved line height and spacing */
 
 .blog-content p,
 .blog-content ol,
 .blog-content ul {
-  @apply text-lg leading-h5;
+  @apply text-lg;
+  line-height: 1.65;
+}
+
+/* Override prose styles for better content rendering */
+.prose-glass, .prose-white {
+  font-size: 1.125rem; /* 18px base font size for better readability */
+}
+
+/* Ensure proper spacing for content containers */
+.blog-content, .prose-glass, .prose-white {
+  @apply leading-relaxed;
 }
 
 /* Blog Breadcrumbs */
