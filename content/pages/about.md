@@ -4,7 +4,13 @@ description: 'Learn more about this site and its purpose'
 published: true
 ---
 
-Welcome to my personal digital space! This is where I share my thoughts, experiences, and insights on various topics related to technology, programming, and personal development.
+### Hello there!
+
+I'm HUANG Xinyu, a dynamic software engineer passionate about leveraging state-of-the-art stack to craft attracting products while maintaining an operational excellence. I've treaded on many fields of programming, including backend serving AI models, devops, game-making, but is still building my own nest.
+
+Welcome to my personal digital space! This is where I share my thoughts, experiences, and insights on various topics related to technology and programming.
+
+---
 
 ### Roadmap for this site
 
@@ -28,6 +34,7 @@ If you find the content helpful, consider:
 
 ### Recent Updates
 
+- **2025.7** - Rescued several published blogs from my last site
 - **2025.6** - Refactored this site again with consistent style
 
 ---
