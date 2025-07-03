@@ -115,6 +115,18 @@ You can define language, highlighted lines, and filename.
 
 Inline code is written using \`, and looks like `this`.
 
+## GitHub Code Citations
+
+You can cite and embed code directly from GitHub repositories with proper attribution and context lines:
+
+<GitHubCodeCitation 
+  url="https://github.com/XyLearningProgramming/helm.x3huang.dev/blob/main/traefik/values.yaml.gotmpl#L110-L120"
+  :context-before="2"
+  :context-after="2"
+/>
+
+The component supports customizable context lines through the `context-before` and `context-after` props, with sensible defaults of 3 lines each.
+
 ## Images
 
 Images should be loaded from the `public` folder. An image is added like this:

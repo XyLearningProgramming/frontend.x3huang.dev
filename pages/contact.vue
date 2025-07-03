@@ -52,7 +52,7 @@
       </a>
 
       <!-- Resume -->
-      <a href="/resume/resume.pdf" target="_blank" rel="noopener noreferrer" class="block group">
+      <a :href="resumePath" target="_blank" rel="noopener noreferrer" class="block group">
         <GlassCard variant="primary" padding="lg" radius="lg" hover clickable class="text-center h-full">
           <div class="text-glass">
             <div class="text-4xl mb-4">📄</div>
@@ -138,6 +138,8 @@ import GlassCard from '~/components/ui/GlassCard.vue'
 import BackgroundLayout from '~/components/layouts/BackgroundLayout.vue'
 import PageHeader from '~/components/ui/PageHeader.vue'
 import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
+
+const resumePath = "/resume/20250703.pdf"
 
 const form = ref({
   name: '',
