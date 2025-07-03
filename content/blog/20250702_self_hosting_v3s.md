@@ -4,7 +4,7 @@ description: "TOC"
 headline: 'Typesetting and Layout'
 date: '2025-07-02T12:00:00'
 dateUpdated: ''
-published: true
+published: false
 author: 'Xinyu'
 tags: ['self-host', 'k8s']
 readTime: 10

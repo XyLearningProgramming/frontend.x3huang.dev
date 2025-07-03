@@ -1,13 +1,29 @@
 <template>
   <BackgroundLayout container-width="wide" overlay-intensity="heavy" blur-background>
-    <PageHeader 
-      title="Latest Blog Posts" 
-      description="Technical articles, insights, and thoughts on my software development journey." 
-    />
+    <PageHeader title="Latest Blog Posts"
+      description="Technical articles, insights, and thoughts on my software development journey." />
+
+    <!-- Search box -->
+    <div class="mb-8">
+      <div class="relative">
+        <input v-model="searchQuery" type="text" placeholder="Search blogs by title, description, or tag..."
+          class="w-full px-4 py-3 pl-12 pr-12 glass-primary rounded-lg border-0 text-glass placeholder-glass-muted/60 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all duration-200" />
+        <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white">
+          <IconsSearch class="w-5 h-5" />
+        </div>
+        <button
+          v-if="searchQuery.trim()"
+          @click="clearSearch"
+          class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-white/70 transition-colors duration-200"
+        >
+          <IconsX class="w-5 h-5" />
+        </button>
+      </div>
+    </div>
 
     <!-- Blog posts -->
     <div class="mb-8">
-      <BlogList :posts="posts" />
+      <BlogList :posts="filteredPosts" />
     </div>
 
     <!-- Loading indicator -->
@@ -28,10 +44,7 @@
 
     <!-- Back to home -->
     <div class="text-center mt-12">
-      <NuxtLink 
-        to="/" 
-        class="inline-flex items-center gap-2 text-glass hover:text-glass-muted transition-colors"
-      >
+      <NuxtLink to="/" class="inline-flex items-center gap-2 text-glass hover:text-glass-muted transition-colors">
         <IconsArrowLeft class="w-4 h-4" />
         Back to Home
       </NuxtLink>
@@ -43,6 +56,8 @@
 import BackgroundLayout from '~/components/layouts/BackgroundLayout.vue'
 import PageHeader from '~/components/ui/PageHeader.vue'
 import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
+import IconsSearch from '~/components/icons/search.vue'
+import IconsX from '~/components/icons/x.vue'
 
 // Calculate dynamic posts per page based on viewport height
 const calculatePostsPerPage = () => {
@@ -61,13 +76,48 @@ const posts = ref<any[]>([])
 const loading = ref(false)
 const hasMore = ref(true)
 
+// Search state
+const searchQuery = ref('')
+
+// Clear search function
+const clearSearch = () => {
+  searchQuery.value = ''
+}
+
+// Filtered posts based on search query
+const filteredPosts = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return posts.value
+  }
+
+  const query = searchQuery.value.toLowerCase().trim()
+  return posts.value.filter(post => {
+    const titleMatch = post.title?.toLowerCase().includes(query)
+    const descriptionMatch = post.description?.toLowerCase().includes(query)
+    const tagsMatch = post.tags?.some((tag: string) => tag.toLowerCase().includes(query))
+
+    return titleMatch || descriptionMatch || tagsMatch
+  })
+})
+
+// Single function to query published blog posts
+const queryPublishedBlogs = (limit: number, skip: number) => {
+  const query = queryCollection('blogs')
+
+  if (!import.meta.dev) {
+    query.where('published', '=', true)
+  }
+
+  return query
+    .order('date', 'DESC')
+    .limit(limit)
+    .skip(skip)
+    .all()
+}
+
 // Load initial posts
 const { data: initialPosts } = await useAsyncData('blog-posts-initial', () =>
-  queryCollection('blog')
-    .order('date', 'DESC')
-    .limit(postsPerPage.value)
-    .skip(0)
-    .all()
+  queryPublishedBlogs(postsPerPage.value, 0)
 )
 
 // Initialize posts with first batch
@@ -84,11 +134,7 @@ const loadMorePosts = async () => {
 
   try {
     const nextPage = currentPage.value + 1
-    const newPosts = await queryCollection('blog')
-      .order('date', 'DESC')
-      .limit(postsPerPage.value)
-      .skip(nextPage * postsPerPage.value)
-      .all()
+    const newPosts = await queryPublishedBlogs(postsPerPage.value, nextPage * postsPerPage.value)
 
     if (newPosts && newPosts.length > 0) {
       posts.value.push(...newPosts)
