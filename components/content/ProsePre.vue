@@ -1,5 +1,6 @@
 <template>
     <div class="prose-pre-wrapper">
+        <!-- https://github.com/Hetari/vuejs-code-block -->
         <ClientOnly>
             <CodeBlock :code="code || ''" :language="(language as any) || 'text'" theme="oceanicNext" :numbered="true"
                 :show-header="true" :file-name="filename || undefined" />
@@ -67,13 +68,13 @@ const props = withDefaults(
     /* Remove all padding */
     min-height: 1.2em !important;
     /* Very compact line height */
-    height: 1.2em !important;
-    /* Force exact height */
+    height: auto !important;
+    /* Allow natural height for wrapped content */
     line-height: 1.2 !important;
     /* Force line height */
     background: transparent !important;
     display: flex !important;
-    align-items: center !important;
+    align-items: flex-start !important;
 }
 
 .prose-pre-wrapper :deep(.line-number) {
@@ -87,9 +88,11 @@ const props = withDefaults(
     padding: 0 8px !important;
     background: transparent !important;
     line-height: 1.2 !important;
-    height: 1.2em !important;
-    display: flex !important;
-    align-items: center !important;
+    height: auto !important;
+    display: block !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: pre-wrap !important;
 }
 
 /* .prose-pre-wrapper :deep(.copy-button) {
@@ -114,12 +117,12 @@ const props = withDefaults(
     display: flex !important;
     align-items: center !important;
     gap: 6px !important;
-    font-size: 12px !important;
+    font-size: 14px !important;
 }
 
 .prose-pre-wrapper :deep(.file-name img) {
-    width: 12px !important;
-    height: 12px !important;
+    width: 20px !important;
+    height: 20px !important;
 }
 
 .prose-pre-wrapper :deep(.actions) {
