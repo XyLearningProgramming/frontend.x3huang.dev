@@ -120,7 +120,12 @@ Inline code is written using \`, and looks like `this`.
 You can cite and embed code directly from GitHub repositories with proper attribution and context lines:
 
 <!-- https://stackoverflow.com/questions/28338017/is-there-a-way-to-embed-github-code-into-an-iframe -->
-<iframe frameborder=0 style="min-width: 200px; width: 60%; height: 460px;" scrolling="no" seamless="seamless" srcdoc='<html><body><style type="text/css">.gist .gist-data { height: 400px; width: 100% }</style><script src="https://gist.github.com/sundbry/55bb902b66a39c0ff83629d9a8015ca4.js"></script></body></html>'></iframe>
+::ProseGithub
+---
+rawUrl: https://raw.githubusercontent.com/XyLearningProgramming/helm.x3huang.dev/main/traefik/values.yaml.gotmpl
+height: 400
+---
+::
 
 
 ## Images
