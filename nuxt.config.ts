@@ -46,6 +46,7 @@ export default defineNuxtConfig({
     '@nuxt/content',
     '@nuxt/eslint',
     '@nuxtjs/tailwindcss',
+    'nuxt-llms',
   ],
   css: ['/assets/css/main.css', '/assets/css/glass-ui.css'],
   ssr: true,
@@ -125,4 +126,20 @@ export default defineNuxtConfig({
       }
     }
   },
+  // Ref: https://content.nuxt.com/docs/advanced/llms
+  llms: {
+    domain: 'https://x3huang.dev',
+    title: "Xinyu Huang's digital space",
+    description: 'Xinyu Huang - Developer & Tech Enthusiast',
+    sections: [
+      {
+        title: 'Blog Posts - Xinyu Huang',
+        description: 'Latest blog posts by Xinyu Huang.',
+        contentCollection: "blogs",
+        contentFilters: [
+          { field: 'published', operator: '=', value: true }
+        ]
+      }
+    ]
+  }
 })

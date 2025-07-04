@@ -49,20 +49,17 @@ const props = defineProps({
 
 const copied = ref(false)
 
-// Get the current URL dynamically
+// Get the current URL dynamically - use relative path to avoid hydration mismatch
 const getCurrentUrl = () => {
-    if (import.meta.client) {
-        return window.location.origin + props.path
-    }
     return props.path
 }
 
-const encodedUrl = encodeURIComponent(getCurrentUrl())
+const encodedUrl = computed(() => encodeURIComponent(getCurrentUrl()))
 
 const copyLink = async () => {
     if (import.meta.client && navigator.clipboard) {
         try {
-            await navigator.clipboard.writeText(getCurrentUrl())
+            await navigator.clipboard.writeText(window.location.origin + props.path)
             copied.value = true
             setTimeout(() => {
                 copied.value = false

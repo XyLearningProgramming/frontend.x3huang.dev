@@ -55,7 +55,7 @@
 /* Enhanced content rendering with better spacing and typography */
 .prose-glass,
 .prose-white {
-  line-height: 1.6;
+  line-height: 1.5;
   max-width: none;
 }
 
@@ -115,8 +115,8 @@
 /* Better paragraph spacing */
 .prose-glass p,
 .prose-white p {
-  margin-top: 0.75rem;
-  margin-bottom: 0.75rem;
+  margin-top: 1rem;
+  margin-bottom: 0.25rem;
   line-height: 1.65;
 }
 
@@ -133,7 +133,7 @@
 .prose-white h5+p,
 .prose-glass h6+p,
 .prose-white h6+p {
-  margin-top: 0.25rem;
+  margin-top: 1rem;
 }
 
 /* List spacing */
@@ -148,9 +148,10 @@
 
 .prose-glass li,
 .prose-white li {
-  margin-top: 0.25rem;
-  margin-bottom: 0.25rem;
-  line-height: 1.6;
+  /* margin-top: 0.25rem; */
+  /* margin-bottom: 0.25rem; */
+  line-height: 1.65;
+  font-size: 1rem;
 }
 
 /* Nested lists */

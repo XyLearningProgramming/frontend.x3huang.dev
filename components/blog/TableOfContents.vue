@@ -10,9 +10,9 @@
       </svg>
     </header>
 
-    <nav v-if="links" :class="['space-y-2', isVisible ? 'block' : 'hidden']">
+    <nav v-if="links" :class="['space-y-1', isVisible ? 'block' : 'hidden']">
       <a v-for="link of flattenLinks(links)" :key="link.id" :href="`#${link.id}`" :class="[
-        'text-sm text-glass-muted hover:text-glass transition-all duration-200 block py-2 px-3 rounded-lg hover:bg-white/20 leading-relaxed border-l-2 border-transparent hover:border-white/60',
+        'text-sm text-glass-muted hover:text-glass transition-all duration-200 block py-1 px-3 rounded-lg hover:bg-white/20 leading-relaxed border-l-2 border-transparent hover:border-white/60',
         `toc-link_${link.depth}`
       ]">
         {{ link.text }}

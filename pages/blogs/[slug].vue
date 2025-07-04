@@ -33,16 +33,7 @@
 
       <GlassCard variant="primary" padding="lg" radius="lg" class="mb-8">
         <div class="text-white prose-white">
-          <ClientOnly>
-            <ContentRenderer :value="post" />
-            <template #fallback>
-              <div class="animate-pulse">
-                <div class="h-4 bg-white/20 rounded w-3/4 mb-4"></div>
-                <div class="h-4 bg-white/20 rounded w-1/2 mb-4"></div>
-                <div class="h-4 bg-white/20 rounded w-5/6 mb-4"></div>
-              </div>
-            </template>
-          </ClientOnly>
+          <ContentRenderer :value="post" />
         </div>
       </GlassCard>
     </article>
@@ -230,7 +221,7 @@ const generateSlug = (title: string) => {
 // First try to find post by direct path
 const { data: post, error } = await useAsyncData(`blog-${slug}`, async () => {
   // Get all posts to find matching slug
-  const allPosts = await queryCollection('blog').all()
+  const allPosts = await queryCollection('blogs').all()
   return allPosts.find(p => generateSlug(p.title || "missing-title") === slug) || null
 })
 
