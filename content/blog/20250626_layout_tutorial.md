@@ -4,7 +4,7 @@ description: "TOC, Code, Image, Title, Paragraph"
 headline: 'Typesetting and Layout'
 date: '2025-06-26T12:00:00'
 dateUpdated: ''
-published: true
+published: false
 author: 'Xinyu'
 tags: ['layout', 'web-development']
 image: '/img/blog/sample.webp'

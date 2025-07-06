@@ -32,17 +32,17 @@
     </div>
 
     <!-- Attribution footer -->
-    <div class="github-attribution">
+    <!-- <div class="github-attribution">
       <div class="attribution-content">
         <span class="text-xs text-gray-500 dark:text-gray-400">
           <span v-if="scrollToLine">Line {{ scrollToLine }} • </span>
-          <!-- <span>{{ repoInfo.owner }}/{{ repoInfo.name }}</span> -->
+          <span>{{ repoInfo.owner }}/{{ repoInfo.name }}</span>
         </span>
         <span class="text-xs text-gray-400 dark:text-gray-500">
           Fetched from GitHub
         </span>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 

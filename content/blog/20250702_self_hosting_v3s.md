@@ -1,5 +1,5 @@
 ---
-title: 'Self'
+title: 'vps + k3s: '
 description: "TOC"
 headline: 'Typesetting and Layout'
 date: '2025-07-02T12:00:00'
