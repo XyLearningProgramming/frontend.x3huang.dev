@@ -2,16 +2,10 @@ name: CD Pipeline
 
 on:
   workflow_dispatch:
-    inputs:
-      ci_run_id:
-        description: 'CI workflow run ID (optional; if omitted, use latest successful on current branch)'
-        required: false
   workflow_run:
-    workflows: [CI Pipeline]
-    types:
-      - completed
-    branches:
-      - main
+    workflows: ["CI Pipeline"]
+    types: [completed]
+    branches: [main]
 
 env:
   HELMFILE_FILE_PATH: ./deploy/helmfile/helmfile.yaml.gotmpl
@@ -19,52 +13,29 @@ env:
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
-        
-  on-failure:
-    runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-    steps:
-      - run: echo 'The triggering workflow failed, deployment skipped.' && exit 1
   deploy:
     runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'workflow_dispatch' || 
-      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
-    # require manual approval in GitHub → Settings → Environments → production
-    environment: prod
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Download artifact when triggered by workflow_run (use that run's ID)
-      - name: Download artifact from CI run
-        if: ${{ github.event_name == 'workflow_run' }}
-        uses: dawidd6/action-download-artifact@v10
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          run_id: ${{ github.event.workflow_run.id }}
-          name: output
-          path: .output
-      # When manually dispatched: if user supplied ci_run_id, use it
-      - name: Download artifact by provided run ID
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ci_run_id }}
-        uses: dawidd6/action-download-artifact@v10
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          run_id: ${{ github.event.inputs.ci_run_id }}
-          name: output
-          path: .output
-      # When manually dispatched with no run ID: pick latest successful CI with the same commit
-      - name: Download latest successful artifact on current branch
-        if: ${{ github.event_name == 'workflow_dispatch' && !github.event.inputs.ci_run_id }}
-        uses: dawidd6/action-download-artifact@v10
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: ci.yml        # adjust if your CI file name differs
-          commit: ${{ github.sha }}
-          name: output
-          path: .output
-      # Now .output/ contains the compiled output from CI
+          node-version: '22.16.0'
+          cache: 'pnpm'
+
+      # Install dependencies and build (no artifact needed)
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build project
+        run: pnpm build
 
       - name: Log in to registry
         uses: docker/login-action@v3
@@ -107,7 +78,7 @@ jobs:
         with:
           helmfile-args: diff --environment prod --detailed-exitcode
         continue-on-error: true
-        # This acts as a dry‑run check :contentReference[oaicite:9]{index=9}
+        # This acts as a dry‑run check
 
       - name: Apply Changes
         uses: helmfile/helmfile-action@v2.0.4
