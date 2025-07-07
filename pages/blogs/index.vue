@@ -11,11 +11,8 @@
         <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white">
           <IconsSearch class="w-5 h-5" />
         </div>
-        <button
-          v-if="searchQuery.trim()"
-          @click="clearSearch"
-          class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-white/70 transition-colors duration-200"
-        >
+        <button v-if="searchQuery.trim()" @click="clearSearch"
+          class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-white/70 transition-colors duration-200">
           <IconsX class="w-5 h-5" />
         </button>
       </div>
@@ -61,7 +58,7 @@ import IconsX from '~/components/icons/x.vue'
 
 // Calculate dynamic posts per page based on viewport height
 const calculatePostsPerPage = () => {
-  if (!import.meta.client) return 6 // Default for SSR
+  if (!import.meta.client) return 5 // Default for SSR
 
   const viewportHeight = window.innerHeight
   // Estimate ~200px per blog card + padding, minimum 3, maximum 20
