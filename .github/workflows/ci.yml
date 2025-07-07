@@ -1,0 +1,49 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get Run ID
+        run: |
+          echo "Workflow Run ID: ${{ github.run_id }}"
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.16.0'
+          cache: 'pnpm'
+
+      # Install dependencies
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # NOTE: disabled for now for simplicity in dev phase
+      #
+      # # Lint the code
+      # - name: Lint code
+      #   run: pnpm lint
+      
+      # # Run unit tests
+      # - name: Run vitest
+      #   run: pnpm test
+
+      # Build project
+      - name: Build project
+        run: pnpm build
