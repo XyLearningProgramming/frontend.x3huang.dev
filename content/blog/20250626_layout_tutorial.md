@@ -119,7 +119,6 @@ Inline code is written using \`, and looks like `this`.
 
 You can cite and embed code directly from GitHub repositories with proper attribution and context lines:
 
-<!-- https://stackoverflow.com/questions/28338017/is-there-a-way-to-embed-github-code-into-an-iframe -->
 ::ProseGithub
 ---
 rawUrl: https://raw.githubusercontent.com/XyLearningProgramming/helm.x3huang.dev/main/traefik/values.yaml.gotmpl

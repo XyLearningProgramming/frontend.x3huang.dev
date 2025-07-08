@@ -33,7 +33,16 @@
 
       <GlassCard variant="primary" padding="lg" radius="lg" class="mb-8">
         <div class="text-white prose-white">
-          <ContentRenderer :value="post" />
+          <ClientOnly>
+            <ContentRenderer :value="post" />
+            <template #fallback>
+              <div class="animate-pulse">
+                <div class="h-4 bg-white/20 rounded mb-4"></div>
+                <div class="h-4 bg-white/20 rounded mb-4"></div>
+                <div class="h-4 bg-white/20 rounded mb-4 w-3/4"></div>
+              </div>
+            </template>
+          </ClientOnly>
         </div>
       </GlassCard>
     </article>
