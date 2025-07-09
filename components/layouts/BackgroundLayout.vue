@@ -6,15 +6,33 @@
     <!-- Background image with blur for blog pages -->
     <div 
       v-if="currentBackground && blurBackground"
-      class="fixed inset-0 bg-cover bg-center bg-no-repeat bg-blur"
-      :style="{ backgroundImage: `url(${currentBackground.url})` }">
+      class="fixed inset-0 bg-blur">
+      <NuxtImg
+        :src="currentBackground.url"
+        :alt="currentBackground.title || 'Background'"
+        class="w-full h-full object-cover"
+        quality="60"
+        format="webp"
+        loading="eager"
+        width="1920"
+        height="1080"
+      />
     </div>
     
     <!-- Background image without blur for other pages -->
     <div 
       v-else-if="currentBackground && !blurBackground"
-      class="absolute inset-0 bg-cover bg-center bg-no-repeat"
-      :style="{ backgroundImage: `url(${currentBackground.url})` }">
+      class="absolute inset-0">
+      <NuxtImg
+        :src="currentBackground.url"
+        :alt="currentBackground.title || 'Background'"
+        class="w-full h-full object-cover"
+        quality="75"
+        format="webp"
+        loading="eager"
+        width="1920"
+        height="1080"
+      />
     </div>
     
     <!-- Background overlay -->

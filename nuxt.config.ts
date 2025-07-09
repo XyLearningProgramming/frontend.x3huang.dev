@@ -46,6 +46,7 @@ export default defineNuxtConfig({
     '@nuxt/content',
     '@nuxt/eslint',
     '@nuxtjs/tailwindcss',
+    '@nuxt/image',
     'nuxt-llms',
   ],
   css: ['/assets/css/main.css', '/assets/css/glass-ui.css'],
@@ -95,6 +96,20 @@ export default defineNuxtConfig({
     verbose: false,
     prometheusPath: "/metrics",
     prefix: "",
+  },
+  image: {
+    format: ['webp', 'avif', 'jpeg', 'jpg', 'png'],
+    quality: 85,
+    dir: 'public',
+    screens: {
+      xs: 320,
+      sm: 640,
+      md: 768,
+      lg: 1024,
+      xl: 1280,
+      xxl: 1536,
+    },
+    provider: 'ipx'
   },
   content: {
     database: {

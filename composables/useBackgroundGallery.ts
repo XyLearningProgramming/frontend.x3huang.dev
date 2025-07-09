@@ -28,9 +28,7 @@ export const useBackgroundGallery = () => {
   const currentBackground = ref<BackgroundImage | null>(null)
 
   const initializeBackground = () => {
-    if (import.meta.client) {
-      currentBackground.value = getRandomBackground()
-    }
+    currentBackground.value = getRandomBackground()
   }
 
   return {

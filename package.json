@@ -16,12 +16,16 @@
   },
   "dependencies": {
     "@artmizu/nuxt-prometheus": "^2.5.0",
+    "@nuxt/image": "^1.10.0",
     "@vueuse/core": "^13.4.0",
     "@wxperia/liquid-glass-vue": "^1.0.9",
     "better-sqlite3": "^12.1.0",
+    "diff": "^8.0.2",
     "nuxt-llms": "^0.1.3",
     "pg": "^8.16.0",
     "prismjs": "^1.30.0",
+    "sharp": "^0.34.2",
+    "vanilla-jsoneditor": "^3.6.1",
     "vuejs-code-block": "^1.0.1"
   },
   "packageManager": "pnpm@10.12.1+sha512.f0dda8580f0ee9481c5c79a1d927b9164f2c478e90992ad268bbb2465a736984391d6333d2c327913578b2804af33474ca554ba29c04a8b13060a717675ae3ac",
@@ -34,7 +38,8 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "better-sqlite3"
+      "better-sqlite3",
+      "sharp"
     ]
   }
 }

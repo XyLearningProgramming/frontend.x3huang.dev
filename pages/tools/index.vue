@@ -37,6 +37,28 @@
             </Card>
           </NuxtLink>
 
+          <!-- JSON Editor Tool -->
+          <NuxtLink to="/tools/json" class="block group">
+            <Card 
+              variant="default" 
+              padding="lg" 
+              radius="lg" 
+              hover
+              clickable
+              class="bg-white/10 backdrop-blur-md border-white/20 text-center transition-all duration-300 group-hover:bg-white/20 group-hover:scale-105 h-full"
+            >
+              <div class="text-white">
+                <div class="text-4xl mb-4">📝</div>
+                <h3 class="text-xl font-semibold mb-2">
+                  JSON Editor
+                </h3>
+                <p class="text-white/80">
+                  Edit, format, and validate JSON data with a powerful online editor.
+                </p>
+              </div>
+            </Card>
+          </NuxtLink>
+
           <!-- More tools can be added here -->
           <div class="block opacity-50">
             <Card 

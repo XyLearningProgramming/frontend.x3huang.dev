@@ -1,5 +1,13 @@
 <template>
   <BackgroundLayout container-width="wide" overlay-intensity="heavy" blur-background>
+    <!-- Back navigation -->
+    <div class="mb-6">
+      <button @click="$router.go(-1)" class="inline-flex items-center gap-2 text-glass hover:text-glass-muted transition-colors">
+        <IconsArrowLeft class="w-4 h-4" />
+        Back
+      </button>
+    </div>
+
     <PageHeader title="Latest Blog Posts"
       description="Technical articles, insights, and thoughts on my software development journey." />
 
