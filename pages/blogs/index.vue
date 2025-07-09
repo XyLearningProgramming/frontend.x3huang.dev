@@ -2,11 +2,11 @@
   <BackgroundLayout container-width="wide" overlay-intensity="heavy" blur-background>
     <!-- Back navigation -->
     <div class="mb-6">
-      <button @click="$router.go(-1)"
+      <NuxtLink to="/"
         class="inline-flex items-center gap-2 text-glass hover:text-glass-muted transition-colors">
         <IconsArrowLeft class="w-4 h-4" />
-        Back
-      </button>
+        Back to Home
+      </NuxtLink>
     </div>
 
     <PageHeader title="Latest Blog Posts"
@@ -48,13 +48,7 @@
       </div>
     </div>
 
-    <!-- Back to home -->
-    <div class="text-center mt-12">
-      <NuxtLink to="/" class="inline-flex items-center gap-2 text-glass hover:text-glass-muted transition-colors">
-        <IconsArrowLeft class="w-4 h-4" />
-        Back to Home
-      </NuxtLink>
-    </div>
+    
   </BackgroundLayout>
 </template>
 
