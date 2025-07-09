@@ -21,14 +21,21 @@ export const useBackgroundGallery = () => {
 
   const getRandomBackground = (): BackgroundImage | null => {
     if (backgroundImages.length === 0) return null
-    const randomIndex = Math.floor(Math.random() * backgroundImages.length)
-    return backgroundImages[randomIndex]
+    // For hydration consistency, use the first image instead of random
+    // TODO: Re-enable random selection later with proper hydration handling
+    return backgroundImages[0]
   }
 
-  const currentBackground = ref<BackgroundImage | null>(null)
+  // Initialize with the first background to ensure server/client consistency
+  const currentBackground = ref<BackgroundImage | null>(
+    backgroundImages.length > 0 ? backgroundImages[0] : null
+  )
 
   const initializeBackground = () => {
-    currentBackground.value = getRandomBackground()
+    // Only update if not already initialized (to prevent hydration issues)
+    if (!currentBackground.value) {
+      currentBackground.value = getRandomBackground()
+    }
   }
 
   return {

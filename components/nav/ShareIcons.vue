@@ -25,7 +25,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import Twitter from '../icons/twitter.vue'
 import Pinterest from '../icons/pinterest.vue'
 import Linkedin from '../icons/linkedin.vue'
@@ -44,6 +44,10 @@ const props = defineProps({
     path: {
         type: String,
         required: true
+    },
+    image: {
+        type: String,
+        default: ''
     }
 })
 
@@ -55,6 +59,12 @@ const getCurrentUrl = () => {
 }
 
 const encodedUrl = computed(() => encodeURIComponent(getCurrentUrl()))
+
+const getFullImageUrl = () => {
+    if (!props.image) return ''
+    if (props.image.startsWith('http')) return props.image
+    return `${window.location.origin}${props.image}`
+}
 
 const copyLink = async () => {
     if (import.meta.client && navigator.clipboard) {
@@ -107,7 +117,9 @@ const icons = [
         icon: Pinterest,
         alt: 'Share this story on Pinterest.',
         getHref: () => {
-            return `https://pinterest.com/pin/create/button/?url=${encodedUrl}`;
+            const imageUrl = getFullImageUrl()
+            const baseUrl = `https://pinterest.com/pin/create/button/?url=${encodedUrl}&description=${encodeURIComponent(props.headline)}`
+            return imageUrl ? `${baseUrl}&media=${encodeURIComponent(imageUrl)}` : baseUrl
         }
     }
 ];

@@ -9,6 +9,9 @@ published: true
 author: 'Xinyu' 
 tags: ['self-host', 'k8s', 'vps']
 readTime: 12
+image:
+  src: '/images/20250702_sh_img3.jpg'
+  alt: 'Site architecture as k8s cluster'
 ---
 
 **TL;DR:** My site is now on k3s. It's fast, it has controls over failures, and I can sleep at night. The whole setup is code, which you can see in my repo, and there's a pretty diagram at the end if you want to see its structure.

@@ -7,13 +7,10 @@ dateUpdated: ''
 published: false
 author: 'Xinyu'
 tags: ['layout', 'web-development']
-image: '/img/blog/sample.webp'
-socialImage:
+image:
     src: '/img/blog/sample.webp'
-    mime: 'webp'
     alt: 'Mountain'
-    width: 1200
-    height: 630
+    size: 'large'
 readTime: 5
 ---
 

@@ -94,7 +94,7 @@
       <!-- Share Icons -->
       <GlassCard variant="primary" padding="sm" radius="lg">
         <NavShareIcons :headline="post.title" :description="post.description || 'Check out this blog post'"
-          :path="route.fullPath" />
+          :path="route.fullPath" :image="post.image?.src || ''" />
       </GlassCard>
     </div>
   </BackgroundLayout>
@@ -144,8 +144,8 @@ onUnmounted(() => {
 })
 
 // History stack for back button
-const returnPath = ref('/')
-const returnTitle = ref('Home')
+const returnPath = ref('/blogs')
+const returnTitle = ref('Latest Posts')
 
 // Map of route patterns to page titles
 const getPageTitle = (path: string, search: string = '') => {
@@ -213,7 +213,7 @@ onMounted(() => {
       returnPath.value = '/timeline'
       returnTitle.value = 'Timeline'
     }
-    // Default fallback remains '/' and 'Home'
+    // Default fallback to /blogs
   }
 })
 
@@ -254,7 +254,20 @@ const formatDate = (dateString: string) => {
 useHead({
   title: computed(() => post.value?.title || 'Blog Post'),
   meta: [
-    { name: 'description', content: computed(() => post.value?.description || 'Blog post content') }
+    { name: 'description', content: computed(() => post.value?.description || 'Blog post content') },
+    // Open Graph meta tags for social sharing
+    { property: 'og:title', content: computed(() => post.value?.title || 'Blog Post') },
+    { property: 'og:description', content: computed(() => post.value?.description || 'Blog post content') },
+    { property: 'og:url', content: computed(() => `https://x3huang.dev${route.fullPath}`) },
+    { property: 'og:type', content: 'article' },
+    { property: 'og:image', content: computed(() => post.value?.image?.src ? `https://x3huang.dev${post.value.image.src}` : '') },
+    { property: 'og:image:alt', content: computed(() => post.value?.image?.alt || post.value?.title || 'Blog post image') },
+    // Twitter Card meta tags
+    { name: 'twitter:card', content: 'summary_large_image' },
+    { name: 'twitter:title', content: computed(() => post.value?.title || 'Blog Post') },
+    { name: 'twitter:description', content: computed(() => post.value?.description || 'Blog post content') },
+    { name: 'twitter:image', content: computed(() => post.value?.image?.src ? `https://x3huang.dev${post.value.image.src}` : '') },
+    { name: 'twitter:image:alt', content: computed(() => post.value?.image?.alt || post.value?.title || 'Blog post image') }
   ]
 })
 </script>

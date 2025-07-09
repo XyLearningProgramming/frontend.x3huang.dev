@@ -2,7 +2,8 @@
   <BackgroundLayout container-width="wide" overlay-intensity="heavy" blur-background>
     <!-- Back navigation -->
     <div class="mb-6">
-      <button @click="$router.go(-1)" class="inline-flex items-center gap-2 text-glass hover:text-glass-muted transition-colors">
+      <button @click="$router.go(-1)"
+        class="inline-flex items-center gap-2 text-glass hover:text-glass-muted transition-colors">
         <IconsArrowLeft class="w-4 h-4" />
         Back
       </button>
@@ -75,7 +76,7 @@ const calculatePostsPerPage = () => {
 }
 
 // Pagination state
-const postsPerPage = ref(calculatePostsPerPage())
+const postsPerPage = ref(5)
 const currentPage = ref(0)
 const posts = ref<any[]>([])
 const loading = ref(false)
@@ -177,11 +178,11 @@ const handleResize = () => {
 
 // Set up event listeners
 onMounted(() => {
-  window.addEventListener('scroll', handleScroll)
-  window.addEventListener('resize', handleResize)
-
   // Update posts per page on client-side mount
   postsPerPage.value = calculatePostsPerPage()
+
+  window.addEventListener('scroll', handleScroll)
+  window.addEventListener('resize', handleResize)
 })
 
 onUnmounted(() => {
