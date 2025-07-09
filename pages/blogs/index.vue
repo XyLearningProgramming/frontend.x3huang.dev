@@ -71,7 +71,6 @@ const calculatePostsPerPage = () => {
 
 // Pagination state
 const postsPerPage = ref(5)
-const currentPage = ref(0)
 const posts = ref<any[]>([])
 const loading = ref(false)
 const hasMore = ref(true)
@@ -133,12 +132,10 @@ const loadMorePosts = async () => {
   loading.value = true
 
   try {
-    const nextPage = currentPage.value + 1
-    const newPosts = await queryPublishedBlogs(postsPerPage.value, nextPage * postsPerPage.value)
+    const newPosts = await queryPublishedBlogs(postsPerPage.value, posts.value.length)
 
     if (newPosts && newPosts.length > 0) {
       posts.value.push(...newPosts)
-      currentPage.value = nextPage
       hasMore.value = newPosts.length === postsPerPage.value
     } else {
       hasMore.value = false
