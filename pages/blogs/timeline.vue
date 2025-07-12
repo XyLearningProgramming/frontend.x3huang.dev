@@ -39,7 +39,7 @@
 
 // Fetch all posts
 const { data: finalPosts } = await useAsyncData('blog-posts-timeline', () =>
-  queryCollection('blog').all()
+  queryCollection('blogs').all()
 )
 
 // Computed properties
