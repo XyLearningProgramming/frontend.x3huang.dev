@@ -143,15 +143,32 @@
 .prose-white ol {
   margin-top: 1rem;
   margin-bottom: 1rem;
-  padding-left: 1.5rem;
+  padding-left: 0; /* Removed padding from ul/ol */
 }
 
 .prose-glass li,
 .prose-white li {
-  /* margin-top: 0.25rem; */
-  /* margin-bottom: 0.25rem; */
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
   line-height: 1.65;
   font-size: 1rem;
+  padding-left: 1.5rem; /* Added padding to li for bullet/number space */
+}
+
+.prose-glass li p,
+.prose-white li p {
+  margin-top: 1rem;
+  margin-bottom: 0.25rem;
+  margin-left: 0; /* Ensure no conflicting horizontal margin */
+  padding-left: 0; /* Ensure no conflicting horizontal padding */
+}
+
+.prose-glass li p:first-child {
+  margin-top: 0;
+}
+
+.prose-glass li p:last-child {
+  margin-bottom: 0;
 }
 
 /* Nested lists */
@@ -166,8 +183,8 @@
 /* Block quotes */
 .prose-glass blockquote,
 .prose-white blockquote {
-  margin-top: 1.6rem;
-  margin-bottom: 1.6rem;
+  margin-top: 1rem; /* Adjusted to match paragraph spacing */
+  margin-bottom: 0.25rem; /* Adjusted to match paragraph spacing */
   padding-left: 1rem;
   border-left: 0.25rem solid rgba(255, 255, 255, 0.3);
   font-style: italic;
@@ -228,6 +245,7 @@
 .prose-white td {
   padding: 0.5rem 0.75rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 1rem;
 }
 
 /* Links */

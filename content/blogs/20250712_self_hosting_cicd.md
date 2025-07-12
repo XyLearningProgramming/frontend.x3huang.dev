@@ -1,214 +1,114 @@
 ---
-
-title: 'From Bare-metal to Kubernetes 2: Github Actions as Push-Based CICD Pipelines' 
-description: "How I built pipelines that automate build, test, and deployment to k8s cluster via github actions, helm, helmfile, with features like environment and secret management"
+title: 'From Bare-metal to Kubernetes 2: A Push-Based GitOps Pipeline' 
+description: "Why I chose a push-based CI/CD model with GitHub Actions for my K3s cluster, and a look at the high-level architecture that automates my deployments."
 headline: '' 
 date: '2025-07-12T12:00:00' 
-dateUpdated: '2025-07-12T00:00:00'
+dateUpdated: '2025-07-13T00:00:00'
 published: true 
 author: 'Xinyu' 
-tags: ['self-host', 'k8s', 'vps']
-readTime: 10
+tags: ['self-host', 'k8s', 'vps', 'ci-cd', 'github-actions']
+readTime: 9
 image:
   src: '/images/20250712_sh2_img0_github.png'
   alt: 'Push-Based GitOps with Github Actions'
 ---
 
-TL;DR: TODO
+**TL;DR:** I set up a push-based CI/CD pipeline using GitHub Actions to automatically deploy my applications to a k8s cluster (k3s distro.). This approach avoids adding extra agents like ArgoCD to my resource-constrained VPS. 
+
+It’s a __lean, effective__ setup for personal projects that I control completely from my Git repository.
 
 ::RepoGithub
 ---
 url: https://github.com/XyLearningProgramming/helm.x3huang.dev
-description: Charts of site infrastructure, mixing custom and third-party ones.
+description: Charts for my site infrastructure, mixing custom and third-party ones.
 ---
 ::
 
 ::RepoGithub
 ---
 url: https://github.com/XyLearningProgramming/frontend.x3huang.dev
-description: Site repo as an example of chart with custom image.
+description: My blog's repo, which serves as an example of a service deployed by the pipeline.
 ---
 ::
 
-> not an exact step-by-step tutorial; focus on comparing choices and summarizing my current cicd pipeline instead;
+> This article covers the "why" behind my CI/CD choices for a self-hosted Kubernetes project. It’s not a step-by-step tutorial, but a look at the trade-offs and the resulting architecture.
 
-1. for what?
+### 1. The Automation Goals
 
-- auto-deploy whenever there's an update from my repo;
-- release managed in k8s, records of release, update only components if diff, enable to pull back or cancel without dragging down machine;
-- but also with manual approval checkpoint, env. secret management feature;
-- small mem footprint, suitable for low budget vps;
+After getting my cluster running, the next logical step was to automate deployments. I wanted a system that would:
 
-2. comparing methods
+- **Deploy automatically the whole infra.** to a desired final state on a merge to my main branch.
+- **Manage releases**, allowing for history, rollbacks, and safe, component-level updates.
+- **Include a manual approval checkpoint** for production deployments.
+- **Keep a small memory footprint**, minial extra setup inside k8s, only updating changed components, and suitable for a low-budget VPS.
 
-TODO: add a table here listing pros and cons of each method
+### 2. Push vs. Pull: Choosing a Path
 
-topic: push vs pull based
-method 1: jenkins / github actions for push; pros: lighter footprint on machines
-method 2: FluxCD / ArgoCD; pros: stray state monitor; fewer and simpler setting in repo; ideal for larger projects since their settings can be found and configured together
+When deploying to Kubernetes, the classic and major debate is "push" vs. "pull."
 
-topic: pipeline push pattern
-method 1: via ssh, copy code base or built package, deploy; cons: install helm, helmfile on vps
-method 2: via k8s api; cons: exposing port
+| Approach                | Key Players             | 👍 Pros                                                                                                     | 👎 Cons                                                                                                       |
+| :---------------------- | :---------------------- | :--------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------- |
+| **Push-Based (CI)**     | Jenkins, GitHub Actions | Lighter footprint on the cluster (no agent needed). Highly flexible and customizable workflows.            | Requires storing cluster credentials in the CI system. Can lead to state drift if changes are made manually. |
+| **Pull-Based (GitOps)** | FluxCD, ArgoCD          | Git is the single source of truth. Automatically detects and corrects drift. More secure credential model. | Requires an agent running in the cluster (consumes resources). Can be more complex to set up initially.      |
 
-> note that k8s port expose issue can be solved by 1. only allow connection from my ip, github runners, other agents in k8s cluster (whitelist mechanism); example TODO 2. fail2ban parsing to ban ip frequently trying; 3. reverse proxy, bastion machine, etc.
+For my project, a **push-based** model with **GitHub Actions** was the clear winner. It requires no extra daemons inside my already resource-constrained cluster, saving precious memory and simplifying the setup.
 
-additional considerations when extra build image step is needed:
+I also chose to interact directly with the Kubernetes API rather than SSHing into the server. This keeps the VPS clean, as no extra tools like `helm` or `helmfile` need to be installed on it. To keep this secure, I've locked down the API endpoint to a whitelist of trusted IPs.
 
-   1. what to do with image when deploying
-      1. choose a registry, set tag, and download inside node by kubelet; or 2. ssh or other ways to transfer image; 3. use basic image, transfer repo or built ones as zip, and attach volume to the image at place;
+### 3. The Final Workflow
 
-   2. what to do when compiling image
-      1. two-step build inside docker image? - not a must, opt out for now
+Here’s a high-level look at the pipeline I landed on:
 
 ::Image
 ---
-src: /images/20250712_sh2_img1.jpg.png
-alt: PushBased GitOps (CD Pipeline) for k8s Cluster
+src: /images/20250712_sh2_img1.jpg
+alt: Push-Based GitOps (CD Pipeline) for k8s Cluster
 size: large
 ---
 ::
 
-In the end, I chosed the push-based for my k8s cluster on vps, because it requires no extra setup / container inside the cluster, saves memory;
+The process is straightforward:
+1.  A pull request triggers the CI workflow, which runs tests and linting.
+2.  Merging to the `main` branch triggers the CD workflow, which first requires my manual approval via **GitHub Environments**.
+3.  When needed, the CD job builds a new Docker image, tags it with the Git commit SHA, and pushes it to a container registry.
+4.  Finally, the job uses `helmfile` to deploy the new release to the cluster, applying all the necessary configurations. 
 
-description of the steps: 1. pull request trigger ci, test, lint, etc. 2. merge to main trigger cd, requires extra manual review by code repo owner, me, leveraging env settings in github; 3. in cd, build image and push to docker registry with ` '{{github.sha}}' ? todo what is it?; 4. in cd, set kube config with access to my k8s server, use helmfile as wrapper to render rollout deployment with features / settings listed below
+### 4. How Tools Solve Puzzle
 
-3. trivial but useful settings in my push-based pipeline now
+With this setup, my initial goals were met by combining a few key tools, each with a specific job:
 
-3.1. env management
+- **Automated, stateful deployments:** This is the core strength of **[Helm](https://helm.sh/docs/topics/architecture/)**. It packages applications into charts and manages them as releases within Kubernetes. When running `helm upgrade`, Helm compares the new chart with the last deployed release. It only applies changes to the resources that have actually been modified, making deployments efficient. For a `Deployment`, changing the pod template automatically triggers a safe, rolling update.
 
+    However, sometimes changing `ConfigMap` will **not** trigger an update without additional settings. And for special settings, eg. `initdb` script inside `bitnami/postgres`, image may have logic speficically stating to ignore changes to avoid unexpected operations to the existing storage.
 
-::Image
----
-src: /images/20250712_sh2_img3.jpg
-alt: Environment Management
-size: large
----
-::
+    ::ProseGithub
+    ---
+    githubUrl: https://github.com/XyLearningProgramming/helm.x3huang.dev/blob/main/db/postgres.values.yaml.gotmpl#L61
+    description: Script change will not apply automatically when redeploying.
+    maxHeight: 300
+    ---
+    ::
 
+    A common pattern to ensure deployments restart when a dependency like a `ConfigMap` changes is to inject a checksum of the config into the deployment's annotations. When the config changes, the checksum changes, which in turn triggers a rollout. But still, this won't solve the postgres initdb script issue mentioned above.
 
-for local dev, test, prod, different env each with a set of vars, need to render config dynamically based on env;
+    ```yaml[deployment.yaml]
+    # In your deployment.yaml template
+    spec:
+    template:
+        metadata:
+        annotations:
+            checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    # ...
+    ```
 
-eg. kubectl apply can cover; helm can use multiple values overwritting? add code example; helmfile can apply different set of values by env name;
+- **Manual approval & CI/CD orchestration:** **[GitHub Actions](https://docs.github.com/en/actions)** is the engine driving the pipeline. The workflow is triggered on a push to `main`, but I use **[GitHub Environments](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment)** to create a manual approval gate for my `prod` environment. This prevents accidental deployments and gives me a final checkpoint.
 
-TODO kubectl, helm examples
+- **Managing the whole fleet:** This is where **[Helmfile](https://helmfile.dev/)** shines. My infrastructure isn't just one application; it's a collection of charts (Traefik, cert-manager, my blog, databases, etc.). Helmfile lets me define this entire stack in a single declarative `helmfile.yaml`. 
 
-helmfile example:
-::ProseGithub
----
-githubUrl: https://github.com/XyLearningProgramming/helm.x3huang.dev/blob/main/helmfile.yaml.gotmpl#L8
-language: yaml
-maxHeight: 400
----
-::
+    Instead of running multiple `helm` commands, I run one: `helmfile apply`. It orchestrates deploying or updating all the charts in the correct order. It's "infrastructure as code" for your Helm releases. 
 
-apply eg. to obtain tls cert, acme server setting should be empty and use local signed for local and / or test, but is set for prod
+    Also, I found `helmfile` quite useful for multi-env management, which I'll explain in my next article.
 
-::ProseGithub
----
-githubUrl: https://github.com/XyLearningProgramming/helm.x3huang.dev/blob/main/ingress-cert/templates/cluster-issuer.yaml#L9
-language: yaml
-maxHeight: 400
----
-::
+### What's Next?
 
-3.2. secret management
-
-::Image
----
-src: /images/20250712_sh2_img2.jpg
-alt: Secret Management
-size: large
----
-::
-
-3.2.0. secrets are ignored in .gitignore and examples of secret, to illustrate format are un-ignored.
-
-```yaml[.gitignore]
-# Secrets files
-secrets/*
-!secrets/*.example.*
-```
-
-3.2.1 secret setup
-chose to use github env. secret and set prod ones in it;
-
-3.2.2. secret flow during deployment
-cd workflow read secrets via `'{{ xxx }}'`; note the pitfall of using double quotes eg. "" and if doing so, $ will be replaced,
-
-eg.
-::ProseGithub
----
-githubUrl: https://github.com/XyLearningProgramming/helm.x3huang.dev/blob/main/secrets/mail.example.cf
-language: yaml
-maxHeight: 200
----
-::
-
-secrets are then injected as local files inside repo checked out;
-secrets are then **"upserted"** from these files into k8s cluster as secret type config using script leveraging kubectl create -o yaml and kubectl apply; TODO: explain why this works; explain --from-env and --from-file with examples;
-
-eg.
-::ProseGithub
----
-githubUrl: https://github.com/XyLearningProgramming/helm.x3huang.dev/blob/main/scripts/apply-secrets.sh#L41
-language: yaml
-maxHeight: 400
----
-::
-
-each deployment then use its own ways, to use existing k8s secret in different ns.
-
-where secrets are inside each container?
-
-1. mount as volumeMounts, declare secret path in extraVolumes but chart should support such customization example is 
-
-eg. mail server I mount my rsa private key inside container with designated mountPath
-::ProseGithub
----
-githubUrl: https://github.com/XyLearningProgramming/helm.x3huang.dev/blob/main/mail/values.yaml.gotmpl#L37
-language: yaml
-maxHeight: 400
----
-::
-
-2. set as env var, if image supports it, need to read doc; eg. my frontend site, use env var to set external postgres to store content instead of using sqlite by default
-
-::ProseGithub
----
-githubUrl: https://github.com/XyLearningProgramming/frontend.x3huang.dev/blob/main/deploy/helmfile/chart/templates/deployment.yaml#L46
-language: yaml
-maxHeight: 400
----
-::
-
-3. use helmfile -> helm -> ?? -> ext. over golang template to inject and generate config on the fly
-
-cons: strongly against it only if too hard to comply with third-party charts, or whenever doc. is not clear;
-eg. bitname redis, set username and password, doc and comment not clear enough how to attach secrets as file with what format, I gave up; https://github.com/bitnami/charts/blob/main/bitnami/redis/values.yaml#L172 and using kubectl to write config on the fly given secrets
-
-::ProseGithub
----
-githubUrl: https://github.com/XyLearningProgramming/helm.x3huang.dev/blob/main/db/redis.values.yaml.gotmpl#L24
-language: yaml
-maxHeight: 400
----
-::
-
-but to avoid log secrets inside runner log, I have to leverage github runner's ? mask logic and add mask programmatically over my secrets
-
-::ProseGithub
----
-githubUrl: https://github.com/XyLearningProgramming/helm.x3huang.dev/blob/main/.github/workflows/cd.yml#L69
-language: yaml
-maxHeight: 400
----
-::
-
-downside: dangerous; also, secrets after sha256 might still be exposed; but sometimes I took the risk for now since I set secrets long and using random generator;
-
-
-conclusion
-
-TODO ... 
-Other topics to come: 1. cert management; 2. mail docker setting, concept intro, common pitfalls; 3. backend model server deploy example via similar pipeline
+This setup provides a solid, automated foundation for my projects. But the real magic is in the details. In the [next article](/blogs/from-bare-metal-to-kubernetes-3-cicd-tips-for-managing-configs-and-secrets), I'll dive into how I manage environment-specific configurations and handle secrets securely within this pipeline.

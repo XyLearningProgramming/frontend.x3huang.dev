@@ -12,7 +12,7 @@
           <span class="github-file-path">{{ repoInfo.path }}</span>
         </div>
       </div>
-      <a v-if="githubUrl" :href="githubUrl" target="_blank" class="github-view-button">
+      <a v-if="githubLink" :href="githubLink" target="_blank" class="github-view-button">
         <svg viewBox="0 0 16 16" fill="currentColor">
           <path
             d="M3.75 2A1.75 1.75 0 002 3.75v8.5c0 .966.784 1.75 1.75 1.75h8.5A1.75 1.75 0 0014 12.25v-3.5a.75.75 0 00-1.5 0v3.5a.25.25 0 01-.25.25h-8.5a.25.25 0 01-.25-.25v-8.5a.25.25 0 01.25-.25h3.5a.75.75 0 000-1.5h-3.5z" />
@@ -24,159 +24,153 @@
     </div>
 
     <!-- Code block -->
-    <div class="code-block-container" :style="{ '--max-height': (maxHeight || 500) + 'px' }">
-      <ClientOnly>
-        <CodeBlock :code="code || 'Loading...'" :language="(detectedLanguage as any) || 'text'" theme="oceanicNext"
-          :numbered="true" :show-header="false" :file-name="displayFilename" :scroll-to-line="scrollToLine" />
+    <div ref="codeContainer" class="code-block-container" :style="{ '--max-height': (maxHeight || 500) + 'px' }">
+      <div v-if="isLoading" class="loading-indicator">Loading code...</div>
+      <ClientOnly v-if="!isLoading && code">
+        <CodeBlock :code="code" :language="(detectedLanguage as any) || 'text'" theme="oceanicNext" :numbered="true"
+          :show-header="false" :file-name="displayFilename" />
       </ClientOnly>
+      <div v-if="!isLoading && !code" class="error-indicator">{{ errorMessage }}</div>
     </div>
-
-    <!-- Attribution footer -->
-    <!-- <div class="github-attribution">
-      <div class="attribution-content">
-        <span class="text-xs text-gray-500 dark:text-gray-400">
-          <span v-if="scrollToLine">Line {{ scrollToLine }} • </span>
-          <span>{{ repoInfo.owner }}/{{ repoInfo.name }}</span>
-        </span>
-        <span class="text-xs text-gray-400 dark:text-gray-500">
-          Fetched from GitHub
-        </span>
-      </div>
-    </div> -->
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { CodeBlock } from 'vuejs-code-block'
 
 const props = defineProps<{
-  /** Raw URL to a GitHub file (e.g. 'https://raw.githubusercontent.com/...') */
-  rawUrl?: string
-  /** GitHub URL to the original file for linking */
   githubUrl?: string
-  /** Line number to scroll to when loading */
+  rawUrl?: string
   scrollToLine?: number
-  /** Custom filename to display */
   filename?: string
-  /** Custom language for syntax highlighting */
   language?: string
-  /** Maximum height in pixels (default: 500px) */
   maxHeight?: number
 }>()
 
 const code = ref<string>('')
 const isLoading = ref(true)
+const errorMessage = ref('')
+const codeContainer = ref<HTMLElement | null>(null)
+
+const parsedInfo = computed(() => {
+  const info = {
+    owner: '',
+    name: '',
+    branch: '',
+    path: '',
+    filename: '',
+    rawUrl: props.rawUrl,
+    githubUrl: props.githubUrl,
+    scrollToLine: props.scrollToLine,
+  }
+
+  const sourceUrl = props.githubUrl || props.rawUrl
+  if (!sourceUrl) return info
+
+  if (props.githubUrl) {
+    try {
+      const url = new URL(props.githubUrl)
+      const lineMatch = url.hash.match(/L(\d+)/)
+      if (lineMatch) {
+        info.scrollToLine = parseInt(lineMatch[1], 10)
+      }
+      info.githubUrl = props.githubUrl.split('#')[0]
+
+      const pathParts = url.pathname.split('/')
+      if (url.hostname === 'github.com' && pathParts.length > 4 && pathParts[3] === 'blob') {
+        info.owner = pathParts[1]
+        info.name = pathParts[2]
+        info.branch = pathParts[4]
+        info.path = pathParts.slice(5).join('/')
+        info.filename = pathParts[pathParts.length - 1]
+        info.rawUrl = `https://raw.githubusercontent.com/${info.owner}/${info.name}/${info.branch}/${info.path}`
+      }
+    } catch (e) { /* Invalid URL */ }
+  } else if (props.rawUrl) {
+    try {
+      const url = new URL(props.rawUrl)
+      const pathParts = url.pathname.split('/')
+      if (url.hostname === 'raw.githubusercontent.com' && pathParts.length >= 4) {
+        info.owner = pathParts[1]
+        info.name = pathParts[2]
+        info.branch = pathParts[3]
+        info.path = pathParts.slice(4).join('/')
+        info.filename = pathParts[pathParts.length - 1]
+        info.githubUrl = `https://github.com/${info.owner}/${info.name}/blob/${info.branch}/${info.path}`
+      }
+    } catch (e) { /* Invalid URL */ }
+  }
+
+  return info
+})
 
 const detectedLanguage = computed(() => {
   if (props.language) return props.language
-  if (!props.rawUrl) return 'text'
-
-  // Extract file extension from URL
-  const urlParts = props.rawUrl.split('/')
-  const filename = urlParts[urlParts.length - 1]
+  const filename = parsedInfo.value.filename
+  if (!filename) return 'text'
   const extension = filename.split('.').pop()?.toLowerCase()
-
-  // Map common extensions to languages
   const languageMap: Record<string, string> = {
-    'js': 'javascript',
-    'ts': 'typescript',
-    'jsx': 'javascript',
-    'tsx': 'typescript',
-    'py': 'python',
-    'rb': 'ruby',
-    'php': 'php',
-    'java': 'java',
-    'c': 'c',
-    'cpp': 'cpp',
-    'cs': 'csharp',
-    'go': 'go',
-    'rs': 'rust',
-    'sh': 'bash',
-    'bash': 'bash',
-    'yml': 'yaml',
-    'yaml': 'yaml',
-    'json': 'json',
-    'xml': 'xml',
-    'html': 'html',
-    'css': 'css',
-    'scss': 'scss',
-    'sass': 'sass',
-    'md': 'markdown',
-    'sql': 'sql',
-    'dockerfile': 'dockerfile',
-    'toml': 'toml',
-    'ini': 'ini',
-    'conf': 'ini',
-    'gitignore': 'gitignore',
-    'vue': 'vue',
-    'svelte': 'svelte'
+    'js': 'javascript', 'ts': 'typescript', 'jsx': 'javascript', 'tsx': 'typescript',
+    'py': 'python', 'rb': 'ruby', 'php': 'php', 'java': 'java', 'c': 'c', 'cpp': 'cpp',
+    'cs': 'csharp', 'go': 'go', 'rs': 'rust', 'sh': 'bash', 'bash': 'bash',
+    'yml': 'yaml', 'yaml': 'yaml', 'json': 'json', 'xml': 'xml', 'html': 'html',
+    'css': 'css', 'scss': 'scss', 'sass': 'sass', 'md': 'markdown', 'sql': 'sql',
+    'dockerfile': 'dockerfile', 'toml': 'toml', 'ini': 'ini', 'conf': 'ini',
+    'gitignore': 'gitignore', 'vue': 'vue', 'svelte': 'svelte'
   }
-
   return languageMap[extension || ''] || 'text'
 })
 
-const displayFilename = computed(() => {
-  if (props.filename) return props.filename
-  if (!props.rawUrl) return 'Unknown file'
-
-  const urlParts = props.rawUrl.split('/')
-  return urlParts[urlParts.length - 1]
-})
-
-const repoInfo = computed(() => {
-  if (!props.rawUrl) return { owner: '', name: '', path: '' }
-
-  // Extract repository information from raw URL
-  // Format: https://raw.githubusercontent.com/owner/repo/branch/path/to/file
-  const urlParts = props.rawUrl.replace('https://raw.githubusercontent.com/', '').split('/')
-  if (urlParts.length < 3) return { owner: '', name: '', path: '' }
-
-  const owner = urlParts[0]
-  const name = urlParts[1]
-  const branch = urlParts[2]
-  const path = urlParts.slice(3).join('/')
-
-  return { owner, name, path, branch }
-})
-
-const githubUrl = computed(() => {
-  if (props.githubUrl) return props.githubUrl
-  if (!props.rawUrl) return null
-
-  // Convert raw URL to GitHub URL
-  let url = props.rawUrl
-    .replace('https://raw.githubusercontent.com/', 'https://github.com/')
-    .replace('/main/', '/blob/main/')
-    .replace('/master/', '/blob/master/')
-
-  // Add line anchor if scrollToLine is specified
-  if (props.scrollToLine) {
-    url += `#L${props.scrollToLine}`
-  }
-
-  return url
-})
+const displayFilename = computed(() => props.filename || parsedInfo.value.filename || 'Loading...')
+const repoInfo = computed(() => ({ owner: parsedInfo.value.owner, name: parsedInfo.value.name, path: parsedInfo.value.path }))
+const githubLink = computed(() => parsedInfo.value.githubUrl)
+const lineToScroll = computed(() => parsedInfo.value.scrollToLine)
 
 const fetchCode = async () => {
-  if (!props.rawUrl) {
-    code.value = 'No rawUrl provided'
+  isLoading.value = true
+  errorMessage.value = ''
+  const urlToFetch = parsedInfo.value.rawUrl
+
+  if (!urlToFetch) {
+    errorMessage.value = 'Error: No valid githubUrl or rawUrl provided.'
     isLoading.value = false
     return
   }
 
   try {
-    const response = await fetch(props.rawUrl)
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-    }
+    const response = await fetch(urlToFetch)
+    if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`)
     code.value = await response.text()
   } catch (error) {
-    code.value = `Failed to load: ${error}`
+    errorMessage.value = `Failed to load code: ${error}`
+    code.value = '' // Ensure code is empty on error
   } finally {
     isLoading.value = false
   }
 }
+
+watch(code, async (newCode) => {
+  if (newCode && lineToScroll.value && codeContainer.value) {
+    await nextTick();
+
+    const scrollableElement = codeContainer.value.querySelector('pre');
+    const lineElement = codeContainer.value.querySelector(`.line:nth-child(${lineToScroll.value})`) as HTMLElement;
+
+    if (scrollableElement && lineElement) {
+      // Calculate position relative to the scrollable parent
+      const linePosition = lineElement.offsetTop - scrollableElement.offsetTop;
+      // Scroll the line to the top of the scrollable area
+      const offset = linePosition;
+
+      scrollableElement.scrollTop = offset;
+
+      // Add permanent highlight class
+      lineElement.classList.add('highlighted');
+    }
+  }
+}, { flush: 'post' });
+
 
 onMounted(() => {
   fetchCode()
@@ -191,6 +185,14 @@ onMounted(() => {
   border-radius: 8px;
   overflow: hidden;
   background: #0d1117;
+}
+
+.loading-indicator,
+.error-indicator {
+  padding: 16px;
+  color: #8b949e;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  text-align: center;
 }
 
 /* GitHub-style header */
@@ -254,20 +256,6 @@ onMounted(() => {
 .github-view-button svg {
   width: 12px;
   height: 12px;
-}
-
-/* Attribution footer */
-.github-attribution {
-  background: #161b22;
-  border-top: 1px solid #30363d;
-  padding: 8px 16px;
-}
-
-.attribution-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 12px;
 }
 
 /* Code block container with scrolling */
@@ -334,13 +322,9 @@ onMounted(() => {
 
 .prose-github-wrapper :deep(.line) {
   padding: 0 !important;
-  /* Remove all padding */
   min-height: 1.2em !important;
-  /* Very compact line height */
   height: auto !important;
-  /* Allow natural height for wrapped content */
   line-height: 1.2 !important;
-  /* Force line height */
   background: transparent !important;
   display: flex !important;
   align-items: flex-start !important;
@@ -365,35 +349,9 @@ onMounted(() => {
   font-weight: normal !important;
 }
 
-.prose-github-wrapper :deep(.file-name) {
-  display: flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  font-size: 14px !important;
-}
-
-.prose-github-wrapper :deep(.file-name img) {
-  width: 20px !important;
-  height: 20px !important;
-}
-
-.prose-github-wrapper :deep(.actions) {
-  display: flex !important;
-  align-items: center !important;
-}
-
-/* This rule is now handled above with scrolling */
-
 /* Highlight the scrolled-to line */
 .prose-github-wrapper :deep(.line.highlighted) {
   background: rgba(255, 255, 0, 0.1) !important;
-}
-
-/* Style the code block container */
-.prose-github-wrapper :deep(.code-block-container) {
-  background: #0d1117 !important;
-  border: none !important;
-  border-radius: 0 !important;
 }
 
 /* Force all elements to use normal font-weight with highest specificity */
@@ -406,32 +364,26 @@ onMounted(() => {
 }
 
 /* Custom scrollbar styling for GitHub theme */
-.prose-github-wrapper :deep(.css-1uawpjz)::-webkit-scrollbar {
+.prose-github-wrapper :deep(.code-block-container)::-webkit-scrollbar {
   width: 12px;
 }
 
-.prose-github-wrapper :deep(.css-1uawpjz)::-webkit-scrollbar-track {
+.prose-github-wrapper :deep(.code-block-container)::-webkit-scrollbar-track {
   background: #161b22;
-  border-radius: 6px;
-  border: 1px solid #30363d;
 }
 
-.prose-github-wrapper :deep(.css-1uawpjz)::-webkit-scrollbar-thumb {
+.prose-github-wrapper :deep(.code-block-container)::-webkit-scrollbar-thumb {
   background: #484f58;
   border-radius: 6px;
-  border: 2px solid #161b22;
+  border: 3px solid #161b22;
 }
 
-.prose-github-wrapper :deep(.css-1uawpjz)::-webkit-scrollbar-thumb:hover {
+.prose-github-wrapper :deep(.code-block-container)::-webkit-scrollbar-thumb:hover {
   background: #6e7681;
 }
 
-.prose-github-wrapper :deep(.css-1uawpjz)::-webkit-scrollbar-thumb:active {
-  background: #8b949e;
-}
-
 /* Firefox scrollbar styling */
-.prose-github-wrapper :deep(.css-1uawpjz) {
+.prose-github-wrapper :deep(.code-block-container) {
   scrollbar-width: thin;
   scrollbar-color: #484f58 #161b22;
 }
