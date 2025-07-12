@@ -2,9 +2,10 @@
   <BackgroundLayout container-width="full" overlay-intensity="heavy" blur-background>
     <!-- Back navigation -->
     <div class="mb-6">
-      <button @click="$router.go(-1)" class="inline-flex items-center gap-2 text-glass hover:text-glass-muted transition-colors">
+      <button @click="$router.push('/tools')"
+        class="inline-flex items-center gap-2 text-glass hover:text-glass-muted transition-colors">
         <IconsArrowLeft class="w-4 h-4" />
-        Back
+        Back to Tools
       </button>
     </div>
 
@@ -56,8 +57,7 @@
     <!-- Attribution -->
     <div class="fixed bottom-4 right-4 z-10">
       <a href="https://github.com/josdejong/svelte-jsoneditor" target="_blank" rel="noopener noreferrer"
-        class="text-xs text-white/50 hover:text-white/70 transition-colors"
-        title="Powered by svelte-jsoneditor">
+        class="text-xs text-white/50 hover:text-white/70 transition-colors" title="Powered by svelte-jsoneditor">
         Powered by svelte-jsoneditor
       </a>
     </div>
@@ -180,9 +180,10 @@ const copyLeftToRight = () => {
   if (leftEditor && rightEditor) {
     try {
       const leftContent = leftEditor.get()
-      rightEditor.set(leftContent)
+      // Use update() instead of set() to preserve history for undo/redo
+      rightEditor.update(leftContent)
       saveContent(STORAGE_KEYS.RIGHT_CONTENT, leftContent)
-      errorMessage.value = 'Copied from left to right'
+      errorMessage.value = 'Copied from left to right (Ctrl+Z to undo)'
       // Clear message after 2 seconds
       setTimeout(() => {
         errorMessage.value = ''
@@ -197,9 +198,10 @@ const copyRightToLeft = () => {
   if (leftEditor && rightEditor) {
     try {
       const rightContent = rightEditor.get()
-      leftEditor.set(rightContent)
+      // Use update() instead of set() to preserve history for undo/redo
+      leftEditor.update(rightContent)
       saveContent(STORAGE_KEYS.LEFT_CONTENT, rightContent)
-      errorMessage.value = 'Copied from right to left'
+      errorMessage.value = 'Copied from right to left (Ctrl+Z to undo)'
       // Clear message after 2 seconds
       setTimeout(() => {
         errorMessage.value = ''
