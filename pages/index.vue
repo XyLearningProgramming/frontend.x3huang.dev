@@ -73,15 +73,16 @@
 
 <script setup lang="ts">
 import Card from '~/components/ui/Card.vue'
+import { siteConfig, getPageMeta } from '~/site.config'
 
 // ========== CUSTOMIZABLE CONTENT ==========
 // Profile Information
 const profile = {
-  name: 'HUANG Xinyu 黄昕宇',
-  initials: 'HXY',
+  name: siteConfig.author.name,
+  initials: siteConfig.author.name.split(' ').map(n => n[0]).join('').toUpperCase(),
   image: '/images/profile.png',
   motto: 'Code with passion, learn for life, run freely, and read deeply.',
-  subtitle: 'Fullstack developer, self-hosting, building this site.',
+  subtitle: siteConfig.author.bio,
   welcomeMessage: 'Welcome to my digital space powered by vue, nuxt, and nuxt content'
 }
 
@@ -112,15 +113,6 @@ const navigationCards = [
     route: '/contact'
   },
 ]
-
-// SEO Configuration
-const seoConfig = {
-  title: 'Xinyu Huang - Developer & Tech Enthusiast',
-  description: 'Welcome to Xinyu Huang\'s digital space x3huang.dev. Passionate developer, lifelong learner, and tech enthusiast sharing insights on web development, technology, and more.',
-  keywords: 'Xinyu Huang, developer, full-stack, technology, blog, tools, x3huang.dev',
-  ogTitle: 'Xinyu Huang - Developer & Tech Enthusiast',
-  ogDescription: 'Welcome to my digital space. Passionate developer sharing insights on software development and technology.'
-}
 // ========== END CUSTOMIZABLE CONTENT ==========
 
 const { currentBackground, initializeBackground } = useBackgroundGallery()
@@ -131,17 +123,12 @@ onMounted(() => {
   initializeBackground()
 })
 
-// SEO meta
-useHead({
-  title: seoConfig.title,
-  meta: [
-    { name: 'description', content: seoConfig.description },
-    { name: 'keywords', content: seoConfig.keywords },
-    { property: 'og:title', content: seoConfig.ogTitle },
-    { property: 'og:description', content: seoConfig.ogDescription },
-    { property: 'og:type', content: 'website' }
-  ]
-})
+// SEO meta using centralized config
+useHead(getPageMeta({
+  description: siteConfig.description,
+  url: siteConfig.url,
+  type: 'website'
+}))
 </script>
 
 <style scoped>

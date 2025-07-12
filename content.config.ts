@@ -12,7 +12,10 @@ export default defineContentConfig({
         date: z.string(),
         published: z.boolean().default(true),
         tags: z.array(z.string()).optional(),
-        image: z.string().optional(),
+        image: z.object({
+          src: z.string(),
+          alt: z.string()
+        }).optional(),
         author: z.string().optional(),
         readTime: z.number().optional()
       })

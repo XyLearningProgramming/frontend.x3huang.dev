@@ -1,14 +1,16 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { siteConfig, getBaseUrl } from './site.config'
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
   devtools: { enabled: true },
   app: {
     head: {
-      title: "Xinyu's Blog",
+      title: siteConfig.title,
       meta: [
         {
           name: 'description',
-          content: 'Blog site of Xinyu Huang, x3huang, sharing tech insights, self-hosting experience, web development',
+          content: siteConfig.description,
         }
       ],
       link: [
@@ -46,6 +48,7 @@ export default defineNuxtConfig({
     '@nuxt/content',
     '@nuxt/eslint',
     '@nuxtjs/tailwindcss',
+    '@nuxt/image',
     'nuxt-llms',
   ],
   css: ['/assets/css/main.css', '/assets/css/glass-ui.css'],
@@ -96,6 +99,20 @@ export default defineNuxtConfig({
     prometheusPath: "/metrics",
     prefix: "",
   },
+  image: {
+    format: ['webp', 'avif', 'jpeg', 'jpg', 'png'],
+    quality: 85,
+    dir: 'public',
+    screens: {
+      xs: 320,
+      sm: 640,
+      md: 768,
+      lg: 1024,
+      xl: 1280,
+      xxl: 1536,
+    },
+    provider: 'ipx'
+  },
   content: {
     database: {
       type: 'postgres',
@@ -128,18 +145,18 @@ export default defineNuxtConfig({
   },
   // Ref: https://content.nuxt.com/docs/advanced/llms
   llms: {
-    domain: 'https://x3huang.dev',
-    title: "Xinyu Huang's digital space",
-    description: 'Xinyu Huang - Developer & Tech Enthusiast',
+    domain: getBaseUrl(),
+    title: siteConfig.title,
+    description: siteConfig.description,
     sections: [
       {
-        title: 'Blog Posts - Xinyu Huang',
-        description: 'Latest blog posts by Xinyu Huang.',
+        title: `Blog Posts - ${siteConfig.author.name}`,
+        description: `Latest blog posts by ${siteConfig.author.name}.`,
         contentCollection: "blogs",
         contentFilters: [
           { field: 'published', operator: '=', value: true }
         ]
       }
     ]
-  }
+  },
 })

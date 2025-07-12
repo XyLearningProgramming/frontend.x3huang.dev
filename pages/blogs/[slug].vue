@@ -33,7 +33,16 @@
 
       <GlassCard variant="primary" padding="lg" radius="lg" class="mb-8">
         <div class="text-white prose-white">
-          <ContentRenderer :value="post" />
+          <ClientOnly>
+            <ContentRenderer :value="post" />
+            <template #fallback>
+              <div class="animate-pulse">
+                <div class="h-4 bg-white/20 rounded mb-4"></div>
+                <div class="h-4 bg-white/20 rounded mb-4"></div>
+                <div class="h-4 bg-white/20 rounded mb-4 w-3/4"></div>
+              </div>
+            </template>
+          </ClientOnly>
         </div>
       </GlassCard>
     </article>
@@ -85,7 +94,7 @@
       <!-- Share Icons -->
       <GlassCard variant="primary" padding="sm" radius="lg">
         <NavShareIcons :headline="post.title" :description="post.description || 'Check out this blog post'"
-          :path="route.fullPath" />
+          :path="route.fullPath" :image="post.image?.src || ''" />
       </GlassCard>
     </div>
   </BackgroundLayout>
@@ -96,6 +105,7 @@ import BackgroundLayout from '~/components/layouts/BackgroundLayout.vue'
 import GlassCard from '~/components/ui/GlassCard.vue'
 import TableOfContents from '~/components/blog/TableOfContents.vue'
 import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
+import { siteConfig, getPageMeta, getBlogPageTitle } from '~/site.config'
 
 const route = useRoute()
 const slug = route.params.slug as string
@@ -135,8 +145,8 @@ onUnmounted(() => {
 })
 
 // History stack for back button
-const returnPath = ref('/')
-const returnTitle = ref('Home')
+const returnPath = ref('/blogs')
+const returnTitle = ref('Latest Posts')
 
 // Map of route patterns to page titles
 const getPageTitle = (path: string, search: string = '') => {
@@ -204,7 +214,7 @@ onMounted(() => {
       returnPath.value = '/timeline'
       returnTitle.value = 'Timeline'
     }
-    // Default fallback remains '/' and 'Home'
+    // Default fallback to /blogs
   }
 })
 
@@ -241,11 +251,12 @@ const formatDate = (dateString: string) => {
   })
 }
 
-// SEO meta
-useHead({
-  title: computed(() => post.value?.title || 'Blog Post'),
-  meta: [
-    { name: 'description', content: computed(() => post.value?.description || 'Blog post content') }
-  ]
-})
+// SEO meta using centralized config
+useHead(computed(() => getPageMeta({
+  title: getBlogPageTitle(post.value?.title),
+  description: post.value?.description || 'Blog post content',
+  url: `${siteConfig.url}${route.fullPath}`,
+  image: post.value?.image?.src ? `${siteConfig.url}${post.value.image.src}` : undefined,
+  type: 'article'
+})))
 </script>

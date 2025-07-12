@@ -1,7 +1,19 @@
 <template>
   <BackgroundLayout container-width="wide" overlay-intensity="heavy" blur-background>
-    <PageHeader title="Latest Blog Posts"
-      description="Technical articles, insights, and thoughts on my software development journey." />
+    <!-- Back navigation -->
+    <div class="mb-6">
+      <NuxtLink to="/" class="inline-flex items-center gap-2 text-glass hover:text-glass-muted transition-colors">
+        <IconsArrowLeft class="w-4 h-4" />
+        Back to Home
+      </NuxtLink>
+    </div>
+
+    <PageHeader :title="blogConfig.title" :description="blogConfig.pageDescription" />
+
+    <!-- RSS Feed Button -->
+    <div class="flex justify-center mb-8">
+      <RssButton />
+    </div>
 
     <!-- Search box -->
     <div class="mb-8">
@@ -39,19 +51,14 @@
       </div>
     </div>
 
-    <!-- Back to home -->
-    <div class="text-center mt-12">
-      <NuxtLink to="/" class="inline-flex items-center gap-2 text-glass hover:text-glass-muted transition-colors">
-        <IconsArrowLeft class="w-4 h-4" />
-        Back to Home
-      </NuxtLink>
-    </div>
+
   </BackgroundLayout>
 </template>
 
 <script setup lang="ts">
 import BackgroundLayout from '~/components/layouts/BackgroundLayout.vue'
 import PageHeader from '~/components/ui/PageHeader.vue'
+import RssButton from '~/components/ui/RssButton.vue'
 import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
 import IconsSearch from '~/components/icons/search.vue'
 import IconsX from '~/components/icons/x.vue'
@@ -67,8 +74,7 @@ const calculatePostsPerPage = () => {
 }
 
 // Pagination state
-const postsPerPage = ref(calculatePostsPerPage())
-const currentPage = ref(0)
+const postsPerPage = ref(5)
 const posts = ref<any[]>([])
 const loading = ref(false)
 const hasMore = ref(true)
@@ -106,6 +112,7 @@ const queryPublishedBlogs = (limit: number, skip: number) => {
   }
 
   return query
+    .select('title', 'date', 'description', 'tags', 'image')
     .order('date', 'DESC')
     .limit(limit)
     .skip(skip)
@@ -130,12 +137,10 @@ const loadMorePosts = async () => {
   loading.value = true
 
   try {
-    const nextPage = currentPage.value + 1
-    const newPosts = await queryPublishedBlogs(postsPerPage.value, nextPage * postsPerPage.value)
+    const newPosts = await queryPublishedBlogs(postsPerPage.value, posts.value.length)
 
     if (newPosts && newPosts.length > 0) {
       posts.value.push(...newPosts)
-      currentPage.value = nextPage
       hasMore.value = newPosts.length === postsPerPage.value
     } else {
       hasMore.value = false
@@ -169,11 +174,11 @@ const handleResize = () => {
 
 // Set up event listeners
 onMounted(() => {
-  window.addEventListener('scroll', handleScroll)
-  window.addEventListener('resize', handleResize)
-
   // Update posts per page on client-side mount
   postsPerPage.value = calculatePostsPerPage()
+
+  window.addEventListener('scroll', handleScroll)
+  window.addEventListener('resize', handleResize)
 })
 
 onUnmounted(() => {
@@ -181,11 +186,22 @@ onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
 })
 
+// Import configs
+import { blogConfig, getBlogPageTitle, getBlogPageDescription } from '~/site.config'
+
 // SEO meta
 useHead({
-  title: 'Blog Posts - Xinyu Huang',
+  title: getBlogPageTitle('Blog Posts'),
   meta: [
-    { name: 'description', content: 'Latest blog posts by Xinyu Huang. Technical articles, insights, and thoughts on web development, technology, and more.' }
+    { name: 'description', content: getBlogPageDescription() }
+  ],
+  link: [
+    {
+      rel: 'alternate',
+      type: 'application/rss+xml',
+      title: 'Blog RSS Feed',
+      href: '/blogs/rss.xml'
+    }
   ]
 })
 </script>

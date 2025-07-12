@@ -7,13 +7,9 @@ dateUpdated: ''
 published: false
 author: 'Xinyu'
 tags: ['layout', 'web-development']
-image: '/img/blog/sample.webp'
-socialImage:
+image:
     src: '/img/blog/sample.webp'
-    mime: 'webp'
     alt: 'Mountain'
-    width: 1200
-    height: 630
 readTime: 5
 ---
 
@@ -119,7 +115,6 @@ Inline code is written using \`, and looks like `this`.
 
 You can cite and embed code directly from GitHub repositories with proper attribution and context lines:
 
-<!-- https://stackoverflow.com/questions/28338017/is-there-a-way-to-embed-github-code-into-an-iframe -->
 ::ProseGithub
 ---
 rawUrl: https://raw.githubusercontent.com/XyLearningProgramming/helm.x3huang.dev/main/traefik/values.yaml.gotmpl
