@@ -1,10 +1,9 @@
 <template>
-  <article 
-    class="glass-primary rounded-lg overflow-hidden glass-hover cursor-pointer flex items-stretch"
-    @click="selectPost">
-    
+  <article class="glass-primary rounded-lg overflow-hidden glass-hover cursor-pointer" @click="selectPost">
+
     <!-- Content section -->
-    <div class="p-6 flex-1">
+    <div class="p-6">
+      <!-- Title and date row -->
       <div class="flex justify-between items-start mb-3">
         <h2 class="text-xl font-semibold text-glass">{{ props.post.title }}</h2>
         <time class="text-sm text-glass-muted flex-shrink-0 ml-4">
@@ -12,9 +11,33 @@
         </time>
       </div>
 
-      <p v-if="props.post.description" class="text-glass-muted mb-4">{{ props.post.description }}</p>
+      <!-- Description and image row -->
+      <div class="flex gap-6" v-if="props.post.description || hasImage">
+        <div class="flex-1 flex flex-col justify-between min-h-28">
+          <p v-if="props.post.description" class="text-glass-muted">{{ props.post.description }}</p>
 
-      <div v-if="props.post.tags && props.post.tags.length" class="flex flex-wrap gap-2">
+          <!-- Tags pushed to bottom -->
+          <div v-if="props.post.tags && props.post.tags.length" class="flex flex-wrap gap-2 mt-4">
+            <NuxtLink v-for="tag in props.post.tags" :key="tag" :to="`/blogs/tags/${encodeURIComponent(tag)}`"
+              class="px-2 py-1 text-xs glass-secondary rounded-full hover:bg-white/30 text-glass-muted hover:text-glass transition-all duration-200"
+              @click.stop>
+              {{ tag }}
+            </NuxtLink>
+          </div>
+        </div>
+
+        <!-- Image thumbnail beside description -->
+        <ClientOnly v-if="hasImage">
+          <div class="w-40 h-28 flex-shrink-0 rounded-lg overflow-hidden shadow-lg">
+            <nuxt-img :src="imageSrc" :alt="imageAlt"
+              class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" format="webp"
+              sizes="160px" loading="lazy" quality="80" />
+          </div>
+        </ClientOnly>
+      </div>
+
+      <!-- Tags for posts without description or image -->
+      <div v-else-if="props.post.tags && props.post.tags.length" class="flex flex-wrap gap-2">
         <NuxtLink v-for="tag in props.post.tags" :key="tag" :to="`/blogs/tags/${encodeURIComponent(tag)}`"
           class="px-2 py-1 text-xs glass-secondary rounded-full hover:bg-white/30 text-glass-muted hover:text-glass transition-all duration-200"
           @click.stop>
@@ -22,21 +45,6 @@
         </NuxtLink>
       </div>
     </div>
-
-    <!-- Image thumbnail -->
-    <ClientOnly v-if="hasImage">
-      <div class="w-48 flex-shrink-0">
-        <nuxt-img 
-          :src="imageSrc" 
-          :alt="imageAlt"
-          class="w-full h-full object-cover"
-          format="webp"
-          sizes="192px"
-          loading="lazy"
-          quality="60"
-        />
-      </div>
-    </ClientOnly>
   </article>
 </template>
 
@@ -61,14 +69,9 @@ const imageSrc = computed(() => {
 })
 const imageAlt = computed(() => props.post.image?.alt || props.post.title || 'Blog post image')
 
-const generateSlug = (title: string) => {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .trim()
-}
+import { useSlug } from '~/composables/useSlug';
+
+const { generateSlug } = useSlug();
 
 // Navigation
 const selectPost = () => {

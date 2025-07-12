@@ -10,7 +10,6 @@ tags: ['layout', 'web-development']
 image:
     src: '/img/blog/sample.webp'
     alt: 'Mountain'
-    size: 'large'
 readTime: 5
 ---
 

@@ -51,11 +51,16 @@ const props = defineProps({
     }
 })
 
+import { useRuntimeConfig } from '#app'
+
+const config = useRuntimeConfig()
+const baseUrl = config.public.siteUrl
+
 const copied = ref(false)
 
 // Get the current URL dynamically - use relative path to avoid hydration mismatch
 const getCurrentUrl = () => {
-    return props.path
+    return `${baseUrl}${props.path}`
 }
 
 const encodedUrl = computed(() => encodeURIComponent(getCurrentUrl()))
@@ -63,13 +68,13 @@ const encodedUrl = computed(() => encodeURIComponent(getCurrentUrl()))
 const getFullImageUrl = () => {
     if (!props.image) return ''
     if (props.image.startsWith('http')) return props.image
-    return `${window.location.origin}${props.image}`
+    return `${baseUrl}${props.image}`
 }
 
 const copyLink = async () => {
     if (import.meta.client && navigator.clipboard) {
         try {
-            await navigator.clipboard.writeText(window.location.origin + props.path)
+            await navigator.clipboard.writeText(getCurrentUrl())
             copied.value = true
             setTimeout(() => {
                 copied.value = false
@@ -85,7 +90,7 @@ const icons = [
         icon: Linkedin,
         alt: 'LinkedIn profile.',
         getHref: () => {
-            return `https://www.linkedin.com/sharing/share-offsite/?mini=true&url=${encodedUrl}&title=${encodeURI(
+            return `https://www.linkedin.com/sharing/share-offsite/?mini=true&url=${encodedUrl.value}&title=${encodeURI(
                 props.headline
             )}&summary=${encodeURI(props.description)}`;
         }
@@ -94,14 +99,14 @@ const icons = [
         icon: Twitter,
         alt: 'Share this story on Twitter.',
         getHref: () => {
-            return `https://twitter.com/intent/tweet?text=${encodeURIComponent('Check out this article about ' + props.headline)}&url=${encodedUrl}`;
+            return `https://twitter.com/intent/tweet?text=${encodeURIComponent('Check out this article about ' + props.headline)}&url=${encodedUrl.value}`;
         }
     },
     {
         icon: Facebook,
         alt: 'Share this story on Facebook.',
         getHref: () => {
-            return `https://facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+            return `https://facebook.com/sharer/sharer.php?u=${encodedUrl.value}`;
         }
     },
     {
@@ -110,7 +115,7 @@ const icons = [
         getHref: () => {
             return `mailto:?subject=${encodeURI(props.headline)}&body=Check%20out%20this%20article%20about%20${encodeURI(
                 props.headline
-            )},%20${encodedUrl}`;
+            )},%20${encodedUrl.value}`;
         }
     },
     {
@@ -118,7 +123,7 @@ const icons = [
         alt: 'Share this story on Pinterest.',
         getHref: () => {
             const imageUrl = getFullImageUrl()
-            const baseUrl = `https://pinterest.com/pin/create/button/?url=${encodedUrl}&description=${encodeURIComponent(props.headline)}`
+            const baseUrl = `https://pinterest.com/pin/create/button/?url=${encodedUrl.value}&description=${encodeURIComponent(props.headline)}`
             return imageUrl ? `${baseUrl}&media=${encodeURIComponent(imageUrl)}` : baseUrl
         }
     }

@@ -6,7 +6,7 @@
     <!-- Contact cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
       <!-- Email -->
-      <a href="mailto:hello@x3huang.dev" class="block group">
+      <a :href="`mailto:${siteConfig.social.email}`" class="block group">
         <GlassCard variant="primary" padding="lg" radius="lg" hover clickable class="text-center h-full">
           <div class="text-glass">
             <div class="text-4xl mb-4">📧</div>
@@ -14,14 +14,14 @@
               Email
             </h3>
             <p class="text-glass-muted">
-              contact@x3huang.dev
+              {{ siteConfig.social.email }}
             </p>
           </div>
         </GlassCard>
       </a>
 
       <!-- GitHub -->
-      <a href="https://github.com/x3huang" target="_blank" rel="noopener noreferrer" class="block group">
+      <a :href="siteConfig.social.github" target="_blank" rel="noopener noreferrer" class="block group">
         <GlassCard variant="primary" padding="lg" radius="lg" hover clickable class="text-center h-full">
           <div class="text-glass">
             <div class="text-4xl mb-4">💻</div>
@@ -29,14 +29,14 @@
               GitHub
             </h3>
             <p class="text-glass-muted text-sm">
-              XyLearningProgramming
+              {{ siteConfig.social.github?.split('/').pop() }}
             </p>
           </div>
         </GlassCard>
       </a>
 
       <!-- LinkedIn -->
-      <a href="https://linkedin.com/in/xinyu-huang-019650170/" target="_blank" rel="noopener noreferrer"
+      <a :href="siteConfig.social.linkedin" target="_blank" rel="noopener noreferrer"
         class="block group">
         <GlassCard variant="primary" padding="lg" radius="lg" hover clickable class="text-center h-full">
           <div class="text-glass">
@@ -45,7 +45,7 @@
               LinkedIn
             </h3>
             <p class="text-glass-muted">
-              /in/xinyu-huang-019650170/
+              {{ siteConfig.social.linkedin?.split('/').slice(-2).join('/') }}
             </p>
           </div>
         </GlassCard>
@@ -119,7 +119,7 @@
       <div v-if="submitted"
         class="mt-4 p-4 bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg text-white text-center drop-shadow-lg">
         Your email client should have opened with the message. If not, please send an email directly to
-        hello@x3huang.dev
+        {{ siteConfig.social.email }}
       </div>
     </GlassCard>
 
@@ -138,6 +138,7 @@ import GlassCard from '~/components/ui/GlassCard.vue'
 import BackgroundLayout from '~/components/layouts/BackgroundLayout.vue'
 import PageHeader from '~/components/ui/PageHeader.vue'
 import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
+import { siteConfig, getPageMeta } from '~/site.config'
 
 const resumePath = "/resume/20250703.pdf"
 
@@ -162,7 +163,7 @@ const submitForm = async () => {
     `Message:\n${form.value.message}`
   )
 
-  const mailtoLink = `mailto:hello@x3huang.dev?subject=${subject}&body=${body}`
+  const mailtoLink = `mailto:${siteConfig.social.email}?subject=${subject}&body=${body}`
 
   // Open email client
   window.location.href = mailtoLink
@@ -184,10 +185,8 @@ const submitForm = async () => {
   }, 5000)
 }
 
-useHead({
-  title: 'Contact - Xinyu Huang',
-  meta: [
-    { name: 'description', content: 'Get in touch with Xinyu Huang. Reach out for collaborations, questions, or just to say hello!' }
-  ]
-})
+useHead(getPageMeta({
+  title: 'Contact',
+  description: `Get in touch with ${siteConfig.author.name}. Reach out for collaborations, questions, or just to say hello!`
+}))
 </script>

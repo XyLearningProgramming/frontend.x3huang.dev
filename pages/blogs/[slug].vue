@@ -105,6 +105,7 @@ import BackgroundLayout from '~/components/layouts/BackgroundLayout.vue'
 import GlassCard from '~/components/ui/GlassCard.vue'
 import TableOfContents from '~/components/blog/TableOfContents.vue'
 import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
+import { siteConfig, getPageMeta, getBlogPageTitle } from '~/site.config'
 
 const route = useRoute()
 const slug = route.params.slug as string
@@ -250,24 +251,12 @@ const formatDate = (dateString: string) => {
   })
 }
 
-// SEO meta
-useHead({
-  title: computed(() => post.value?.title || 'Blog Post'),
-  meta: [
-    { name: 'description', content: computed(() => post.value?.description || 'Blog post content') },
-    // Open Graph meta tags for social sharing
-    { property: 'og:title', content: computed(() => post.value?.title || 'Blog Post') },
-    { property: 'og:description', content: computed(() => post.value?.description || 'Blog post content') },
-    { property: 'og:url', content: computed(() => `https://x3huang.dev${route.fullPath}`) },
-    { property: 'og:type', content: 'article' },
-    { property: 'og:image', content: computed(() => post.value?.image?.src ? `https://x3huang.dev${post.value.image.src}` : '') },
-    { property: 'og:image:alt', content: computed(() => post.value?.image?.alt || post.value?.title || 'Blog post image') },
-    // Twitter Card meta tags
-    { name: 'twitter:card', content: 'summary_large_image' },
-    { name: 'twitter:title', content: computed(() => post.value?.title || 'Blog Post') },
-    { name: 'twitter:description', content: computed(() => post.value?.description || 'Blog post content') },
-    { name: 'twitter:image', content: computed(() => post.value?.image?.src ? `https://x3huang.dev${post.value.image.src}` : '') },
-    { name: 'twitter:image:alt', content: computed(() => post.value?.image?.alt || post.value?.title || 'Blog post image') }
-  ]
-})
+// SEO meta using centralized config
+useHead(computed(() => getPageMeta({
+  title: getBlogPageTitle(post.value?.title),
+  description: post.value?.description || 'Blog post content',
+  url: `${siteConfig.url}${route.fullPath}`,
+  image: post.value?.image?.src ? `${siteConfig.url}${post.value.image.src}` : undefined,
+  type: 'article'
+})))
 </script>

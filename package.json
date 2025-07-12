@@ -21,10 +21,12 @@
     "@wxperia/liquid-glass-vue": "^1.0.9",
     "better-sqlite3": "^12.1.0",
     "diff": "^8.0.2",
+    "feed": "^5.1.0",
     "nuxt-llms": "^0.1.3",
     "pg": "^8.16.0",
     "prismjs": "^1.30.0",
     "sharp": "^0.34.2",
+    "ufo": "^1.6.1",
     "vanilla-jsoneditor": "^3.6.1",
     "vuejs-code-block": "^1.0.1"
   },
