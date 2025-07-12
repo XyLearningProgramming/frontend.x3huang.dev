@@ -48,17 +48,31 @@
       </div>
 
       <!-- Navigation cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl w-full">
-        <NuxtLink v-for="card in navigationCards" :key="card.title" :to="card.route" class="block group h-full">
-          <Card variant="default" padding="lg" radius="lg" hover clickable
-            class="bg-white/10 backdrop-blur-md border-white/20 text-center transition-all duration-300 group-hover:bg-white/20 group-hover:scale-105 h-full flex flex-col justify-between">
-            <div class="text-white">
-              <div class="text-3xl mb-4">{{ card.icon }}</div>
-              <h3 class="text-xl font-semibold mb-2">{{ card.title }}</h3>
-              <p class="text-white/80 text-sm">{{ card.description }}</p>
-            </div>
-          </Card>
-        </NuxtLink>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl w-full place-content-center">
+        <template v-for="card in navigationCards" :key="card.title">
+          <!-- Interactive card with route -->
+          <NuxtLink v-if="card.route" :to="card.route" class="block group h-full">
+            <Card variant="default" padding="lg" radius="lg" hover clickable
+              class="bg-white/10 backdrop-blur-md border-white/20 text-center transition-all duration-300 group-hover:bg-white/20 group-hover:scale-105 h-full flex flex-col justify-between">
+              <div class="text-white">
+                <div class="text-3xl mb-4">{{ card.icon }}</div>
+                <h3 class="text-xl font-semibold mb-2">{{ card.title }}</h3>
+                <p class="text-white/80 text-sm">{{ card.description }}</p>
+              </div>
+            </Card>
+          </NuxtLink>
+          <!-- Non-interactive card without route -->
+          <div v-else class="h-full">
+            <Card variant="default" padding="lg" radius="lg"
+              class="bg-white/5 backdrop-blur-md border-white/10 text-center opacity-60 h-full flex flex-col justify-between cursor-not-allowed">
+              <div class="text-white">
+                <div class="text-3xl mb-4">{{ card.icon }}</div>
+                <h3 class="text-xl font-semibold mb-2">{{ card.title }}</h3>
+                <p class="text-white/80 text-sm">{{ card.description }}</p>
+              </div>
+            </Card>
+          </div>
+        </template>
       </div>
 
       <!-- Footer note -->
@@ -111,6 +125,17 @@ const navigationCards = [
     icon: '💬',
     description: 'Get in touch with me',
     route: '/contact'
+  },
+  {
+    title: '勉強中',
+    icon: '🗒️',
+    description: 'Japanese Grammar Notes from "新标日"',
+    route: 'https://xylearningprogramming.github.io/nihongo_pages/'
+  },
+  {
+    title: 'Life',
+    icon: '🍾',
+    description: 'Incoming - My book picks, hobbies, my life',
   },
 ]
 // ========== END CUSTOMIZABLE CONTENT ==========
