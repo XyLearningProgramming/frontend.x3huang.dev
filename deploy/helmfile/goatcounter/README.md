@@ -21,3 +21,7 @@ ALTER ROLE
 postgres=# ALTER DATABASE goatcounter OWNER TO app;
 ALTER DATABASE
 ```
+
+2. need to manually enable visitor counter in goatcounter dashboard
+
+> Ref: https://github.com/htejera/publii-goatcounter-analytics-plugin?tab=readme-ov-file#visitor-counter
