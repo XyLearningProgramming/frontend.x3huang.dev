@@ -1,7 +1,7 @@
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
-  name: {{ include "goatcounter.fullname" . }}-ratelimit
+  name: {{ .Values.middleware.ratelimit }}
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "goatcounter.labels" . | nindent 4 }}
@@ -19,7 +19,7 @@ spec:
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
-  name: {{ include "goatcounter.fullname" . }}-headers
+  name: {{ .Values.middleware.headers }}
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "goatcounter.labels" . | nindent 4 }}
@@ -36,7 +36,7 @@ spec:
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
-  name: {{ include "goatcounter.fullname" . }}-stripprefix
+  name: {{ .Values.middleware.stripprefix }}
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "goatcounter.labels" . | nindent 4 }}

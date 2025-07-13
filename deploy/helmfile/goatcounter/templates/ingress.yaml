@@ -8,7 +8,7 @@ metadata:
   labels:
     {{- include "goatcounter.labels" . | nindent 4 }}
   annotations:
-    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ include "goatcounter.fullname" . }}-ratelimit@kubernetescrd,{{ .Release.Namespace }}-{{ include "goatcounter.fullname" . }}-headers@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ .Values.middleware.ratelimit }}@kubernetescrd,{{ .Release.Namespace }}-{{ .Values.middleware.headers }}@kubernetescrd
     traefik.ingress.kubernetes.io/router.priority: "200"
     {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
@@ -49,7 +49,7 @@ metadata:
   labels:
     {{- include "goatcounter.labels" . | nindent 4 }}
   annotations:
-    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ include "goatcounter.fullname" . }}-ratelimit@kubernetescrd,{{ .Release.Namespace }}-{{ include "goatcounter.fullname" . }}-headers@kubernetescrd,{{ .Release.Namespace }}-{{ include "goatcounter.fullname" . }}-stripprefix@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ .Values.middleware.ratelimit }}@kubernetescrd,{{ .Release.Namespace }}-{{ .Values.middleware.headers }}@kubernetescrd,{{ .Release.Namespace }}-{{ .Values.middleware.stripprefix }}@kubernetescrd
     traefik.ingress.kubernetes.io/router.priority: "100"
     {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
