@@ -4,6 +4,7 @@ metadata:
   name: {{ .Values.middleware.name }}
   namespace: {{ .Release.Namespace }}
   labels:
+    checksum/config: 671e1053377e64a15661c2f98c1e21ee90819dc8
     {{- include "frontend.labels" . | nindent 4 }}
 spec:
   plugin:

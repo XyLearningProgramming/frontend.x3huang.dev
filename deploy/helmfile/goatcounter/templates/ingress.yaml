@@ -26,14 +26,14 @@ spec:
       http:
         paths:
         - path: {{ .Values.ingress.path }}
-          pathType: Prefix
+          pathType: ImplementationSpecific
           backend:
             service:
               name: {{ include "goatcounter.fullname" . }}
               port:
                 number: {{ .Values.service.port }}
         - path: {{ .Values.ingress.counterPath }}
-          pathType: Prefix
+          pathType: ImplementationSpecific
           backend:
             service:
               name: {{ include "goatcounter.fullname" . }}
@@ -67,7 +67,7 @@ spec:
       http:
         paths:
         - path: {{ .Values.ingress.adminPath }}
-          pathType: Prefix
+          pathType: ImplementationSpecific
           backend:
             service:
               name: {{ include "goatcounter.fullname" . }}
