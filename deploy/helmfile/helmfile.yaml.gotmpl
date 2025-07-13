@@ -15,8 +15,16 @@ environments:
 
 ---
 releases:
+  - name: goatcounter
+    namespace: frontend
+    chart: ./goatcounter
+    values:
+      - values/{{ .Environment.Name }}.yaml.gotmpl
+
   - name: frontend
     namespace: frontend
     chart: ./chart
+    needs:
+      - frontend/goatcounter
     values:
       - values/{{ .Environment.Name }}.yaml.gotmpl

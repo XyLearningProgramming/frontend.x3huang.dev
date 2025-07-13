@@ -23,5 +23,8 @@ logs
 .env.*
 !.env.example
 
+# Deployment secrets
+deploy/secret/*.env
+
 # Sample blogs as placeholder
 content/blog/sample-*

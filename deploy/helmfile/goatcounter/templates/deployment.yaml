@@ -1,0 +1,139 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "goatcounter.fullname" . }}
+  labels:
+    {{- include "goatcounter.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "goatcounter.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "goatcounter.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "goatcounter.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          env:
+            {{- if .Values.goatcounter.database.secretName }}
+            - name: POSTGRES_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.goatcounter.database.secretName }}
+                  key: {{ .Values.goatcounter.database.secretKey }}
+            {{- end }}
+            {{- if .Values.goatcounter.admin.secretName }}
+            - name: GTC_ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.goatcounter.admin.secretName }}
+                  key: {{ .Values.goatcounter.admin.emailKey }}
+            - name: GTC_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.goatcounter.admin.secretName }}
+                  key: {{ .Values.goatcounter.admin.passwordKey }}
+            {{- end }}
+            {{- range $key, $value := .Values.goatcounter.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          command: ["/bin/sh"]
+          args:
+            - "-c"
+            - |
+              # Unset problematic Kubernetes environment variables that GoatCounter might interpret
+              unset GOATCOUNTER_SERVICE_PORT_HTTP
+              unset GOATCOUNTER_PORT_8080_TCP_ADDR  
+              unset GOATCOUNTER_SERVICE_HOST
+              unset GOATCOUNTER_PORT_8080_TCP_PORT
+              unset GOATCOUNTER_PORT_8080_TCP_PROTO
+              unset GOATCOUNTER_SERVICE_PORT
+              unset GOATCOUNTER_PORT_8080_TCP
+              unset GOATCOUNTER_PORT
+
+              # Convert from postgres://user:pass@host:port/db to postgresql+postgresql://user:pass@host:port/goatcounter
+              USER=$(echo "$POSTGRES_URL" | sed -n 's/.*:\/\/\([^:]*\):.*/\1/p')
+              PASS=$(echo "$POSTGRES_URL" | sed -n 's/.*:\/\/[^:]*:\([^@]*\)@.*/\1/p')
+              HOST=$(echo "$POSTGRES_URL" | sed -n 's/.*@\([^:]*\):.*/\1/p')
+              PORT=$(echo "$POSTGRES_URL" | sed -n 's/.*@[^:]*:\([^/]*\)\/.*/\1/p')
+              export GOATCOUNTER_DB="postgresql+postgresql://${USER}:${PASS}@${HOST}:${PORT}/goatcounter?sslmode=disable"
+
+              echo "[DEBUG] GOATCOUNTER_DB: $GOATCOUNTER_DB"
+
+              # Create site if admin credentials are provided
+              if [ -n "$GTC_ADMIN_EMAIL" ] && [ -n "$GTC_ADMIN_PASSWORD" ]; then
+                echo "Creating site if it doesn't exist..."
+                goatcounter db create site \
+                  -vhost={{ .Values.DOMAIN }} \
+                  -user.email="$GTC_ADMIN_EMAIL" \
+                  -password="$GTC_ADMIN_PASSWORD" \
+                  -createdb \
+                  -db="$GOATCOUNTER_DB" || echo "Site creation failed or already exists"
+              fi
+              
+              echo "Starting GoatCounter server..."
+              exec goatcounter serve -db "$GOATCOUNTER_DB" -automigrate
+
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
