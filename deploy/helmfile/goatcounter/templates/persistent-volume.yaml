@@ -22,7 +22,7 @@ metadata:
     {{- include "goatcounter.labels" . | nindent 4 }}
 spec:
   capacity:
-    storage: 5Gi
+    storage: 2Gi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Delete
@@ -37,20 +37,3 @@ spec:
           operator: In
           values:
           - {{ .Values.GTC_NODE }}
----
-# -----------------------------------------
-# PersistentVolumeClaim for goatcounter data
-# -----------------------------------------
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: goatcounter-data-pvc
-  labels:
-    {{- include "goatcounter.labels" . | nindent 4 }}
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: local-goatcounter-data
-  resources:
-    requests:
-      storage: 5Gi

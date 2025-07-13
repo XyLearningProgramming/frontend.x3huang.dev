@@ -150,4 +150,4 @@ spec:
         storageClassName: local-goatcounter-data
         resources:
           requests:
-            storage: 5Gi
+            storage: 2Gi
