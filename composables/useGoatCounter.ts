@@ -72,17 +72,76 @@ export const useGoatCounter = () => {
     checkAndTrack()
   }
 
+  // Ensure GoatCounter script is loaded
+  const ensureGoatCounterLoaded = (): Promise<void> => {
+    if (!shouldTrack) return Promise.resolve()
+    
+    return new Promise((resolve) => {
+      if (window.goatcounter?.count) {
+        resolve()
+        return
+      }
+      
+      initializeTracking()
+      
+      const checkLoaded = () => {
+        if (window.goatcounter?.count) {
+          resolve()
+        } else {
+          setTimeout(checkLoaded, 100)
+        }
+      }
+      
+      checkLoaded()
+    })
+  }
+
+  // Record a hit for the given path
+  const recordHit = (path: string): Promise<void> => {
+    if (!shouldTrack) return Promise.resolve()
+    
+    return new Promise((resolve) => {
+      if (window.goatcounter?.count) {
+        window.goatcounter.count({
+          path,
+          title: document.title,
+          event: false
+        })
+        // Small delay to ensure the hit is processed
+        setTimeout(resolve, 100)
+      } else {
+        resolve()
+      }
+    })
+  }
+
   // Get visit count for a specific path
   const getVisitCount = async (path: string): Promise<number> => {
     if (isDevMode) return 0
     
+    // Ensure GoatCounter is loaded and record a hit first
+    await ensureGoatCounterLoaded()
+    await recordHit(path)
+    
     try {
-      const encodedPath = encodeURIComponent(path)
-      // GoatCounter uses /counter/ endpoint for retrieving counts
+      // Use the same path normalization as GoatCounter for consistent matching
+      let normalizedPath = path
+      if (window.goatcounter?.get_data) {
+        // Use GoatCounter's path normalization if available
+        const gcData = window.goatcounter.get_data()
+        if (gcData?.p && path === window.location.pathname) {
+          normalizedPath = gcData.p
+        }
+      }
+      
+      const encodedPath = encodeURIComponent(normalizedPath)
       const response = await fetch(`${baseUrl}/counter/${encodedPath}.json`)
       
       if (!response.ok) {
-        if (response.status === 404) return 0
+        if (response.status === 404) {
+          // Zero views so far - this is expected for new pages
+          return 0
+        }
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       
@@ -148,6 +207,7 @@ declare global {
         event?: boolean
       }) => void
       visit_count: (params?: any) => void
+      get_data: () => { p?: string } | null
     }
   }
 }
