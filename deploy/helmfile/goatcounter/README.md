@@ -25,3 +25,10 @@ ALTER DATABASE
 2. need to manually enable visitor counter in goatcounter dashboard
 
 > Ref: https://github.com/htejera/publii-goatcounter-analytics-plugin?tab=readme-ov-file#visitor-counter
+
+3. need to create local path for storage on destined node
+
+```bash
+sudo mkdir -p /var/goatcounter-data
+sudo chown -R 1000:1000 /var/goatcounter-data
+```

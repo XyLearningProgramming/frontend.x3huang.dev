@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ include "goatcounter.fullname" . }}
   labels:
@@ -8,6 +8,7 @@ spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
+  serviceName: {{ include "goatcounter.fullname" . }}
   selector:
     matchLabels:
       {{- include "goatcounter.selectorLabels" . | nindent 6 }}
@@ -117,16 +118,19 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.volumeMounts }}
           volumeMounts:
+            - name: goatcounter-data
+              mountPath: /home/goatcounter/goatcounter-data
+          {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
       {{- with .Values.volumes }}
       volumes:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.nodeSelector }}
       nodeSelector:
+        kubernetes.io/hostname: {{ .Values.GTC_NODE }}
+      {{- with .Values.nodeSelector }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.affinity }}
@@ -137,3 +141,13 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+  volumeClaimTemplates:
+    - metadata:
+        name: goatcounter-data
+      spec:
+        accessModes: 
+          - ReadWriteOnce
+        storageClassName: local-goatcounter-data
+        resources:
+          requests:
+            storage: 5Gi

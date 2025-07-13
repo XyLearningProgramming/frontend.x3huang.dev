@@ -1,0 +1,56 @@
+# -----------------------------------------
+# StorageClass for goatcounter data
+# -----------------------------------------
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-goatcounter-data
+  labels:
+    {{- include "goatcounter.labels" . | nindent 4 }}
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Delete
+---
+# -----------------------------------------
+# PersistentVolume for goatcounter data
+# -----------------------------------------
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: goatcounter-data-pv
+  labels:
+    {{- include "goatcounter.labels" . | nindent 4 }}
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: local-goatcounter-data
+  local:
+    path: /var/goatcounter-data
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - {{ .Values.GTC_NODE }}
+---
+# -----------------------------------------
+# PersistentVolumeClaim for goatcounter data
+# -----------------------------------------
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: goatcounter-data-pvc
+  labels:
+    {{- include "goatcounter.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-goatcounter-data
+  resources:
+    requests:
+      storage: 5Gi
