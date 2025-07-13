@@ -68,7 +68,6 @@ ingress:
 middleware:
   ratelimit: goatcounter-ratelimit
   headers: goatcounter-headers
-  stripprefix: goatcounter-stripprefix
 
 resources:
   # Small footprint resource limits for GoatCounter

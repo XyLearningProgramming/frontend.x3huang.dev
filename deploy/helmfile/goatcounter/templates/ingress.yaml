@@ -42,7 +42,7 @@ metadata:
   labels:
     {{- include "goatcounter.labels" . | nindent 4 }}
   annotations:
-    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ .Values.middleware.ratelimit }}@kubernetescrd,{{ .Release.Namespace }}-{{ .Values.middleware.headers }}@kubernetescrd,{{ .Release.Namespace }}-{{ .Values.middleware.stripprefix }}@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ .Values.middleware.ratelimit }}@kubernetescrd,{{ .Release.Namespace }}-{{ .Values.middleware.headers }}@kubernetescrd
     traefik.ingress.kubernetes.io/router.priority: "100"
     {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
@@ -54,12 +54,12 @@ spec:
   tls:
   - secretName: {{ .Values.DOMAIN }}-tls
     hosts:
-      - {{ .Values.DOMAIN }}
+      - goatcounter.{{ .Values.DOMAIN }}
   rules:
-    - host: {{ .Values.DOMAIN }}
+    - host: goatcounter.{{ .Values.DOMAIN }}
       http:
         paths:
-        - path: {{ .Values.ingress.adminPath }}
+        - path: /
           pathType: Prefix
           backend:
             service:
