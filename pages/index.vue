@@ -3,7 +3,7 @@
     class="min-h-screen bg-gradient-to-br from-light-accent/20 to-dark-accent/20 dark:from-dark-accent/30 dark:to-light-accent/30 bg-cover bg-center bg-no-repeat relative"
     :style="{ backgroundImage: currentBackground ? `url(${currentBackground.url})` : 'none' }">
     <!-- Background overlay for better readability -->
-    <div class="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
+    <div class="absolute inset-0 bg-black/20 dark:bg-black/40" />
 
     <!-- Photo notes -->
     <div v-if="currentBackground?.note" class="absolute bottom-4 left-4 md:left-6 md:max-w-md">
@@ -21,8 +21,8 @@
         <div class="mb-6">
           <div
             class="w-32 h-32 rounded-full mx-auto shadow-2xl border-4 border-white/30 overflow-hidden bg-gradient-to-br from-light-accent to-dark-accent flex items-center justify-center ring-4 ring-white/10">
-            <img :src="profile.image" :alt="profile.name" class="w-full h-full object-cover"
-              @error="showFallback = true" v-show="!showFallback" />
+            <img v-show="!showFallback" :src="profile.image" :alt="profile.name" class="w-full h-full object-cover"
+              @error="showFallback = true">
             <span v-show="showFallback" class="text-4xl text-white font-bold drop-shadow-lg">{{ profile.initials
               }}</span>
           </div>
@@ -35,7 +35,7 @@
 
         <!-- Motto/Introduction -->
         <div class="relative">
-          <div class="absolute inset-0 bg-black/20 rounded-2xl blur-xl"></div>
+          <div class="absolute inset-0 bg-black/20 rounded-2xl blur-xl" />
           <p
             class="relative text-lg md:text-xl text-white/90 max-w-2xl mx-auto leading-relaxed drop-shadow-xl text-shadow-medium px-6 py-2">
             {{ profile.subtitle }}
@@ -77,9 +77,15 @@
 
       <!-- Footer note -->
       <div class="mt-12 text-center">
-        <p class="text-white/60 text-sm">
-          {{ profile.welcomeMessage }}
-        </p>
+        <!-- Welcome message with total site views -->
+        <div class="mt-4 text-center">
+          <p class="text-white/80 text-sm mb-2">
+            {{ profile.welcomeMessage }}
+          </p>
+          <div class="flex justify-center">
+            <VisitCounter path="/" singular-text="visitor to this site" plural-text="visitors to this site" />
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -87,6 +93,7 @@
 
 <script setup lang="ts">
 import Card from '~/components/ui/Card.vue'
+import VisitCounter from '~/components/ui/VisitCounter.vue'
 import { siteConfig, getPageMeta } from '~/site.config'
 
 // ========== CUSTOMIZABLE CONTENT ==========
@@ -141,11 +148,14 @@ const navigationCards = [
 // ========== END CUSTOMIZABLE CONTENT ==========
 
 const { currentBackground, initializeBackground } = useBackgroundGallery()
+const { initializeTracking, trackVisit } = useGoatCounter()
 const showFallback = ref(false)
 
-// Initialize background on mount
+// Initialize background and tracking on mount
 onMounted(() => {
   initializeBackground()
+  initializeTracking()
+  trackVisit('/')
 })
 
 // SEO meta using centralized config

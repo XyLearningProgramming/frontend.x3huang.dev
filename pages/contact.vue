@@ -7,7 +7,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
       <!-- Email -->
       <a :href="`mailto:${siteConfig.social.email}`" class="block group">
-        <GlassCard variant="primary" padding="lg" radius="lg" hover clickable class="text-center h-full">
+        <GlassCard variant="primary" padding="md" radius="lg" hover clickable class="text-center h-full">
           <div class="text-glass">
             <div class="text-4xl mb-4">📧</div>
             <h3 class="text-xl font-semibold mb-2">
@@ -16,13 +16,17 @@
             <p class="text-glass-muted">
               {{ siteConfig.social.email }}
             </p>
+            <!-- Email counter -->
+            <div class="mt-3 pt-3 border-t border-white/20 text-center">
+              <VisitCounter path="/contact/email" singular-text="person said hello" plural-text="people said hello" />
+            </div>
           </div>
         </GlassCard>
       </a>
 
       <!-- GitHub -->
       <a :href="siteConfig.social.github" target="_blank" rel="noopener noreferrer" class="block group">
-        <GlassCard variant="primary" padding="lg" radius="lg" hover clickable class="text-center h-full">
+        <GlassCard variant="primary" padding="md" radius="lg" hover clickable class="text-center h-full">
           <div class="text-glass">
             <div class="text-4xl mb-4">💻</div>
             <h3 class="text-xl font-semibold mb-2">
@@ -31,14 +35,18 @@
             <p class="text-glass-muted text-sm">
               {{ siteConfig.social.github?.split('/').pop() }}
             </p>
+            <!-- GitHub counter -->
+            <div class="mt-3 pt-3 border-t border-white/20 text-center">
+              <VisitCounter path="/contact/github" singular-text="person explored my code"
+                plural-text="people explored my code" />
+            </div>
           </div>
         </GlassCard>
       </a>
 
       <!-- LinkedIn -->
-      <a :href="siteConfig.social.linkedin" target="_blank" rel="noopener noreferrer"
-        class="block group">
-        <GlassCard variant="primary" padding="lg" radius="lg" hover clickable class="text-center h-full">
+      <a :href="siteConfig.social.linkedin" target="_blank" rel="noopener noreferrer" class="block group">
+        <GlassCard variant="primary" padding="md" radius="lg" hover clickable class="text-center h-full">
           <div class="text-glass">
             <div class="text-4xl mb-4">💼</div>
             <h3 class="text-xl font-semibold mb-2">
@@ -47,13 +55,18 @@
             <p class="text-glass-muted">
               {{ siteConfig.social.linkedin?.split('/').slice(-2).join('/') }}
             </p>
+            <!-- LinkedIn counter -->
+            <div class="mt-3 pt-3 border-t border-white/20 text-center">
+              <VisitCounter path="/contact/linkedin" singular-text="person connected professionally"
+                plural-text="people connected professionally" />
+            </div>
           </div>
         </GlassCard>
       </a>
 
       <!-- Resume -->
       <a :href="resumePath" target="_blank" rel="noopener noreferrer" class="block group">
-        <GlassCard variant="primary" padding="lg" radius="lg" hover clickable class="text-center h-full">
+        <GlassCard variant="primary" padding="md" radius="lg" hover clickable class="text-center h-full">
           <div class="text-glass">
             <div class="text-4xl mb-4">📄</div>
             <h3 class="text-xl font-semibold mb-2">
@@ -62,6 +75,11 @@
             <p class="text-glass-muted">
               Download CV
             </p>
+            <!-- Resume counter -->
+            <div class="mt-3 pt-3 border-t border-white/20 text-center">
+              <VisitCounter path="/contact/resume" singular-text="person requested my resume"
+                plural-text="people requested my resume" />
+            </div>
           </div>
         </GlassCard>
       </a>
@@ -73,14 +91,14 @@
         Leave Me a Message
       </h3>
 
-      <form @submit.prevent="submitForm" class="space-y-6">
+      <form class="space-y-6" @submit.prevent="submitForm">
         <div>
           <label for="name" class="block text-sm font-medium text-glass mb-2">
             Name
           </label>
           <input id="name" v-model="form.name" type="text" required
             class="w-full p-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/40"
-            placeholder="Your name" />
+            placeholder="Your name">
         </div>
 
         <div>
@@ -89,7 +107,7 @@
           </label>
           <input id="email" v-model="form.email" type="email" required
             class="w-full p-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/40"
-            placeholder="your.email@example.com" />
+            placeholder="your.email@example.com">
         </div>
 
         <div>
@@ -98,7 +116,7 @@
           </label>
           <input id="subject" v-model="form.subject" type="text" required
             class="w-full p-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/40"
-            placeholder="What's this about?" />
+            placeholder="What's this about?">
         </div>
 
         <div>
@@ -107,7 +125,7 @@
           </label>
           <textarea id="message" v-model="form.message" required rows="5"
             class="w-full p-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 resize-none focus:outline-none focus:ring-2 focus:ring-white/40"
-            placeholder="Your message..."></textarea>
+            placeholder="Your message..." />
         </div>
 
         <button type="submit" :disabled="isSubmitting"
@@ -138,6 +156,7 @@ import GlassCard from '~/components/ui/GlassCard.vue'
 import BackgroundLayout from '~/components/layouts/BackgroundLayout.vue'
 import PageHeader from '~/components/ui/PageHeader.vue'
 import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
+import VisitCounter from '~/components/ui/VisitCounter.vue'
 import { siteConfig, getPageMeta } from '~/site.config'
 
 const resumePath = "/resume/20250703.pdf"
@@ -184,6 +203,15 @@ const submitForm = async () => {
     submitted.value = false
   }, 5000)
 }
+
+// Initialize tracking
+onMounted(() => {
+  if (!import.meta.client) return
+
+  const { initializeTracking, trackVisit } = useGoatCounter()
+  initializeTracking()
+  trackVisit('/contact')
+})
 
 useHead(getPageMeta({
   title: 'Contact',

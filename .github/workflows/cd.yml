@@ -63,16 +63,16 @@ jobs:
 
       - name: Upsert Kubernetes secret
         env:
-          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+          FRONTEND_ENV: ${{ secrets.FRONTEND_ENV }}
         run: |
-          # Ensure namespace exists
-          kubectl create namespace frontend > /dev/null 2>&1 || true
-          # Create or update secrets
-          kubectl create secret generic helmfile-secret-frontend \
-            --from-literal=POSTGRES_URL="$POSTGRES_URL" \
-            --namespace=frontend \
-            --save-config \
-            --dry-run=client -o yaml | kubectl apply -f -
+          # Write env content to temporary file
+          echo "$FRONTEND_ENV" > /tmp/frontend.env
+          
+          # Use apply script to create/update secrets
+          ./deploy/secret/apply.sh /tmp/frontend.env
+          
+          # Clean up temp file
+          rm -f /tmp/frontend.env
 
       - name: Dry‑run (Diff) before Apply
         uses: helmfile/helmfile-action@v2.0.4

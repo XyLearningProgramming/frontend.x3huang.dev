@@ -2,6 +2,8 @@
 import { Feed } from 'feed';
 import { siteConfig, getBaseUrl } from '~/site.config';
 
+import { useSlug } from '~/composables/useSlug';
+
 const queryPublishedBlogs = () => {
   const query = queryCollection('blogs');
   if (!import.meta.dev) {
@@ -27,8 +29,6 @@ const feed = new Feed({
     link: getBaseUrl(),
   },
 });
-
-import { useSlug } from '~/composables/useSlug';
 
 const { generateSlug } = useSlug();
 

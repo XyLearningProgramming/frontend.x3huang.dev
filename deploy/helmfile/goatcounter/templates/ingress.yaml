@@ -1,0 +1,69 @@
+{{- if .Values.ingress.enabled -}}
+# Count and Counter endpoints - no strip prefix needed
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "goatcounter.fullname" . }}-api
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "goatcounter.labels" . | nindent 4 }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ .Values.middleware.ratelimit }}@kubernetescrd,{{ .Release.Namespace }}-{{ .Values.middleware.headers }}@kubernetescrd
+    traefik.ingress.kubernetes.io/router.priority: "200"
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  tls:
+  - secretName: {{ .Values.DOMAIN }}-tls
+    hosts:
+      - {{ .Values.DOMAIN }}
+  rules:
+    - host: {{ .Values.DOMAIN }}
+      http:
+        paths:
+        - path: {{ .Values.ingress.path }}
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ include "goatcounter.fullname" . }}
+              port:
+                number: {{ .Values.service.port }}
+---
+# Admin endpoint - with strip prefix
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "goatcounter.fullname" . }}-admin
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "goatcounter.labels" . | nindent 4 }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ .Values.middleware.ratelimit }}@kubernetescrd,{{ .Release.Namespace }}-{{ .Values.middleware.headers }}@kubernetescrd
+    traefik.ingress.kubernetes.io/router.priority: "100"
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  tls:
+  - secretName: {{ .Values.DOMAIN }}-tls
+    hosts:
+      - goatcounter.{{ .Values.DOMAIN }}
+  rules:
+    - host: goatcounter.{{ .Values.DOMAIN }}
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ include "goatcounter.fullname" . }}
+              port:
+                number: {{ .Values.service.port }}
+{{- end }}

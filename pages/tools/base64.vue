@@ -2,8 +2,9 @@
   <BackgroundLayout container-width="normal" overlay-intensity="heavy" blur-background>
     <!-- Back navigation -->
     <div class="mb-6">
-      <button @click="$router.push('/tools')"
-        class="inline-flex items-center gap-2 text-glass hover:text-glass-muted transition-colors">
+      <button
+class="inline-flex items-center gap-2 text-glass hover:text-glass-muted transition-colors"
+        @click="$router.push('/tools')">
         <IconsArrowLeft class="w-4 h-4" />
         Back to Tools
       </button>
@@ -18,22 +19,26 @@
         <h3 class="text-lg font-semibold text-glass mb-4">
           Input Text
         </h3>
-        <textarea v-model="inputText" placeholder="Enter text to encode or Base64 string to decode..."
-          class="w-full h-32 p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 resize-none focus:outline-none focus:ring-2 focus:ring-white/40"></textarea>
+        <textarea
+v-model="inputText" placeholder="Enter text to encode or Base64 string to decode..."
+          class="w-full h-32 p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 resize-none focus:outline-none focus:ring-2 focus:ring-white/40"/>
       </GlassCard>
 
       <!-- Action buttons -->
       <div class="flex flex-wrap gap-4 justify-center">
-        <button @click="encodeText" :disabled="!inputText.trim()"
-          class="px-6 py-3 glass-secondary rounded-lg hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-glass font-medium">
+        <button
+:disabled="!inputText.trim()" class="px-6 py-3 glass-secondary rounded-lg hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-glass font-medium"
+          @click="encodeText">
           Encode to Base64
         </button>
-        <button @click="decodeText" :disabled="!inputText.trim()"
-          class="px-6 py-3 glass-secondary rounded-lg hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-glass font-medium">
+        <button
+:disabled="!inputText.trim()" class="px-6 py-3 glass-secondary rounded-lg hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-glass font-medium"
+          @click="decodeText">
           Decode from Base64
         </button>
-        <button @click="clearAll"
-          class="px-6 py-3 glass-subtle rounded-lg hover:bg-white/20 transition-all text-glass-muted font-medium">
+        <button
+class="px-6 py-3 glass-subtle rounded-lg hover:bg-white/20 transition-all text-glass-muted font-medium"
+          @click="clearAll">
           Clear All
         </button>
       </div>
@@ -44,13 +49,15 @@
           <h3 class="text-lg font-semibold text-glass">
             Output
           </h3>
-          <button v-if="outputText" @click="copyOutput"
-            class="px-4 py-2 glass-subtle rounded-lg hover:bg-white/20 transition-all text-glass-muted text-sm font-medium">
+          <button
+v-if="outputText" class="px-4 py-2 glass-subtle rounded-lg hover:bg-white/20 transition-all text-glass-muted text-sm font-medium"
+            @click="copyOutput">
             {{ copied ? 'Copied!' : 'Copy' }}
           </button>
         </div>
-        <textarea v-model="outputText" readonly placeholder="Output will appear here..."
-          class="w-full h-32 p-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg text-glass-muted placeholder-white/40 resize-none"></textarea>
+        <textarea
+v-model="outputText" readonly placeholder="Output will appear here..."
+          class="w-full h-32 p-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg text-glass-muted placeholder-white/40 resize-none"/>
         <div v-if="errorMessage" class="mt-2 text-red-400 text-sm drop-shadow-lg">
           {{ errorMessage }}
         </div>

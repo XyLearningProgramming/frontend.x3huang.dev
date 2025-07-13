@@ -16,10 +16,19 @@
 
         <div class="relative mb-6">
           <div class="absolute inset-0 bg-black/20 rounded-2xl blur-xl"></div>
-          <div class="relative flex items-center justify-center gap-4 text-sm text-glass-muted px-6 py-4">
-            <time>{{ formatDate(post.date) }}</time>
-            <span v-if="post.author">by {{ post.author }}</span>
-            <span v-if="post.readTime">{{ post.readTime }} min read</span>
+          <div class="relative flex flex-col items-center justify-center gap-2 text-sm text-glass-muted px-6 py-4">
+            <div class="flex items-center gap-4">
+              <time>{{ formatDate(post.date) }}</time>
+              <span v-if="post.author">by {{ post.author }}</span>
+              <span v-if="post.readTime">{{ post.readTime }} min read</span>
+            </div>
+            
+            <!-- Analytics display -->
+            <AnalyticsDisplay 
+              :slug="slug" 
+              :analytics="analytics" 
+              :loading="analyticsLoading"
+            />
           </div>
         </div>
 
@@ -94,7 +103,7 @@
       <!-- Share Icons -->
       <GlassCard variant="primary" padding="sm" radius="lg">
         <NavShareIcons :headline="post.title" :description="post.description || 'Check out this blog post'"
-          :path="route.fullPath" :image="post.image?.src || ''" />
+          :path="route.fullPath" :image="post.image?.src || ''" :slug="slug" />
       </GlassCard>
     </div>
   </BackgroundLayout>
@@ -104,11 +113,17 @@
 import BackgroundLayout from '~/components/layouts/BackgroundLayout.vue'
 import GlassCard from '~/components/ui/GlassCard.vue'
 import TableOfContents from '~/components/blog/TableOfContents.vue'
+import AnalyticsDisplay from '~/components/blog/AnalyticsDisplay.vue'
 import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
 import { siteConfig, getPageMeta, getBlogPageTitle } from '~/site.config'
 
 const route = useRoute()
 const slug = route.params.slug as string
+const { initializeTracking, trackVisit, getBlogAnalytics } = useGoatCounter()
+
+// Analytics state
+const analytics = ref({ visits: 0, likes: 0, shares: 0 })
+const analyticsLoading = ref(true)
 
 // TOC panel state
 const showTocPanel = ref(true)
@@ -131,10 +146,23 @@ const handleResize = () => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   if (import.meta.client) {
     window.addEventListener('resize', handleResize)
     handleResize() // Initial check
+    
+    // Initialize GoatCounter tracking and track visit
+    initializeTracking()
+    trackVisit(`/blogs/${slug}`)
+    
+    // Load analytics data (getBlogAnalytics will wait for script to load)
+    try {
+      analytics.value = await getBlogAnalytics(slug)
+    } catch (error) {
+      console.warn('Failed to load analytics:', error)
+    } finally {
+      analyticsLoading.value = false
+    }
   }
 })
 
@@ -159,7 +187,7 @@ const generateSlug = (title: string) => {
 }
 
 // First try to find post by direct path
-const { data: post, error } = await useAsyncData(`blog-${slug}`, async () => {
+const { data: post } = await useAsyncData(`blog-${slug}`, async () => {
   // Get all posts to find matching slug
   const allPosts = await queryCollection('blogs').all()
   return allPosts.find(p => generateSlug(p.title || "missing-title") === slug) || null

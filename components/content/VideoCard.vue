@@ -11,7 +11,7 @@
             :src="thumbnailUrl"
             :alt="title"
             class="thumbnail-image"
-          />
+          >
           <div class="play-overlay">
             <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor">
               <path d="M8 5v14l11-7z"/>

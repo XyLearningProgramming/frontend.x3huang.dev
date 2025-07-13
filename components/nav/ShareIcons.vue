@@ -1,18 +1,20 @@
 <template>
     <div class="flex flex-col gap-3">
         <template v-for="icon in icons" :key="icon.href">
-            <a :href="icon.getHref()" target="_blank" rel="noopener noreferrer"
-                class="text-light-text dark:text-dark-text hover:text-light-accent dark:hover:text-dark-accent hover:scale-110 transition-all duration-200 flex items-center justify-center">
+            <a
+:href="icon.getHref()" target="_blank" rel="noopener noreferrer"
+                class="text-light-text dark:text-dark-text hover:text-light-accent dark:hover:text-dark-accent hover:scale-110 transition-all duration-200 flex items-center justify-center"
+                @click="handleShare(icon.platform)">
                 <component :is="icon.icon" :alt="icon.alt" :aria-label="icon.alt" class="w-5 h-5" />
             </a>
         </template>
         
         <!-- Copy Link Button -->
         <button 
-            @click="copyLink" 
-            class="text-light-text dark:text-dark-text hover:text-light-accent dark:hover:text-dark-accent hover:scale-110 transition-all duration-200 flex items-center justify-center"
+            class="text-light-text dark:text-dark-text hover:text-light-accent dark:hover:text-dark-accent hover:scale-110 transition-all duration-200 flex items-center justify-center" 
             :aria-label="copied ? 'Link copied!' : 'Copy link'"
             :title="copied ? 'Link copied!' : 'Copy link'"
+            @click="copyLink"
         >
             <svg v-if="!copied" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
@@ -32,6 +34,8 @@ import Linkedin from '../icons/linkedin.vue'
 import Facebook from '../icons/facebook.vue'
 import Gmail from '../icons/gmail.vue'
 
+import { useRuntimeConfig } from '#app'
+
 const props = defineProps({
     headline: {
         type: String,
@@ -48,13 +52,16 @@ const props = defineProps({
     image: {
         type: String,
         default: ''
+    },
+    slug: {
+        type: String,
+        default: ''
     }
 })
 
-import { useRuntimeConfig } from '#app'
-
 const config = useRuntimeConfig()
 const baseUrl = config.public.siteUrl
+const { trackShare } = useGoatCounter()
 
 const copied = ref(false)
 
@@ -79,15 +86,27 @@ const copyLink = async () => {
             setTimeout(() => {
                 copied.value = false
             }, 2000)
+            
+            // Track copy link as a share event
+            if (props.slug) {
+                trackShare(props.slug, 'copy-link')
+            }
         } catch (err) {
             console.error('Failed to copy link:', err)
         }
     }
 }
 
+const handleShare = (platform) => {
+    if (props.slug) {
+        trackShare(props.slug, platform)
+    }
+}
+
 const icons = [
     {
         icon: Linkedin,
+        platform: 'linkedin',
         alt: 'LinkedIn profile.',
         getHref: () => {
             return `https://www.linkedin.com/sharing/share-offsite/?mini=true&url=${encodedUrl.value}&title=${encodeURI(
@@ -97,6 +116,7 @@ const icons = [
     },
     {
         icon: Twitter,
+        platform: 'twitter',
         alt: 'Share this story on Twitter.',
         getHref: () => {
             return `https://twitter.com/intent/tweet?text=${encodeURIComponent('Check out this article about ' + props.headline)}&url=${encodedUrl.value}`;
@@ -104,6 +124,7 @@ const icons = [
     },
     {
         icon: Facebook,
+        platform: 'facebook',
         alt: 'Share this story on Facebook.',
         getHref: () => {
             return `https://facebook.com/sharer/sharer.php?u=${encodedUrl.value}`;
@@ -111,6 +132,7 @@ const icons = [
     },
     {
         icon: Gmail,
+        platform: 'email',
         alt: 'Share this story via email.',
         getHref: () => {
             return `mailto:?subject=${encodeURI(props.headline)}&body=Check%20out%20this%20article%20about%20${encodeURI(
@@ -120,6 +142,7 @@ const icons = [
     },
     {
         icon: Pinterest,
+        platform: 'pinterest',
         alt: 'Share this story on Pinterest.',
         getHref: () => {
             const imageUrl = getFullImageUrl()

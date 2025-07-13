@@ -10,10 +10,79 @@
 
     <PageHeader :title="blogConfig.title" :description="blogConfig.pageDescription" />
 
-    <!-- RSS Feed Button -->
-    <div class="flex justify-center mb-8">
-      <RssButton />
+    <!-- RSS Feed and Visit Counter -->
+    <div class="flex items-center justify-center gap-6 mb-8">
+      <!-- Visit Counter (styled like analytics) -->
+      <VisitCounter path="/blogs" singular-text="visit of blog page" plural-text="visits of blog page" />
+      <!-- RSS Feed (styled like share button) -->
+      <button @click="showRssPopup = true"
+        class="flex items-center gap-1 text-glass-muted hover:text-orange-400 transition-all duration-300 group cursor-pointer"
+        title="Subscribe to RSS feed">
+        <svg class="w-4 h-4 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor"
+          viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z" />
+        </svg>
+        <span class="text-sm">RSS Feed</span>
+      </button>
     </div>
+
+    <!-- RSS Popup Modal -->
+    <Teleport to="body">
+      <div v-if="showRssPopup" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click="closeRssPopup">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+
+        <!-- Modal -->
+        <div class="relative glass-primary rounded-2xl border border-white/20 p-6 max-w-md w-full shadow-2xl"
+          @click.stop>
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-glass flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z" />
+              </svg>
+              RSS Feed
+            </h3>
+            <button @click="closeRssPopup"
+              class="text-glass-muted hover:text-glass transition-colors duration-200 p-1 rounded-lg hover:bg-white/10">
+              <IconsX class="w-5 h-5" />
+            </button>
+          </div>
+
+          <!-- Description -->
+          <p class="text-glass-muted text-sm mb-4">
+            Subscribe to my blog posts with your favorite RSS reader.
+          </p>
+
+          <!-- RSS URL Input -->
+          <div class="space-y-3">
+            <label class="block text-sm font-medium text-glass">RSS Feed URL</label>
+            <div class="relative">
+              <input ref="urlInput" :value="rssUrl" readonly
+                class="w-full px-3 py-2 pr-20 glass-secondary rounded-lg border border-white/20 text-glass text-sm focus:outline-none focus:ring-2 focus:ring-white/30 selection:bg-white/20" />
+              <button @click="copyToClipboard"
+                class="absolute right-2 top-1/2 transform -translate-y-1/2 px-3 py-1 text-xs bg-white/20 hover:bg-white/30 rounded text-glass transition-colors duration-200">
+                {{ copied ? 'Copied!' : 'Copy' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex gap-2 mt-6">
+            <a :href="rssUrl" target="_blank"
+              class="flex-1 text-center px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-glass text-sm transition-colors duration-200">
+              Open RSS Feed
+            </a>
+            <button @click="closeRssPopup"
+              class="flex-1 px-4 py-2 glass-secondary border border-white/20 hover:border-white/40 rounded-lg text-glass text-sm transition-all duration-200">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
     <!-- Search box -->
     <div class="mb-8">
@@ -58,7 +127,7 @@
 <script setup lang="ts">
 import BackgroundLayout from '~/components/layouts/BackgroundLayout.vue'
 import PageHeader from '~/components/ui/PageHeader.vue'
-import RssButton from '~/components/ui/RssButton.vue'
+import VisitCounter from '~/components/ui/VisitCounter.vue'
 import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
 import IconsSearch from '~/components/icons/search.vue'
 import IconsX from '~/components/icons/x.vue'
@@ -82,9 +151,52 @@ const hasMore = ref(true)
 // Search state
 const searchQuery = ref('')
 
+// RSS popup state
+const showRssPopup = ref(false)
+const copied = ref(false)
+const urlInput = ref<HTMLInputElement | null>(null)
+
 // Clear search function
 const clearSearch = () => {
   searchQuery.value = ''
+}
+
+// RSS functions
+const rssUrl = computed(() => {
+  if (import.meta.client) {
+    return `${window.location.origin}/blogs/rss.xml`
+  }
+  return '/blogs/rss.xml'
+})
+
+const closeRssPopup = () => {
+  showRssPopup.value = false
+  copied.value = false
+}
+
+const copyToClipboard = async () => {
+  try {
+    await navigator.clipboard.writeText(rssUrl.value)
+    copied.value = true
+    setTimeout(() => {
+      copied.value = false
+    }, 2000)
+  } catch (err) {
+    // Fallback for older browsers
+    if (urlInput.value) {
+      urlInput.value.select()
+      urlInput.value.setSelectionRange(0, 99999)
+      try {
+        document.execCommand('copy')
+        copied.value = true
+        setTimeout(() => {
+          copied.value = false
+        }, 2000)
+      } catch (fallbackErr) {
+        console.warn('Copy to clipboard failed:', fallbackErr)
+      }
+    }
+  }
 }
 
 // Filtered posts based on search query
@@ -179,6 +291,23 @@ onMounted(() => {
 
   window.addEventListener('scroll', handleScroll)
   window.addEventListener('resize', handleResize)
+
+  // RSS popup escape key handler
+  const handleEscape = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      closeRssPopup()
+    }
+  }
+  document.addEventListener('keydown', handleEscape)
+
+  // Initialize GoatCounter tracking
+  const { initializeTracking, trackVisit } = useGoatCounter()
+  initializeTracking()
+  trackVisit('/blogs')
+
+  onUnmounted(() => {
+    document.removeEventListener('keydown', handleEscape)
+  })
 })
 
 onUnmounted(() => {
