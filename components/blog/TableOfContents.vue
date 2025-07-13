@@ -1,7 +1,8 @@
 <template>
   <GlassCard tag="nav" variant="primary" padding="lg" radius="lg" class="w-60 shadow-lg">
-    <header class="flex items-center justify-between cursor-pointer mb-4" @click="toggleToc"
-      aria-label="Expand the table of contents">
+    <header
+class="flex items-center justify-between cursor-pointer mb-4" aria-label="Expand the table of contents"
+      @click="toggleToc">
       <h3 class="text-lg font-semibold text-glass">Contents</h3>
       <svg
         :class="['w-5 h-5 transform transition-transform text-glass', isVisible ? '' : 'rotate-180']"
@@ -11,7 +12,8 @@
     </header>
 
     <nav v-if="links" :class="['space-y-1', isVisible ? 'block' : 'hidden']">
-      <a v-for="link of flattenLinks(links)" :key="link.id" :href="`#${link.id}`" :class="[
+      <a
+v-for="link of flattenLinks(links)" :key="link.id" :href="`#${link.id}`" :class="[
         'text-sm text-glass-muted hover:text-glass transition-all duration-200 block py-1 px-3 rounded-lg hover:bg-white/20 leading-relaxed border-l-2 border-transparent hover:border-white/60',
         `toc-link_${link.depth}`
       ]">

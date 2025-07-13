@@ -58,6 +58,16 @@
                   {{ aboutContent.description }}
                 </p>
               </div>
+              
+              <!-- Analytics display -->
+              <div class="mb-6 flex justify-center">
+                <AnalyticsDisplay 
+                  slug="about"
+                  :analytics="analytics" 
+                  :loading="analyticsLoading"
+                  :show-shares="false"
+                />
+              </div>
             </header>
 
             <div class="bg-white/10 backdrop-blur-md border-white/20 rounded-lg p-6 mb-8">
@@ -107,6 +117,7 @@
 <script setup lang="ts">
 import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
 import BackgroundLayout from '~/components/layouts/BackgroundLayout.vue'
+import AnalyticsDisplay from '~/components/blog/AnalyticsDisplay.vue'
 
 // Fetch about content using queryCollection from pages collection
 const { data: allPages, error } = await useAsyncData('all-pages', () =>
@@ -117,6 +128,28 @@ const { data: allPages, error } = await useAsyncData('all-pages', () =>
 const aboutContent = computed(() => {
   if (!allPages.value) return null
   return allPages.value.find((page: any) => page.path === '/pages/about')
+})
+
+// Analytics state
+const analytics = ref({ visits: 0, likes: 0, shares: 0 })
+const analyticsLoading = ref(true)
+
+// Initialize tracking and load analytics
+onMounted(async () => {
+  if (!import.meta.client) return
+  
+  try {
+    const { initializeTracking, trackVisit, getBlogAnalytics } = useGoatCounter()
+    initializeTracking()
+    trackVisit('/about')
+    
+    // Load analytics data
+    analytics.value = await getBlogAnalytics('about')
+  } catch (error) {
+    console.warn('Failed to load analytics for about page:', error)
+  } finally {
+    analyticsLoading.value = false
+  }
 })
 
 // SEO meta

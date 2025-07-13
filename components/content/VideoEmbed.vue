@@ -11,7 +11,7 @@
                 :src="thumbnailUrl"
                 :alt="title"
                 class="thumbnail-image"
-              />
+              >
               <div class="play-overlay">
                 <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M8 5v14l11-7z"/>
@@ -24,8 +24,8 @@
               <div class="player-header">
                 <button
                   class="close-button"
-                  @click="handleClose"
                   aria-label="Close video"
+                  @click="handleClose"
                 >
                   <svg class="close-icon" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
@@ -38,7 +38,7 @@
                 frameborder="0"
                 allowfullscreen
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              ></iframe>
+              />
             </div>
           </div>
           

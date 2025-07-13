@@ -4,11 +4,17 @@
     <!-- Content section -->
     <div class="p-6">
       <!-- Title and date row -->
-      <div class="flex justify-between items-start mb-3">
+      <div class="flex justify-between items-start">
         <h2 class="text-xl font-semibold text-glass">{{ props.post.title }}</h2>
         <time class="text-sm text-glass-muted flex-shrink-0 ml-4">
           {{ formatDate(props.post.date) }}
         </time>
+      </div>
+
+      <!-- Analytics display -->
+      <div class="mb-3">
+        <AnalyticsDisplay :slug="generateSlug(props.post.title)" :analytics="analytics" :loading="analyticsLoading"
+          :clickable="false" />
       </div>
 
       <!-- Description and image row -->
@@ -51,12 +57,17 @@
 <script setup lang="ts">
 import { withBase } from 'ufo'
 import { useRuntimeConfig } from '#imports'
+import AnalyticsDisplay from './AnalyticsDisplay.vue'
 
 interface Props {
   post: any
 }
 
 const props = defineProps<Props>()
+
+// Analytics state
+const analytics = ref({ visits: 0, likes: 0, shares: 0 })
+const analyticsLoading = ref(true)
 
 const hasImage = computed(() => !!props.post.image && !!props.post.image.src)
 const imageSrc = computed(() => {
@@ -90,4 +101,19 @@ const formatDate = (dateString: string) => {
     day: 'numeric'
   })
 }
+
+// Load analytics data
+onMounted(async () => {
+  if (!import.meta.client) return
+
+  try {
+    const { getBlogAnalytics } = useGoatCounter()
+    const slug = generateSlug(props.post.title)
+    analytics.value = await getBlogAnalytics(slug)
+  } catch (error) {
+    console.warn('Failed to load analytics for', props.post.title, error)
+  } finally {
+    analyticsLoading.value = false
+  }
+})
 </script>

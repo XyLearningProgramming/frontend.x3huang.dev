@@ -1,6 +1,7 @@
 <template>
   <component 
     :is="props.type"
+    :id="props.id"
     :class="[
       'px-6 py-8 sm:px-8 sm:py-12 relative',
       'bg-light-bg dark:bg-dark-bg',
@@ -9,7 +10,6 @@
       props.surface ? 'bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-lg' : '',
       props.centered ? 'flex items-center justify-center' : ''
     ]"
-    :id="props.id"
   >
     <slot />
   </component>

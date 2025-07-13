@@ -1,13 +1,15 @@
 {{- if .Values.ingress.enabled -}}
+# Count and Counter endpoints - no strip prefix needed
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "goatcounter.fullname" . }}
+  name: {{ include "goatcounter.fullname" . }}-api
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "goatcounter.labels" . | nindent 4 }}
   annotations:
     traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ include "goatcounter.fullname" . }}-ratelimit@kubernetescrd,{{ .Release.Namespace }}-{{ include "goatcounter.fullname" . }}-headers@kubernetescrd
+    traefik.ingress.kubernetes.io/router.priority: "200"
     {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -24,12 +26,46 @@ spec:
       http:
         paths:
         - path: {{ .Values.ingress.path }}
-          pathType: ImplementationSpecific
+          pathType: Prefix
           backend:
             service:
               name: {{ include "goatcounter.fullname" . }}
               port:
                 number: {{ .Values.service.port }}
+        - path: {{ .Values.ingress.counterPath }}
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ include "goatcounter.fullname" . }}
+              port:
+                number: {{ .Values.service.port }}
+---
+# Admin endpoint - with strip prefix
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "goatcounter.fullname" . }}-admin
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "goatcounter.labels" . | nindent 4 }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ include "goatcounter.fullname" . }}-ratelimit@kubernetescrd,{{ .Release.Namespace }}-{{ include "goatcounter.fullname" . }}-headers@kubernetescrd,{{ .Release.Namespace }}-{{ include "goatcounter.fullname" . }}-stripprefix@kubernetescrd
+    traefik.ingress.kubernetes.io/router.priority: "100"
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  tls:
+  - secretName: {{ .Values.DOMAIN }}-tls
+    hosts:
+      - {{ .Values.DOMAIN }}
+  rules:
+    - host: {{ .Values.DOMAIN }}
+      http:
+        paths:
         - path: {{ .Values.ingress.adminPath }}
           pathType: Prefix
           backend:

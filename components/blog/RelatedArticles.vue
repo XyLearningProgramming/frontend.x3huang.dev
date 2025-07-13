@@ -5,7 +5,8 @@
     <div class="space-y-3">
       <template v-for="(other, index) in surround" :key="index">
         <div v-if="other" class="border-l-2 border-light-accent dark:border-dark-accent pl-3">
-          <NuxtLink :to="other.path + '/'"
+          <NuxtLink
+:to="other.path + '/'"
             class="text-light-text-strong dark:text-dark-text-strong hover:text-light-accent dark:hover:text-dark-accent hover:underline transition-colors block font-medium"
             :aria-label="other.headline">
             {{ other.headline }}

@@ -61,6 +61,7 @@ ingress:
   enabled: true
   className: traefik
   path: /count
+  counterPath: /counter
   adminPath: /goatcounter
   annotations:
     kubernetes.io/ingress.class: traefik
