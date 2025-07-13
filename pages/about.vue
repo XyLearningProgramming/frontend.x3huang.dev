@@ -140,10 +140,12 @@ onMounted(async () => {
   
   try {
     const { initializeTracking, trackVisit, getBlogAnalytics } = useGoatCounter()
+    
+    // Initialize tracking and track visit (will ensure script loads properly)
     initializeTracking()
     trackVisit('/about')
     
-    // Load analytics data
+    // Load analytics data (getBlogAnalytics will wait for script to load)
     analytics.value = await getBlogAnalytics('about')
   } catch (error) {
     console.warn('Failed to load analytics for about page:', error)

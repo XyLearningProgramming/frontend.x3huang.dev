@@ -151,11 +151,11 @@ onMounted(async () => {
     window.addEventListener('resize', handleResize)
     handleResize() // Initial check
     
-    // Initialize GoatCounter tracking
+    // Initialize GoatCounter tracking and track visit
     initializeTracking()
     trackVisit(`/blogs/${slug}`)
     
-    // Load analytics data
+    // Load analytics data (getBlogAnalytics will wait for script to load)
     try {
       analytics.value = await getBlogAnalytics(slug)
     } catch (error) {
