@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "isso.fullname" . }}-config-template
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "isso.labels" . | nindent 4 }}
+data:
+  isso.cfg.template: |
+    [general]
+    dbpath = /db/comments.db
+    host = https://{{ .Values.DOMAIN }}/
+    notify = smtp
+    # log-file = 
+
+    [smtp]
+    username = ${{ "{" }}{{ .Values.secrets.smtpUsernameKey }}{{ "}" }}
+    password = ${{ "{" }}{{ .Values.secrets.smtpPasswordKey }}{{ "}" }}
+    host = mail.{{ .Values.DOMAIN }}
+    port = 587
+    security = starttls
+    to = ${{ "{" }}{{ .Values.secrets.smtpUsernameKey }}{{ "}" }}
+    from = ${{ "{" }}{{ .Values.secrets.smtpUsernameKey }}{{ "}" }}
+
+    [server]
+    listen = http://0.0.0.0:8080
+    # public-endpoint = 
+    
+    [guard]
+    enabled = true
+    ratelimit = 1
+    direct-reply = 3
+    reply-to-self = true
+    require-author = true
+    require-email = false
+    
+    [markup]
+    options = strikethrough, superscript, autolink, fenced-code
+    allowed-elements = 
+    allowed-attributes = 
+    
+    [hash]
+    algorithm = pbkdf2
+    salt = hebmRciTeGS0wkM
+    
+    [admin]
+    enabled = true
+    password = ${{ "{" }}{{ .Values.secrets.adminPasswordKey }}{{ "}" }}

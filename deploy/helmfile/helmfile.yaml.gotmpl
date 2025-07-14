@@ -21,10 +21,17 @@ releases:
     values:
       - values/{{ .Environment.Name }}.yaml.gotmpl
 
+  - name: isso
+    namespace: frontend
+    chart: ./isso
+    values:
+      - values/{{ .Environment.Name }}.yaml.gotmpl
+
   - name: frontend
     namespace: frontend
     chart: ./chart
     needs:
       - frontend/goatcounter
+      - frontend/isso
     values:
       - values/{{ .Environment.Name }}.yaml.gotmpl

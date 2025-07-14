@@ -1,0 +1,39 @@
+# -----------------------------------------
+# StorageClass for isso data
+# -----------------------------------------
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .Values.persistence.storageClass }}
+  labels:
+    {{- include "isso.labels" . | nindent 4 }}
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Delete
+---
+# -----------------------------------------
+# PersistentVolume for isso data
+# -----------------------------------------
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: isso-data-pv
+  labels:
+    {{- include "isso.labels" . | nindent 4 }}
+spec:
+  capacity:
+    storage: {{ .Values.persistence.size }}
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: {{ .Values.persistence.storageClass }}
+  local:
+    path: /var/isso-data
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - {{ .Values.ISSO_NODE }}

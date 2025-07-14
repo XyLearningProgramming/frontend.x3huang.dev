@@ -95,6 +95,8 @@ There are also scenarios where I had to write secrets as ConfigMap entries or di
 
 It is **helm templates** that are powered by Go’s built-in `text/template` engine, which supports logic like conditionals, loops, and variable interpolation. To extend this functionality, Helm includes its own commands, like [`lookup`](https://github.com/helm/helm/blob/main/pkg/engine/lookup_func.go), AND the [Sprig](https://masterminds.github.io/sprig/) library, which adds a rich set of helper functions—such as `default`, `quote`, `toYaml`, and more. Combined, these tools make it easy to dynamically render Kubernetes manifests based on values and context.
 
+It is worth noticing that **helmfile** also supports using template grammar with values file, and able to processes `.gotmpl` files with handy functions like `exec`, which basically just allows any command!
+
 For example, where I needed to generate a list of users and passwords for Redis without a dedicated field for ACL settings from secret or file, I could use `lookup` to fetch a pre-existing Secret containing the credentials and then format them as required in the value file applied to the chart.
 
 ::ProseGithub

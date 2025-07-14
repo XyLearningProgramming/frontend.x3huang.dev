@@ -1,0 +1,33 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "isso.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "isso.labels" . | nindent 4 }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ include "isso.fullname" . }}-headers@kubernetescrd,{{ .Release.Namespace }}-{{ include "isso.fullname" . }}-stripprefix@kubernetescrd
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  tls:
+  - secretName: {{ .Values.DOMAIN }}-tls
+    hosts:
+      - {{ .Values.DOMAIN }}
+  rules:
+    - host: {{ .Values.DOMAIN }}
+      http:
+        paths:
+        - path: {{ .Values.config.scriptName }}
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ include "isso.fullname" . }}
+              port:
+                number: {{ .Values.service.port }}
+{{- end }}
