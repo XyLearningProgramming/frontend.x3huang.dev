@@ -102,6 +102,13 @@
           </div>
         </div> -->
 
+          <!-- Comments Section -->
+          <CommentSection 
+            title="About Page Comments"
+            thread-id="/about"
+            form-title="What do you think about this site?"
+          />
+
           <!-- Back navigation -->
           <div class="text-center mt-8">
             <NuxtLink to="/"

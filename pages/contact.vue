@@ -85,61 +85,12 @@
       </a>
     </div>
 
-    <!-- Contact form -->
-    <GlassCard variant="primary" padding="lg" radius="lg" class="max-w-2xl mx-auto">
-      <h3 class="text-2xl font-semibold text-glass mb-6 text-center">
-        Leave Me a Message
-      </h3>
-
-      <form class="space-y-6" @submit.prevent="submitForm">
-        <div>
-          <label for="name" class="block text-sm font-medium text-glass mb-2">
-            Name
-          </label>
-          <input id="name" v-model="form.name" type="text" required
-            class="w-full p-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/40"
-            placeholder="Your name">
-        </div>
-
-        <div>
-          <label for="email" class="block text-sm font-medium text-glass mb-2">
-            Email
-          </label>
-          <input id="email" v-model="form.email" type="email" required
-            class="w-full p-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/40"
-            placeholder="your.email@example.com">
-        </div>
-
-        <div>
-          <label for="subject" class="block text-sm font-medium text-glass mb-2">
-            Subject
-          </label>
-          <input id="subject" v-model="form.subject" type="text" required
-            class="w-full p-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/40"
-            placeholder="What's this about?">
-        </div>
-
-        <div>
-          <label for="message" class="block text-sm font-medium text-glass mb-2">
-            Message
-          </label>
-          <textarea id="message" v-model="form.message" required rows="5"
-            class="w-full p-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 resize-none focus:outline-none focus:ring-2 focus:ring-white/40"
-            placeholder="Your message..." />
-        </div>
-
-        <button type="submit" :disabled="isSubmitting"
-          class="w-full py-3 bg-white/20 backdrop-blur-sm border border-white/30 text-white rounded-lg hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium drop-shadow-lg">
-          {{ isSubmitting ? 'Sending...' : 'Send Message' }}
-        </button>
-      </form>
-
-      <div v-if="submitted"
-        class="mt-4 p-4 bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg text-white text-center drop-shadow-lg">
-        Your email client should have opened with the message. If not, please send an email directly to
-        {{ siteConfig.social.email }}
-      </div>
-    </GlassCard>
+    <!-- Comments Section -->
+    <CommentSection 
+      title="Contact & Messages"
+      thread-id="/contact"
+      form-title="Leave me a note"
+    />
 
     <!-- Back navigation -->
     <div class="text-center mt-8">
@@ -160,49 +111,6 @@ import VisitCounter from '~/components/ui/VisitCounter.vue'
 import { siteConfig, getPageMeta } from '~/site.config'
 
 const resumePath = "/resume/20250703.pdf"
-
-const form = ref({
-  name: '',
-  email: '',
-  subject: '',
-  message: ''
-})
-
-const isSubmitting = ref(false)
-const submitted = ref(false)
-
-const submitForm = async () => {
-  isSubmitting.value = true
-
-  // Create mailto link with form data
-  const subject = encodeURIComponent(form.value.subject || 'Message from your website')
-  const body = encodeURIComponent(
-    `Name: ${form.value.name}\n` +
-    `Email: ${form.value.email}\n\n` +
-    `Message:\n${form.value.message}`
-  )
-
-  const mailtoLink = `mailto:${siteConfig.social.email}?subject=${subject}&body=${body}`
-
-  // Open email client
-  window.location.href = mailtoLink
-
-  // Reset form
-  form.value = {
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  }
-
-  isSubmitting.value = false
-  submitted.value = true
-
-  // Hide success message after 5 seconds
-  setTimeout(() => {
-    submitted.value = false
-  }, 5000)
-}
 
 // Initialize tracking
 onMounted(() => {
