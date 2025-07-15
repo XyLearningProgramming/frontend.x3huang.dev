@@ -201,27 +201,6 @@ onMounted(() => {
   margin-top: 16px;
 }
 
-:deep(.isso-comment) {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-:deep(.isso-avatar) {
-  flex-shrink: 0;
-}
-
-:deep(.isso-avatar svg) {
-  width: 48px;
-  height: 48px;
-  display: block;
-}
-
-:deep(.isso-text-wrapper) {
-  flex: 1;
-  min-width: 0;
-}
-
 :deep(.isso-comment-header) {
   display: flex;
   align-items: center;
@@ -351,7 +330,7 @@ onMounted(() => {
 }
 
 :deep(.isso-follow-up) {
-  margin-left: 60px;
+  grid-area: follow-up;
   margin-top: 12px;
 }
 
@@ -368,7 +347,7 @@ onMounted(() => {
 /* Mobile responsive */
 @media (max-width: 640px) {
   :deep(.isso-comment) {
-    gap: 8px;
+    column-gap: 8px;
     margin-bottom: 16px;
   }
 
@@ -378,7 +357,7 @@ onMounted(() => {
   }
 
   :deep(.isso-follow-up) {
-    margin-left: 48px;
+    margin-top: 12px;
   }
 
   :deep(.isso-auth-section) {
