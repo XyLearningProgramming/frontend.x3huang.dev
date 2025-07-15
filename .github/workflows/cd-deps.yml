@@ -17,5 +17,6 @@ jobs:
       - name: Deploy Dependencies with Helmfile
         uses: ./.github/actions/deploy-helmfile
         with:
-          helmfile-args: --l name!=frontend --environment prod
+          helmfile-args: -l name!=frontend --environment prod
+          helmfile-diff-args: --environment prod
           kube-config: ${{ secrets.KUBE_CONFIG_DATA }}
