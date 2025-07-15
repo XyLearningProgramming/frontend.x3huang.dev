@@ -15,10 +15,11 @@ spec:
       {{- include "isso.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
       labels:
         {{- include "isso.labels" . | nindent 8 }}
         {{- with .Values.podLabels }}
@@ -40,7 +41,7 @@ spec:
           command: ['sh', '-c']
           args:
             - |
-              envsubst < /config-template/isso.cfg.template > /config/isso.cfg
+              sed 's/ISSO_MAIL_ADDR/'"$ISSO_MAIL_ADDR"'/g; s/ISSO_MAIL_PASSWORD/'"$ISSO_MAIL_PASSWORD"'/g; s/ISSO_ADMIN_PASSWORD/'"$ISSO_ADMIN_PASSWORD"'/g' /config-template/isso.cfg.template > /config/isso.cfg
               echo "Config generated successfully"
           env:
             - name: {{ .Values.secrets.smtpUsernameKey }}

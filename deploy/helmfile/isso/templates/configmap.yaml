@@ -14,13 +14,13 @@ data:
     # log-file = 
 
     [smtp]
-    username = ${{ "{" }}{{ .Values.secrets.smtpUsernameKey }}{{ "}" }}
-    password = ${{ "{" }}{{ .Values.secrets.smtpPasswordKey }}{{ "}" }}
+    username = {{ .Values.secrets.smtpUsernameKey }}
+    password = {{ .Values.secrets.smtpPasswordKey }}
     host = mail.{{ .Values.DOMAIN }}
     port = 587
     security = starttls
-    to = ${{ "{" }}{{ .Values.secrets.smtpUsernameKey }}{{ "}" }}
-    from = ${{ "{" }}{{ .Values.secrets.smtpUsernameKey }}{{ "}" }}
+    to = {{ .Values.secrets.smtpUsernameKey }}
+    from = {{ .Values.secrets.smtpUsernameKey }}
 
     [server]
     listen = http://0.0.0.0:8080
@@ -45,4 +45,4 @@ data:
     
     [admin]
     enabled = true
-    password = ${{ "{" }}{{ .Values.secrets.adminPasswordKey }}{{ "}" }}
+    password = {{ .Values.secrets.adminPasswordKey }}

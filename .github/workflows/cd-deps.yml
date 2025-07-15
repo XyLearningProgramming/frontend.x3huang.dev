@@ -1,0 +1,21 @@
+name: CD Dependency Pipeline
+
+on:
+  workflow_dispatch:
+
+env:
+  HELMFILE_FILE_PATH: ./deploy/helmfile/helmfile.yaml.gotmpl
+
+jobs:
+  deploy-deps:
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy Dependencies with Helmfile
+        uses: ./.github/actions/deploy-helmfile
+        with:
+          helmfile-args: --l name!=frontend --environment prod
+          kube-config: ${{ secrets.KUBE_CONFIG_DATA }}

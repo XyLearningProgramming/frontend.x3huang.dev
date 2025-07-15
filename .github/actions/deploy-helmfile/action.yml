@@ -1,0 +1,50 @@
+name: Deploy with Helmfile
+description: Deploy applications using Helmfile with secret management
+
+inputs:
+  helmfile-args:
+    description: 'Arguments to pass to helmfile'
+    required: true
+  kube-config:
+    description: 'Base64 encoded kubeconfig'
+    required: true
+  frontend-env:
+    description: 'Frontend environment variables'
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Helmfile init
+      uses: XyLearningProgramming/helm.x3huang.dev/.github/actions/helmfile-init@main
+
+    - name: Set up kubeconfig
+      shell: bash
+      run: |
+        mkdir -p $HOME/.kube
+        echo '${{ inputs.kube-config }}' | base64 --decode > $HOME/.kube/config
+        chmod 600 $HOME/.kube/config
+
+    - name: Upsert Kubernetes secret
+      if: inputs.frontend-env != ''
+      shell: bash
+      run: |
+        # Write env content to temporary file
+        echo "${{ inputs.frontend-env }}" > /tmp/frontend.env
+        
+        # Use apply script to create/update secrets
+        ./deploy/secret/apply.sh /tmp/frontend.env
+        
+        # Clean up temp file
+        rm -f /tmp/frontend.env
+
+    - name: Dry‑run (Diff) before Apply
+      uses: helmfile/helmfile-action@v2.0.4
+      with:
+        helmfile-args: diff ${{ inputs.helmfile-args }} --detailed-exitcode
+      continue-on-error: true
+
+    - name: Apply Changes
+      uses: helmfile/helmfile-action@v2.0.4
+      with:
+        helmfile-args: apply ${{ inputs.helmfile-args }}
