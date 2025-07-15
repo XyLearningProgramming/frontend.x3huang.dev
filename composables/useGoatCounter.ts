@@ -29,13 +29,13 @@ const CACHE_TTL = 5 * 60 * 1000 // 5 minutes in milliseconds
 const getCachedData = (key: string): number | null => {
   const entry = cache.get(key)
   if (!entry) return null
-  
+
   const now = Date.now()
   if (now - entry.timestamp > CACHE_TTL) {
     cache.delete(key)
     return null
   }
-  
+
   return entry.data
 }
 
@@ -48,9 +48,9 @@ const setCachedData = (key: string, data: number): void => {
 
 const processQueue = async () => {
   if (isProcessingQueue || requestQueue.length === 0) return
-  
+
   isProcessingQueue = true
-  
+
   while (requestQueue.length > 0) {
     const request = requestQueue.shift()!
     try {
@@ -63,7 +63,7 @@ const processQueue = async () => {
       await new Promise(resolve => setTimeout(resolve, 500))
     }
   }
-  
+
   isProcessingQueue = false
 }
 
@@ -74,15 +74,15 @@ const queueRequest = <T>(key: string, requestFn: () => Promise<T>): Promise<T> =
       resolve(0 as T)
       return
     }
-    
+
     // If request is already pending, return 0 to avoid duplicates
     if (pendingRequests.has(key)) {
       resolve(0 as T)
       return
     }
-    
+
     pendingRequests.add(key)
-    
+
     const wrappedRequest = async () => {
       try {
         const result = await requestFn()
@@ -96,7 +96,7 @@ const queueRequest = <T>(key: string, requestFn: () => Promise<T>): Promise<T> =
         resolve(0 as T)
       }
     }
-    
+
     requestQueue.push(wrappedRequest)
     processQueue()
   })
@@ -107,7 +107,7 @@ export const useGoatCounter = () => {
   const countEndpoint = `${baseUrl}/count`
 
   // Debug flag to enable tracking in dev mode for testing
-  const DEBUG_GOATCOUNTER = true
+  const DEBUG_GOATCOUNTER = false
 
   // Centralized dev mode check
   const isDevMode = import.meta.dev
@@ -195,7 +195,7 @@ export const useGoatCounter = () => {
           resolve()
         }
       }, 100)
-      
+
       // Safety timeout after 10 seconds
       setTimeout(() => {
         clearInterval(checkInterval)
@@ -247,10 +247,10 @@ export const useGoatCounter = () => {
 
       const data: CountData = await response.json()
       const count = Number(data.count) || 0
-      
+
       // Cache the result
       setCachedData(cacheKey, count)
-      
+
       return count
     })
   }

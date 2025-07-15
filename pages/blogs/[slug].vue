@@ -95,6 +95,13 @@
       </div>
     </ClientOnly>
 
+    <!-- Comments Section -->
+    <CommentSection 
+      v-if="post" 
+      :title="post.title"
+      :thread-id="`/blogs/${slug}`"
+    />
+
     <!-- Floating Action Buttons -->
     <div v-if="post" class="fixed right-4 bottom-4 flex flex-col gap-2 z-50">
       <!-- Scroll to Top -->
