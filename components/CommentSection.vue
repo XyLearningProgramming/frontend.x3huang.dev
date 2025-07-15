@@ -1,5 +1,10 @@
 <template>
   <div class="comment-section w-full max-w-4xl mx-auto mt-8 mb-8">
+    <!-- Custom form title
+    <h3 v-if="props.formTitle" class="form-title text-lg font-medium text-glass mb-4 text-left">
+      {{ props.formTitle }}
+    </h3> -->
+
     <section id="isso-thread" :data-title="props.title">
       <noscript>
         <div class="no-js-message p-6 rounded-lg border border-white/20 bg-white/10 backdrop-blur-sm">
@@ -52,13 +57,21 @@ onMounted(() => {
 <style scoped>
 /* Glass UI styling for Isso comments */
 
+/* Thread heading styling */
+:deep(.isso-thread-heading) {
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
 /* Form styling */
 :deep(.isso-postbox) {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  padding: 16px;
+  background: transparent;
+  border: none;
+  padding: 0;
   margin-bottom: 24px;
 }
 
@@ -74,8 +87,8 @@ onMounted(() => {
   width: 100%;
   min-height: 100px;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
   resize: vertical;
   outline: none;
@@ -85,12 +98,35 @@ onMounted(() => {
 }
 
 :deep(.isso-textarea:focus) {
-  border-color: rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 :deep(.isso-textarea::placeholder) {
   color: rgba(255, 255, 255, 0.5);
+}
+
+/* Preview styling */
+:deep(.isso-preview) {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+}
+
+:deep(.isso-preview .isso-comment) {
+  margin-bottom: 0;
+}
+
+:deep(.isso-preview .isso-text-wrapper) {
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+:deep(.isso-preview .isso-text p) {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 :deep(.isso-auth-section) {
@@ -117,8 +153,8 @@ onMounted(() => {
 :deep(.isso-input-wrapper input) {
   width: 100%;
   padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
   outline: none;
   transition: all 0.2s;
@@ -127,8 +163,8 @@ onMounted(() => {
 }
 
 :deep(.isso-input-wrapper input:focus) {
-  border-color: rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 :deep(.isso-input-wrapper input::placeholder) {
@@ -141,8 +177,8 @@ onMounted(() => {
 
 :deep(.isso-post-action input) {
   padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
@@ -151,7 +187,8 @@ onMounted(() => {
 }
 
 :deep(.isso-post-action input:hover:not(:disabled)) {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 :deep(.isso-post-action input:disabled) {
@@ -316,6 +353,11 @@ onMounted(() => {
 :deep(.isso-follow-up) {
   margin-left: 60px;
   margin-top: 12px;
+}
+
+/* Form title styling */
+.form-title {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
 /* No JS fallback */
