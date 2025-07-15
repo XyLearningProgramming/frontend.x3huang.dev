@@ -1,34 +1,34 @@
 # -----------------------------------------
-# StorageClass for goatcounter data
+# StorageClass for isso data
 # -----------------------------------------
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: local-goatcounter-data
+  name: {{ .Values.persistence.storageClass }}
   labels:
-    {{- include "goatcounter.labels" . | nindent 4 }}
+    {{- include "isso.labels" . | nindent 4 }}
 provisioner: kubernetes.io/no-provisioner
 volumeBindingMode: WaitForFirstConsumer
 reclaimPolicy: Delete
 ---
 # -----------------------------------------
-# PersistentVolume for goatcounter data
+# PersistentVolume for isso data
 # -----------------------------------------
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: goatcounter-data-pv
+  name: isso-data-pv
   labels:
-    {{- include "goatcounter.labels" . | nindent 4 }}
+    {{- include "isso.labels" . | nindent 4 }}
 spec:
   capacity:
-    storage: 2Gi
+    storage: {{ .Values.persistence.size }}
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Delete
-  storageClassName: local-goatcounter-data
+  storageClassName: {{ .Values.persistence.storageClass }}
   local:
-    path: /var/goatcounter-data
+    path: /var/isso-data
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -36,4 +36,4 @@ spec:
         - key: kubernetes.io/hostname
           operator: In
           values:
-          - {{ .Values.GTC_NODE }}
+          - {{ .Values.ISSO_NODE }}

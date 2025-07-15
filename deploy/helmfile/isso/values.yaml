@@ -1,4 +1,4 @@
-# Default values for goatcounter.
+# Default values for isso.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -7,11 +7,11 @@ replicaCount: 1
 
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
-  repository: arp242/goatcounter
+  repository: ghcr.io/isso-comments/isso
   # This sets the pull policy for images.
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
+  tag: "release"
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
@@ -58,22 +58,26 @@ service:
 
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
-  enabled: true
-  className: traefik
-  path: /count
-  adminPath: /goatcounter
-  annotations:
-    kubernetes.io/ingress.class: traefik
-
-middleware:
-  ratelimit: goatcounter-ratelimit
-  headers: goatcounter-headers
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
 
 resources:
-  # Small footprint resource limits for GoatCounter
+  # Small footprint resource limits for Isso
   limits:
     cpu: 200m
-    memory: 128Mi
+    memory: 256Mi
   requests:
     memory: 16Mi
 
@@ -116,21 +120,23 @@ tolerations: []
 
 affinity: {}
 
-# GoatCounter specific configuration
-goatcounter:
-  # External PostgreSQL configuration
-  database:
-    # The secret will be mounted as environment variable
-    secretName: helmfile-secret-frontend
-    secretKey: POSTGRES_URL
-  
-  # Admin user configuration
-  admin:
-    secretName: helmfile-secret-frontend
-    emailKey: GOATCOUNTER_ADMIN_EMAIL
-    passwordKey: GOATCOUNTER_ADMIN_PASSWORD
-  
-  # Additional environment variables for GoatCounter
-  env: {}
-  #   GOATCOUNTER_LISTEN: ":8080"
-  #   GOATCOUNTER_PORT: 8080
+# Isso specific configuration
+config:
+  # Script name for sub-URI mounting
+  scriptName: "/isso"
+
+# Persistence configuration for StatefulSet
+persistence:
+  # Storage class to use for persistent volume
+  storageClass: "local-isso-data"
+  # Size of the persistent volume
+  size: "2Gi"
+
+# Secret configuration
+secrets:
+  # Secret name containing the sensitive values
+  secretName: "helmfile-secret-frontend"
+  # Secret keys
+  smtpUsernameKey: "ISSO_MAIL_ADDR"
+  smtpPasswordKey: "ISSO_MAIL_PASSWORD"
+  adminPasswordKey: "ISSO_ADMIN_PASSWORD"

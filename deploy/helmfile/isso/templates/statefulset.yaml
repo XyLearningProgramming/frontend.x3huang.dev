@@ -1,0 +1,128 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "isso.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "isso.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "isso.fullname" . }}
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "isso.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "isso.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "isso.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: config-generator
+          image: busybox:1.35
+          command: ['sh', '-c']
+          args:
+            - |
+              sed 's/ISSO_MAIL_ADDR/'"$ISSO_MAIL_ADDR"'/g; s/ISSO_MAIL_PASSWORD/'"$ISSO_MAIL_PASSWORD"'/g; s/ISSO_ADMIN_PASSWORD/'"$ISSO_ADMIN_PASSWORD"'/g' /config-template/isso.cfg.template > /config/isso.cfg
+              echo "Config generated successfully"
+          env:
+            - name: {{ .Values.secrets.smtpUsernameKey }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.secretName }}
+                  key: {{ .Values.secrets.smtpUsernameKey }}
+            - name: {{ .Values.secrets.smtpPasswordKey }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.secretName }}
+                  key: {{ .Values.secrets.smtpPasswordKey }}
+            - name: {{ .Values.secrets.adminPasswordKey }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.secretName }}
+                  key: {{ .Values.secrets.adminPasswordKey }}
+          volumeMounts:
+            - name: isso-config-template
+              mountPath: /config-template
+              readOnly: true
+            - name: isso-config
+              mountPath: /config
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          env:
+            - name: ISSO_SETTINGS
+              value: "/config/isso.cfg"
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: isso-config
+              mountPath: /config
+              readOnly: true
+            - name: isso-data
+              mountPath: /db
+      volumes:
+        - name: isso-config-template
+          configMap:
+            name: {{ include "isso.fullname" . }}-config-template
+        - name: isso-config
+          emptyDir: {}
+      nodeSelector:
+        kubernetes.io/hostname: {{ .Values.ISSO_NODE }}
+      {{- with .Values.nodeSelector }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  volumeClaimTemplates:
+    - metadata:
+        name: isso-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: {{ .Values.persistence.storageClass }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size }}
