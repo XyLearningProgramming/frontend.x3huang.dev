@@ -314,10 +314,6 @@ export const useGoatCounter = () => {
     trackEvent('like', `/blogs/${slug}`)
   }
 
-  // Track unlike action
-  const trackUnlike = (slug: string) => {
-    trackEvent('unlike', `/blogs/${slug}`)
-  }
 
   // Track share action
   const trackShare = (slug: string, platform?: string) => {
@@ -344,7 +340,6 @@ export const useGoatCounter = () => {
     trackVisit,
     trackEvent,
     trackLike,
-    trackUnlike,
     trackShare,
     getVisitCount,
     getVisitCountOnly,

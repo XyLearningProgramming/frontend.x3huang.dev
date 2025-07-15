@@ -54,3 +54,5 @@ release "goatcounter" uninstalled
 $ helm history goatcounter -n frontend
 Error: release: not found
 ```
+
+3. DO NOT create same site using goatcounter twice. I have commented related code block in `deploy/helmfile/goatcounter/templates/deployment.yaml`.

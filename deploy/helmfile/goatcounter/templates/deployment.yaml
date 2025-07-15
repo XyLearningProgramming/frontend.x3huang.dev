@@ -91,16 +91,16 @@ spec:
 
               echo "[DEBUG] GOATCOUNTER_DB: $GOATCOUNTER_DB"
 
-              # Create site if admin credentials are provided
-              if [ -n "$GTC_ADMIN_EMAIL" ] && [ -n "$GTC_ADMIN_PASSWORD" ]; then
-                echo "Creating site if it doesn't exist..."
-                goatcounter db create site \
-                  -vhost={{ .Values.DOMAIN }} \
-                  -user.email="$GTC_ADMIN_EMAIL" \
-                  -password="$GTC_ADMIN_PASSWORD" \
-                  -createdb \
-                  -db="$GOATCOUNTER_DB" || echo "Site creation failed or already exists"
-              fi
+              # FIRST TIME: Create site if admin credentials are provided
+              # if [ -n "$GTC_ADMIN_EMAIL" ] && [ -n "$GTC_ADMIN_PASSWORD" ]; then
+              #   echo "Creating site if it doesn't exist..."
+              #   goatcounter db create site \
+              #     -vhost={{ .Values.DOMAIN }} \
+              #     -user.email="$GTC_ADMIN_EMAIL" \
+              #     -password="$GTC_ADMIN_PASSWORD" \
+              #     -createdb \
+              #     -db="$GOATCOUNTER_DB" || echo "Site creation failed or already exists"
+              # fi
               
               echo "Starting GoatCounter server..."
               exec goatcounter serve -db "$GOATCOUNTER_DB" -automigrate
