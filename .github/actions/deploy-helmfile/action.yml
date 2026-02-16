@@ -44,10 +44,12 @@ runs:
     - name: Dry‑run (Diff) before Apply
       uses: helmfile/helmfile-action@v2.0.4
       with:
+        helm-version: 'v3.17.3'
         helmfile-args: diff ${{ inputs.helmfile-diff-args || inputs.helmfile-args }} --detailed-exitcode
       continue-on-error: true
 
     - name: Apply Changes
       uses: helmfile/helmfile-action@v2.0.4
       with:
+        helm-version: 'v3.17.3'
         helmfile-args: apply ${{ inputs.helmfile-args }}
