@@ -4,6 +4,11 @@ import { siteConfig, getBaseUrl } from './site.config'
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
   devtools: { enabled: true },
+  runtimeConfig: {
+    public: {
+      chattyApiUrl: '/api/v1/chatty/chat',
+    },
+  },
   app: {
     head: {
       title: siteConfig.title,
