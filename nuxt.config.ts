@@ -90,6 +90,12 @@ export default defineNuxtConfig({
   // },
   nitro: {
     preset: "node-server",
+    devProxy: {
+      '/api/v1/chatty': {
+        target: 'http://localhost:8080/api/v1/chatty',
+        changeOrigin: true,
+      },
+    },
     routeRules: {
       '/.well-known/**': { headers: { 'Access-Control-Allow-Origin': '*' } }
     },

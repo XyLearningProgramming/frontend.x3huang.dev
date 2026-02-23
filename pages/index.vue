@@ -105,8 +105,11 @@
                 <a href="https://github.com/XyLearningProgramming/chatty" target="_blank" rel="noopener noreferrer" class="underline text-white/90 pointer-events-auto">chatty</a>,
                 an open-source persona-driven chatbot running on a locally hosted small model.
               </p>
-              <p class="text-xs text-white/50 leading-relaxed">
+              <p class="text-xs text-white/50 leading-relaxed mb-1.5">
                 Expect 10-60s response times depending on queue and query complexity.
+              </p>
+              <p class="text-xs text-amber-300/70 leading-relaxed">
+                ⚠ Responses may be inaccurate or incomplete — treat as experimental, not a source of truth.
               </p>
             </template>
           </div>
@@ -161,6 +164,7 @@
         <ChatView @active-change="onChatActiveChange" />
       </template>
     </div>
+
   </div>
 </template>
 
@@ -303,4 +307,5 @@ useHead(getPageMeta({
   opacity: 0;
   transform: translateY(-4px);
 }
+
 </style>

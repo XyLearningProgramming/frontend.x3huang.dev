@@ -36,10 +36,12 @@
         </div>
 
         <!-- Content -->
-        <p
+        <div
           v-if="message.content"
-          class="text-sm text-white/90 whitespace-pre-wrap break-words leading-relaxed"
-        >{{ message.content }}<span v-if="message.isStreaming" class="streaming-dots" /></p>
+          class="chat-markdown text-sm text-white/90 break-words leading-relaxed"
+          v-html="renderedContent"
+        />
+        <span v-if="message.isStreaming && message.content" class="streaming-dots" />
 
         <!-- Status indicator (queued, connecting, waiting) -->
         <div
@@ -82,6 +84,7 @@
 </template>
 
 <script setup lang="ts">
+import { marked } from 'marked'
 import type { ChatMessage } from '~/composables/useChatty'
 import ThinkingBlock from './ThinkingBlock.vue'
 
@@ -94,6 +97,11 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   retry: []
 }>()
+
+const renderedContent = computed(() => {
+  if (!props.message.content) return ''
+  return marked.parse(props.message.content, { breaks: true }) as string
+})
 
 const hasError = computed(() => !!props.message.error && !props.message.isStreaming)
 
@@ -129,4 +137,36 @@ const errorLabel = computed(() => {
   0%, 100% { opacity: 0.3; }
   50% { opacity: 1; }
 }
+
+.chat-markdown :deep(p) { margin-bottom: 0.5em; }
+.chat-markdown :deep(p:last-child) { margin-bottom: 0; }
+.chat-markdown :deep(strong) { font-weight: 600; color: white; }
+.chat-markdown :deep(em) { font-style: italic; }
+.chat-markdown :deep(code) {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.1em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.85em;
+}
+.chat-markdown :deep(pre) {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.75em;
+  border-radius: 0.375rem;
+  overflow-x: auto;
+  margin-bottom: 0.5em;
+}
+.chat-markdown :deep(pre code) {
+  background: none;
+  padding: 0;
+}
+.chat-markdown :deep(a) {
+  color: #93c5fd;
+  text-decoration: underline;
+}
+.chat-markdown :deep(ul),
+.chat-markdown :deep(ol) {
+  padding-left: 1.25em;
+  margin-bottom: 0.5em;
+}
+.chat-markdown :deep(li) { margin-bottom: 0.2em; }
 </style>
