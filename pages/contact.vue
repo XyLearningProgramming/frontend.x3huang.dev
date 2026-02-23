@@ -86,11 +86,7 @@
     </div>
 
     <!-- Comments Section -->
-    <CommentSection 
-      title="Contact & Messages"
-      thread-id="/contact"
-      form-title="Leave me a note"
-    />
+    <CommentSection title="Contact & Messages" thread-id="/contact" form-title="Leave me a note" />
 
     <!-- Back navigation -->
     <div class="text-center mt-8">
@@ -110,7 +106,7 @@ import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
 import VisitCounter from '~/components/ui/VisitCounter.vue'
 import { siteConfig, getPageMeta } from '~/site.config'
 
-const resumePath = "/resume/20250703.pdf"
+const resumePath = "/resume/20260111.pdf"
 
 // Initialize tracking
 onMounted(() => {
