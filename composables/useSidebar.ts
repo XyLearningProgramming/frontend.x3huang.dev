@@ -1,28 +1,29 @@
 export const useSidebar = () => {
-  const isExpanded = useState('sidebar-expanded', () => true)
+  const isOpen = useState('sidebar-open', () => false)
   const isMobile = useState('sidebar-mobile', () => false)
 
   const checkMobileSize = () => {
     if (import.meta.client) {
       isMobile.value = window.innerWidth < 768
-      // Only auto-collapse on mobile, otherwise keep current state
-      if (isMobile.value) {
-        isExpanded.value = false
-      } else if (!isExpanded.value) {
-        // If we're going from mobile to desktop and sidebar was collapsed, expand it
-        isExpanded.value = true
+      if (!isMobile.value) {
+        isOpen.value = false
       }
     }
   }
 
   const toggleSidebar = () => {
-    isExpanded.value = !isExpanded.value
+    isOpen.value = !isOpen.value
+  }
+
+  const closeSidebar = () => {
+    isOpen.value = false
   }
 
   return {
-    isExpanded,
+    isOpen,
     isMobile,
     checkMobileSize,
-    toggleSidebar
+    toggleSidebar,
+    closeSidebar,
   }
 }

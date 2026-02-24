@@ -1,21 +1,26 @@
 <template>
-  <!-- Idle state: just the input bar, no messages yet -->
+  <!-- Idle state: just the input bar -->
   <div v-if="!hasMessages" class="w-full max-w-3xl mx-auto">
-    <p class="text-center text-white/40 text-sm mb-4">Ask me anything to start a conversation.</p>
+    <p class="text-center text-neo-text-muted text-sm mb-4 font-medium">
+      Ask me anything to start a conversation.
+    </p>
     <ChatInput @send="handleSend" />
   </div>
 
   <!-- Active state: full chat with messages -->
-  <div v-else class="flex flex-col w-full max-w-3xl mx-auto" style="height: calc(100vh - 12rem)">
+  <div v-else class="flex flex-col w-full max-w-3xl mx-auto" style="height: calc(100vh - 14rem)">
     <!-- Message area -->
-    <div ref="scrollContainer" class="flex-1 overflow-y-auto px-2 py-4 scroll-smooth chat-scroll">
+    <div
+      ref="scrollContainer"
+      class="flex-1 overflow-y-auto px-2 py-4 scroll-smooth chat-scroll"
+    >
       <ChatMessage v-for="msg in messages" :key="msg.id" :message="msg" @retry="handleRetry" />
     </div>
 
     <!-- Clear conversation button -->
     <div v-if="!isStreaming" class="flex justify-center pb-1">
       <button
-        class="text-xs text-white/30 hover:text-white/60 transition-colors"
+        class="neo-btn text-xs px-3 py-1 bg-neo-white text-neo-text-muted hover:text-neo-black"
         @click="clearConversation"
       >
         Clear conversation
@@ -89,22 +94,18 @@ watch(
 .chat-scroll::-webkit-scrollbar {
   width: 4px;
 }
-
 .chat-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
-
 .chat-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 2px;
 }
-
 .chat-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.3);
 }
-
 .chat-scroll {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
 }
 </style>

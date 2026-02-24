@@ -2,7 +2,7 @@
   <div class="mb-2">
     <button
       @click="expanded = !expanded"
-      class="flex items-center gap-1.5 text-xs text-white/50 hover:text-white/70 transition-colors py-1"
+      class="flex items-center gap-1.5 text-xs text-neo-black/50 hover:text-neo-black/70 transition-colors py-1"
     >
       <svg
         class="w-3 h-3 transition-transform duration-200"
@@ -20,7 +20,7 @@
     </button>
     <div
       v-show="expanded"
-      class="pl-4 border-l border-white/10 mt-1 text-sm text-white/40 italic whitespace-pre-wrap leading-relaxed"
+      class="pl-4 border-l-2 border-neo-black/20 mt-1 text-sm text-neo-black/40 italic whitespace-pre-wrap leading-relaxed"
     >
       <p v-for="(chunk, i) in chunks" :key="i">{{ chunk }}<span v-if="isActive && i === chunks.length - 1" class="thinking-dots" /></p>
     </div>

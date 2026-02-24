@@ -1,5 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import { siteConfig, getBaseUrl } from './site.config'
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
@@ -52,11 +53,25 @@ export default defineNuxtConfig({
     '@artmizu/nuxt-prometheus',
     '@nuxt/content',
     '@nuxt/eslint',
-    '@nuxtjs/tailwindcss',
     '@nuxt/image',
     'nuxt-llms',
+    'motion-v/nuxt',
+    '@nuxtjs/google-fonts',
   ],
-  css: ['/assets/css/main.css', '/assets/css/glass-ui.css'],
+  css: ['/assets/css/main.css'],
+  vite: {
+    plugins: [
+      tailwindcss(),
+    ],
+  },
+  googleFonts: {
+    families: {
+      'Space Grotesk': [600, 700],
+      'Inter': [400, 500, 600],
+      'JetBrains Mono': [400],
+    },
+    display: 'swap',
+  },
   ssr: true,
   experimental: {
     payloadExtraction: false
@@ -68,26 +83,13 @@ export default defineNuxtConfig({
   },
   routeRules: {
     '/metrics': {
-      prerender: false, // Disable prerendering for this route
+      prerender: false,
       headers: {
-        'cache-control': 'no-cache', // Prevent caching of the response
+        'cache-control': 'no-cache',
       },
     },
   },
   sourcemap: false,
-  // fonts: {
-  //   families: [
-  //     {
-  //       name: 'Roboto',
-  //       weights: [400, 700],
-  //       // styles, subsets, etc., if needed
-  //     }
-  //   ],
-  //   providers: {
-  //     google: false,
-  //     googleicons: false,
-  //   }
-  // },
   nitro: {
     preset: "node-server",
     devProxy: {
@@ -128,14 +130,12 @@ export default defineNuxtConfig({
     database: {
       type: 'postgres',
       url: process.env.POSTGRES_URL || "postgres_url_default",
-    }, // https://content.nuxtjs.org/api/configuration
-    // @ts-ignore - highlight config is valid but not in types
+    },
     highlight: {
       theme: 'github-dark',
       preload: ['java', 'javascript']
     },
     markdown: {
-      // https://github.com/rehypejs/rehype-external-links
       rehypePlugins: [
         [
           'rehype-external-links',
@@ -146,11 +146,10 @@ export default defineNuxtConfig({
         ]
       ]
     },
-    // Component mapping to fix inline code issue
     renderer: {
       alias: {
-        code: 'ProseCodeInline',  // Map inline code to ProseCodeInline
-        pre: 'ProsePre'          // Map pre blocks to ProsePre
+        code: 'ProseCodeInline',
+        pre: 'ProsePre'
       }
     }
   },

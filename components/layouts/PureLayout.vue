@@ -1,12 +1,7 @@
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-br from-gray-800 to-gray-900 dark:from-gray-900 dark:to-black relative">
-    
-    <!-- Main content -->
-    <div class="relative z-10 min-h-screen">
-      <div :class="containerClass">
-        <slot />
-      </div>
+  <div class="min-h-screen bg-neo-bg text-neo-black">
+    <div :class="containerClass">
+      <slot />
     </div>
   </div>
 </template>

@@ -1,82 +1,81 @@
 <template>
-  <BackgroundLayout blur-background overlay-intensity="heavy" container-width="wide">
-    <!-- Back button -->
-    <NuxtLink :to="returnPath"
-      class="inline-flex items-center gap-2 text-glass hover:text-glass-muted transition-colors mb-8">
-      <IconsArrowLeft class="w-4 h-4" />
-      Back to {{ returnTitle }}
-    </NuxtLink>
+  <div class="min-h-screen bg-neo-bg text-neo-black py-16 px-4">
+    <div class="container mx-auto max-w-screen-xl">
+      <!-- Back button -->
+      <div class="mb-6">
+        <NuxtLink :to="returnPath"
+          class="inline-flex items-center gap-2 text-neo-black/70 hover:text-neo-black transition-colors">
+          <IconsArrowLeft class="w-4 h-4" />
+          Back to {{ returnTitle }}
+        </NuxtLink>
+      </div>
 
-    <!-- Game content -->
-    <div v-if="gameExists" class="max-w-none">
-      <!-- Game Header -->
-      <header class="mb-6 text-center">
-        <h1 class="text-4xl font-bold text-glass mb-4 text-shadow-strong">
-          {{ gameTitle }}
-        </h1>
+      <!-- Game content -->
+      <div v-if="gameExists" class="max-w-none">
+        <!-- Game Header -->
+        <header class="mb-6 text-center">
+          <h1 class="font-neo-heading text-h2-sm md:text-h2 font-bold mb-2">
+            {{ gameTitle }}
+          </h1>
+          <p class="text-lg text-neo-black/70">
+            {{ gameDescription }}
+          </p>
+        </header>
 
-        <div class="relative mb-4">
-          <div class="absolute inset-0 bg-black/20 rounded-2xl blur-xl"></div>
-          <div class="relative flex items-center justify-center gap-4 text-s text-glass-muted px-6 py-3">
-            <span>Unity WebGL Game</span>
-            <span>•</span>
-            <span>{{ gameDescription }}</span>
+        <!-- Main Game Container -->
+        <div class="neo-border bg-neo-bg p-4 relative" style="box-shadow: 6px 6px 0px 0px #000;">
+          <div class="text-center">
+            <div class="relative w-full min-h-[70vh] max-h-[85vh] overflow-hidden neo-border">
+              <iframe ref="gameFrame" :src="gameUrl" class="absolute inset-0 w-full h-full"
+                frameborder="0" allowfullscreen title="Game Frame" @load="onGameLoad"></iframe>
+            </div>
+
+            <!-- Game controls -->
+            <div class="mt-4 flex justify-center gap-4">
+              <button @click="requestFullscreen"
+                class="px-4 py-2 neo-border bg-neo-bg hover:bg-neo-yellow text-neo-black transition-colors rounded-none"
+                style="box-shadow: 2px 2px 0px 0px #000;"
+                title="Fullscreen">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
+                </svg>
+              </button>
+
+              <button @click="refreshGame"
+                class="px-4 py-2 neo-border bg-neo-bg hover:bg-neo-yellow text-neo-black transition-colors rounded-none"
+                style="box-shadow: 2px 2px 0px 0px #000;"
+                title="Refresh Game">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
-      </header>
+      </div>
 
-      <!-- Main Game Container -->
-      <GlassCard variant="primary" padding="sm" radius="lg">
-        <div class="text-center">
-          <div class="relative w-full min-h-[70vh] max-h-[85vh] overflow-hidden">
-            <iframe ref="gameFrame" :src="gameUrl" class="absolute inset-0 w-full h-full rounded-lg game-iframe"
-              frameborder="0" allowfullscreen title="Game Frame" @load="onGameLoad"></iframe>
-          </div>
-
-          <!-- Game controls -->
-          <div class="mt-4 flex justify-center gap-4">
-            <button @click="requestFullscreen"
-              class="px-4 py-2 glass-secondary rounded-lg text-glass-muted hover:bg-white/30 transition-colors"
-              title="Fullscreen">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
-              </svg>
-            </button>
-
-            <button @click="refreshGame"
-              class="px-4 py-2 glass-secondary rounded-lg text-glass-muted hover:bg-white/30 transition-colors"
-              title="Refresh Game">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
-          </div>
+      <!-- Loading state -->
+      <div v-else-if="loading" class="text-center py-12">
+        <div class="neo-border bg-neo-bg p-8 max-w-md mx-auto" style="box-shadow: 4px 4px 0px 0px #000;">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-neo-black/60 mx-auto mb-4"></div>
+          <p class="text-neo-black">Loading game...</p>
         </div>
-      </GlassCard>
-    </div>
+      </div>
 
-    <!-- Loading state -->
-    <div v-else-if="loading" class="text-center py-12">
-      <GlassCard variant="primary" padding="lg" radius="lg">
-        <p class="text-glass">Loading game...</p>
-      </GlassCard>
+      <!-- Game not found -->
+      <div v-else class="text-center py-12">
+        <div class="neo-border bg-neo-bg p-8 max-w-md mx-auto" style="box-shadow: 4px 4px 0px 0px #000;">
+          <h2 class="text-xl font-bold text-neo-black mb-4">Game Not Found</h2>
+          <p class="text-neo-black/70">The requested game could not be found.</p>
+        </div>
+      </div>
     </div>
-
-    <!-- Game not found -->
-    <div v-else class="text-center py-12">
-      <GlassCard variant="primary" padding="lg" radius="lg">
-        <h2 class="text-xl font-bold text-glass mb-4">Game Not Found</h2>
-        <p class="text-glass-muted">The requested game could not be found.</p>
-      </GlassCard>
-    </div>
-  </BackgroundLayout>
+  </div>
 </template>
 
 <script setup lang="ts">
-import BackgroundLayout from '~/components/layouts/BackgroundLayout.vue'
-import GlassCard from '~/components/ui/GlassCard.vue'
 import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
 
 const route = useRoute()
@@ -226,51 +225,3 @@ useHead({
   ]
 })
 </script>
-
-<style scoped>
-.game-iframe {
-  /* Custom scrollbar styling */
-  scrollbar-width: thin;
-  /* Firefox */
-  scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05);
-  /* Firefox */
-  overflow: auto;
-}
-
-/* Webkit browsers (Chrome, Safari, Edge) */
-.game-iframe::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.game-iframe::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
-}
-
-.game-iframe::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  transition: background 0.2s ease;
-}
-
-.game-iframe::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.game-iframe::-webkit-scrollbar-corner {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .game-iframe {
-    min-height: 60vh;
-  }
-
-  .game-iframe::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-}
-</style>

@@ -1,147 +1,291 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* ============================================================
+   Neobrutalism Design Tokens
+   ============================================================ */
+
+@theme {
+  /* === Neobrutalism Palette === */
+  --color-neo-bg: #FEFBEC;
+  --color-neo-black: #000000;
+  --color-neo-white: #FFFFFF;
+  --color-neo-text: #1A1A1A;
+  --color-neo-text-muted: #4A4A4A;
+  --color-neo-yellow: #FFD700;
+  --color-neo-pink: #FF6B9D;
+  --color-neo-blue: #4ECDC4;
+  --color-neo-green: #A8E6CF;
+  --color-neo-orange: #FF8C42;
+  --color-neo-purple: #C3A6FF;
+  --color-neo-red: #FF6B6B;
+  --color-neo-cyan: #88D8FF;
+
+  /* === Section Backgrounds === */
+  --color-neo-section-hero: #FEFBEC;
+  --color-neo-section-posts: #E0F2FE;
+  --color-neo-section-space: #F3E8FF;
+  --color-neo-section-tools: #FEF3C7;
+  --color-neo-section-footer: #000000;
+
+  /* === Legacy color tokens (kept for compatibility) === */
+  --color-light-bg: #fdf6e3;
+  --color-light-surface: #eee8d5;
+  --color-light-border: #d3af86;
+  --color-light-text: #657b83;
+  --color-light-text-strong: #073642;
+  --color-light-accent: #268bd2;
+  --color-light-secondary: #2aa198;
+
+  /* === Neobrutalism Shadows === */
+  --shadow-neo-sm: 2px 2px 0px 0px #000;
+  --shadow-neo: 4px 4px 0px 0px #000;
+  --shadow-neo-lg: 6px 6px 0px 0px #000;
+  --shadow-neo-xl: 8px 8px 0px 0px #000;
+
+  /* === Fonts === */
+  --font-neo-heading: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --font-neo-body: 'Inter', system-ui, sans-serif;
+  --font-neo-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* ============================================================
+   Base Styles
+   ============================================================ */
 
 html {
-  scroll-behavior: smooth;
+  font-family: var(--font-neo-body);
+  color: var(--color-neo-text);
+}
+
+body {
+  background-color: var(--color-neo-bg);
+}
+
+/* Headings use Space Grotesk */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-neo-heading);
+  font-weight: 700;
+  color: var(--color-neo-text);
 }
 
 h1 {
-  @apply text-h1_sm leading-h1_sm mb-6;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.1;
+  margin-bottom: 1rem;
 }
 
 h2 {
-  @apply text-h2_sm leading-h2_sm mb-4;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  line-height: 1.2;
+  margin-bottom: 0.75rem;
 }
 
 h3 {
-  @apply text-h3_sm leading-h3_sm mb-4;
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  line-height: 1.3;
+  margin-bottom: 0.5rem;
 }
 
 h4 {
-  @apply text-h4_sm leading-h4_sm mb-2;
+  font-size: 1.25rem;
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
 }
 
 h5 {
-  @apply text-h5_sm leading-h5_sm mb-1;
+  font-size: 1.125rem;
+  line-height: 1.4;
+  margin-bottom: 0.25rem;
 }
 
-@screen md {
-  h1 {
-    @apply text-h1 leading-h1;
-  }
-
-  h2 {
-    @apply text-h2 leading-h2;
-  }
-
-  h3 {
-    @apply text-h3 leading-h3;
-  }
-
-  h4 {
-    @apply text-h4 leading-h4;
-  }
-
-  h5 {
-    @apply text-h5 leading-h5;
-  }
+/* Code uses JetBrains Mono */
+code, pre, .font-mono {
+  font-family: var(--font-neo-mono);
 }
 
-/* Body Text */
+/* ============================================================
+   Neobrutalism Utilities
+   ============================================================ */
 
-p {
-  @apply text-base leading-base;
+/* Neo card base: black border + offset shadow */
+.neo-card {
+  border: 2px solid var(--color-neo-black);
+  box-shadow: var(--shadow-neo);
+  background: var(--color-neo-white);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* Blog Headings */
-
-.blog-content h1 {
-  @apply mt-16;
+.neo-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-neo-lg);
 }
 
-.blog-content h2 {
-  @apply mt-8;
+.neo-card:active {
+  transform: translate(0, 0);
+  box-shadow: var(--shadow-neo-sm);
 }
 
-.blog-content h3 {
-  @apply mt-6;
+/* Neo button base */
+.neo-btn {
+  border: 2px solid var(--color-neo-black);
+  box-shadow: var(--shadow-neo-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
-.blog-content h4 {
-  @apply mt-4;
+.neo-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-neo);
 }
 
-.blog-content h5 {
-  @apply mt-4;
+.neo-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: none;
 }
 
-/* Blog Content - Updated for better reading experience */
-
-.blog-content>p+p,
-.blog-content>ul+p,
-.blog-content>ol+p,
-.blog-content>p+ul,
-.blog-content>p+ol {
-  @apply mt-3;
+/* Neo input */
+.neo-input {
+  border: 2px solid var(--color-neo-black);
+  box-shadow: var(--shadow-neo-sm);
+  background: var(--color-neo-white);
+  transition: box-shadow 0.15s ease;
 }
 
-/* Blog Body - Improved line height and spacing */
+.neo-input:focus {
+  outline: none;
+  box-shadow: var(--shadow-neo);
+}
+
+/* ============================================================
+   Blog Content Styles
+   ============================================================ */
+
+.blog-content h1 { margin-top: 3rem; }
+.blog-content h2 { margin-top: 2rem; }
+.blog-content h3 { margin-top: 1.5rem; }
+.blog-content h4 { margin-top: 1rem; }
+
+.blog-content > p + p,
+.blog-content > ul + p,
+.blog-content > ol + p,
+.blog-content > p + ul,
+.blog-content > p + ol {
+  margin-top: 0.75rem;
+}
 
 .blog-content p,
 .blog-content ol,
 .blog-content ul {
-  @apply text-lg;
-  line-height: 1.65;
+  font-size: 1.125rem;
+  line-height: 1.75;
 }
-
-/* Override prose styles for better content rendering */
-.prose-glass, .prose-white {
-  font-size: 1.125rem; /* 18px base font size for better readability */
-}
-
-/* Ensure proper spacing for content containers */
-.blog-content, .prose-glass, .prose-white {
-  @apply leading-relaxed;
-}
-
-/* Blog Breadcrumbs */
-
-.blog-breadcrumb {
-  @apply inline-block text-center font-light;
-}
-
-.blog-breadcrumb>span {
-  @apply mx-1 inline;
-}
-
-.blog-breadcrumb>li {
-  @apply inline;
-}
-
-.blog-breadcrumb>li a {
-  @apply text-light-accent dark:text-dark-accent;
-}
-
-.blog-breadcrumb>li a:hover {
-  @apply underline;
-}
-
-/* Blog Aside */
-
-.blog-aside-title {
-  @apply uppercase font-extrabold text-xs leading-xs;
-}
-
-/* Blog Links */
 
 .blog-content :not(h1):not(h2):not(h3):not(h4):not(h5) a {
-  @apply underline font-bold text-light-accent dark:text-dark-accent;
+  text-decoration: underline;
+  font-weight: 600;
+  color: var(--color-light-accent);
 }
 
-/* Code Block Line Fix */
+.blog-content blockquote {
+  border-left: 4px solid var(--color-neo-black);
+  padding-left: 1rem;
+  font-style: italic;
+  margin: 1.5rem 0;
+  background: rgba(0, 0, 0, 0.03);
+  padding: 1rem 1.25rem;
+}
+
+.blog-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  border: 2px solid var(--color-neo-black);
+}
+
+.blog-content th {
+  border: 2px solid var(--color-neo-black);
+  padding: 0.5rem 0.75rem;
+  font-weight: 700;
+  background: var(--color-neo-bg);
+  text-align: left;
+}
+
+.blog-content td {
+  border: 1px solid var(--color-neo-black);
+  padding: 0.5rem 0.75rem;
+}
+
+.blog-content hr {
+  border: none;
+  border-top: 2px solid var(--color-neo-black);
+  margin: 2rem 0;
+}
+
+.blog-content strong {
+  font-weight: 700;
+}
+
+.blog-content ul, .blog-content ol {
+  padding-left: 1.5rem;
+}
+
+.blog-content li {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Blog breadcrumbs */
+.blog-breadcrumb {
+  display: inline-block;
+  text-align: center;
+  font-weight: 300;
+}
+
+.blog-breadcrumb > span { margin: 0 0.25rem; display: inline; }
+.blog-breadcrumb > li { display: inline; }
+.blog-breadcrumb > li a { color: var(--color-light-accent); }
+.blog-breadcrumb > li a:hover { text-decoration: underline; }
+
+/* Blog aside */
+.blog-aside-title {
+  text-transform: uppercase;
+  font-weight: 800;
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+/* Code block line fix */
 .line {
   display: block !important;
   min-height: 1rem;
   white-space: pre-wrap;
+}
+
+/* ============================================================
+   Immersive Scroll Animations
+   ============================================================ */
+
+/* Smooth scroll for the whole page */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection styling */
+::selection {
+  background: var(--color-neo-yellow);
+  color: var(--color-neo-black);
+}
+
+/* Global card hover tilt override for .card-tilt class */
+.card-tilt {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-tilt:hover {
+  transform: translate(-2px, -2px) rotate(-0.5deg) !important;
+  box-shadow: var(--shadow-neo-lg) !important;
+}
+.card-tilt:active {
+  transform: translate(0, 0) rotate(0deg) !important;
+  box-shadow: var(--shadow-neo-sm) !important;
 }

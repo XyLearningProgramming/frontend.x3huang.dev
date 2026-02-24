@@ -1,44 +1,56 @@
 <template>
-  <div class="min-h-screen bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text">
-    <div class="flex">
-      <!-- Sidebar -->
-      <AppSidebar />
+  <div class="min-h-screen bg-neo-section-posts text-neo-black py-16 px-4">
+    <div class="container mx-auto max-w-screen-xl">
+      <!-- Back navigation -->
+      <div class="mb-6">
+        <NuxtLink to="/blogs"
+          class="inline-flex items-center gap-2 text-neo-black/70 hover:text-neo-black transition-colors">
+          <IconsArrowLeft class="w-4 h-4" />
+          Back to Blog
+        </NuxtLink>
+      </div>
 
-      <!-- Right Panel -->
-      <main :class="[
-        'flex-1 p-8 transition-all duration-300',
-        isExpanded && !isMobile ? 'ml-64' : 'ml-0'
-      ]">
-        <h1 class="text-3xl font-bold text-light-text-strong dark:text-dark-text-strong mb-8">All Tags</h1>
+      <!-- Header -->
+      <div class="text-center mb-12">
+        <h1 class="font-neo-heading text-h2-sm md:text-h2 font-bold mb-4">All Tags</h1>
+        <p class="text-lg text-neo-black/70">Browse blog posts by topic</p>
+      </div>
 
-        <div v-if="!allTags" class="text-red-500 mb-4">Loading tags...</div>
-        <div v-else-if="allTags.length === 0" class="text-red-500 mb-4">No tags found</div>
+      <!-- Loading -->
+      <div v-if="!allTags" class="text-center py-12">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-neo-black/60 mx-auto mb-4"></div>
+        <p class="text-neo-black/70">Loading tags...</p>
+      </div>
 
-        <div v-else class="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <NuxtLink v-for="tag in allTags" :key="tag" :to="`/blogs/tags/${encodeURIComponent(tag)}`" class="block h-full">
-            <Card
-              variant="default"
-              padding="md"
-              radius="lg"
-              hover
-              clickable
-              class="h-full flex flex-col justify-between">
-              <h4 class="font-semibold text-light-text-strong dark:text-dark-text-strong">{{ tag }}</h4>
-              <p class="text-sm text-light-text dark:text-dark-text">{{ getTagCount(tag) }} posts</p>
-            </Card>
-          </NuxtLink>
+      <!-- Empty -->
+      <div v-else-if="allTags.length === 0" class="text-center py-12">
+        <div class="neo-card bg-neo-white p-8 max-w-md mx-auto">
+          <p class="text-neo-black/70">No tags found.</p>
         </div>
-      </main>
+      </div>
+
+      <!-- Tags grid -->
+      <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+        <NuxtLink
+          v-for="tag in allTags"
+          :key="tag"
+          :to="`/blogs/tags/${encodeURIComponent(tag)}`"
+          class="neo-card bg-neo-white p-4 text-center"
+        >
+          <h4 class="font-bold text-neo-black mb-1">{{ tag }}</h4>
+          <p class="text-sm text-neo-black/60">{{ getTagCount(tag) }} {{ getTagCount(tag) === 1 ? 'post' : 'posts' }}</p>
+        </NuxtLink>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import Card from '~/components/ui/Card.vue'
+import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
 
 // Fetch all posts to get tags
 const { data: finalPosts } = await useAsyncData('blog-posts-tags', () =>
-  queryCollection('blog').all()
+  queryCollection('blogs').all()
 )
 
 // Computed properties
@@ -48,7 +60,7 @@ const allTags = computed(() => {
   const tags: Set<string> = new Set()
   finalPosts.value.forEach(post => {
     if (post.tags) {
-      post.tags.forEach(tag => tags.add(tag))
+      post.tags.forEach((tag: string) => tags.add(tag))
     }
   })
 
@@ -61,14 +73,8 @@ const getTagCount = (tag: string) => {
   return finalPosts.value.filter(post => post.tags && post.tags.includes(tag)).length
 }
 
-// Use sidebar state for responsive layout
-const { isExpanded, isMobile } = useSidebar()
-
-
-
-// Head meta
 useHead({
-  title: 'Tags - Blog',
+  title: 'Tags - Blog - Xinyu Huang',
   meta: [
     { name: 'description', content: 'Browse all blog post tags' }
   ]

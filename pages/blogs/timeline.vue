@@ -1,41 +1,68 @@
 <template>
-  <div class="min-h-screen bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text">
-    <div class="flex">
-      <!-- Sidebar -->
-      <AppSidebar />
+  <div class="min-h-screen bg-neo-section-posts text-neo-black py-16 px-4">
+    <div class="container mx-auto max-w-screen-xl">
+      <!-- Back navigation -->
+      <div class="mb-6">
+        <NuxtLink to="/blogs"
+          class="inline-flex items-center gap-2 text-neo-black/70 hover:text-neo-black transition-colors">
+          <IconsArrowLeft class="w-4 h-4" />
+          Back to Blog
+        </NuxtLink>
+      </div>
 
-      <!-- Right Panel -->
-      <main :class="[
-        'flex-1 p-8 transition-all duration-300',
-        isExpanded && !isMobile ? 'ml-64' : 'ml-0'
-      ]">
-        <h1 class="text-3xl font-bold text-light-text-strong dark:text-dark-text-strong mb-8">Timeline</h1>
+      <!-- Header -->
+      <div class="text-center mb-12">
+        <h1 class="font-neo-heading text-h2-sm md:text-h2 font-bold mb-4">Timeline</h1>
+        <p class="text-lg text-neo-black/70">Browse blog posts chronologically</p>
+      </div>
 
-        <div v-if="!timelineYears" class="text-red-500 mb-4">Loading timeline...</div>
-        <div v-else-if="timelineYears.length === 0" class="text-red-500 mb-4">No posts found</div>
+      <!-- Loading -->
+      <div v-if="!timelineYears" class="text-center py-12">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-neo-black/60 mx-auto mb-4"></div>
+        <p class="text-neo-black/70">Loading timeline...</p>
+      </div>
 
-        <div v-else class="space-y-6">
-          <div v-for="year in timelineYears" :key="year"
-            class="border-l-2 border-light-accent dark:border-dark-accent pl-6">
-            <h2 class="text-2xl font-bold text-light-text-strong dark:text-dark-text-strong mb-4">{{ year }}</h2>
-            <div class="space-y-3">
-              <div v-for="post in getPostsByYear(year)" :key="post.path"
-                class="cursor-pointer hover:text-light-accent dark:hover:text-dark-accent transition-colors"
-                @click="selectPost(post)">
-                <div class="flex justify-between">
-                  <span class="font-medium">{{ post.title }}</span>
-                  <span class="text-sm text-light-text dark:text-dark-text">{{ formatDate(post.date) }}</span>
-                </div>
+      <!-- Empty -->
+      <div v-else-if="timelineYears.length === 0" class="text-center py-12">
+        <div class="neo-card bg-neo-white p-8 max-w-md mx-auto">
+          <p class="text-neo-black/70">No posts found.</p>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div v-else class="max-w-3xl mx-auto space-y-10">
+        <div v-for="year in timelineYears" :key="year">
+          <!-- Year heading -->
+          <h2 class="inline-block bg-neo-yellow px-4 py-1 border-2 border-neo-black font-bold text-xl mb-4"
+            style="box-shadow: 3px 3px 0px 0px #000;">
+            {{ year }}
+          </h2>
+
+          <!-- Posts for this year -->
+          <div class="space-y-3 border-l-4 border-neo-black pl-6 ml-2">
+            <div
+              v-for="post in getPostsByYear(year)"
+              :key="post.path"
+              class="neo-card bg-neo-white p-4 cursor-pointer"
+              @click="selectPost(post)"
+            >
+              <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
+                <span class="font-bold text-neo-black">{{ post.title }}</span>
+                <span class="text-sm text-neo-black/50 whitespace-nowrap">{{ formatDate(post.date) }}</span>
               </div>
+              <p v-if="post.description" class="text-sm text-neo-black/60 mt-1 line-clamp-2">
+                {{ post.description }}
+              </p>
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
 
 // Fetch all posts
 const { data: finalPosts } = await useAsyncData('blog-posts-timeline', () =>
@@ -66,9 +93,8 @@ const generateSlug = (title: string) => {
 }
 
 const selectPost = (post: any) => {
-  // Save current page to history stack before navigating
   if (import.meta.client) {
-    sessionStorage.setItem('blogReturnPath', '/timeline')
+    sessionStorage.setItem('blogReturnPath', '/blogs/timeline')
     sessionStorage.setItem('blogReturnTitle', 'Timeline')
   }
 
@@ -90,13 +116,8 @@ const formatDate = (dateString: string) => {
   })
 }
 
-// Use sidebar state for responsive layout
-const { isExpanded, isMobile } = useSidebar()
-
-
-// Head meta
 useHead({
-  title: 'Timeline - Blog',
+  title: 'Timeline - Blog - Xinyu Huang',
   meta: [
     { name: 'description', content: 'Browse blog posts by timeline' }
   ]

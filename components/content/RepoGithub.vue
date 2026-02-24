@@ -1,17 +1,18 @@
 <template>
-  <div class="repo-github-wrapper">
+  <div class="my-2 mb-6">
     <a :href="props.url" target="_blank" rel="noopener noreferrer" class="block no-underline">
-      <GlassCard variant="subtle" hover clickable class="repo-github-card group cursor-pointer">
+      <div class="neo-border bg-neo-bg p-3 relative cursor-pointer hover:-translate-y-0.5 transition-transform group"
+        style="box-shadow: 4px 4px 0px 0px #000;">
         <div class="flex items-center gap-2 pb-1">
           <!-- Repository Info -->
           <div class="flex-1 min-w-0">
             <!-- Repository Name -->
             <div class="flex items-center justify-between gap-2 mb-0.5">
-              <h4 class="text-xs font-normal text-glass/90 truncate leading-tight">
+              <h4 class="text-xs font-bold text-neo-black truncate leading-tight">
                 {{ repoOwner }}/{{ repoName }}
               </h4>
               <div class="opacity-0 group-hover:opacity-60 transition-opacity duration-200">
-                <svg class="w-3 h-3 text-glass-muted flex-shrink-0" fill="none" stroke="currentColor"
+                <svg class="w-3 h-3 text-neo-black/50 flex-shrink-0" fill="none" stroke="currentColor"
                   viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -20,13 +21,13 @@
             </div>
 
             <!-- Description -->
-            <p v-if="displayDescription" class="text-sm text-glass-muted/90 mb-1.5 line-clamp-2 leading-relaxed">
+            <p v-if="displayDescription" class="text-sm text-neo-black/70 mb-1.5 line-clamp-2 leading-relaxed">
               {{ displayDescription }}
             </p>
 
-            <!-- Repository Stats - Only show if mounted and we have data -->
+            <!-- Repository Stats -->
             <div v-if="mounted && !loading && (language || stars !== null || forks !== null || lastUpdated)"
-              class="flex items-center gap-3 text-xs text-glass-muted/70">
+              class="flex items-center gap-3 text-xs text-neo-black/60">
               <div v-if="language" class="flex items-center gap-1">
                 <span class="w-1.5 h-1.5 rounded-full" :style="{ backgroundColor: getLanguageColor(language) }"></span>
                 <span>{{ language }}</span>
@@ -39,7 +40,7 @@
                 <span>🍴</span>
                 <span>{{ formatNumber(forks) }}</span>
               </div>
-              <div v-if="lastUpdated" class="text-glass-muted/60">
+              <div v-if="lastUpdated" class="text-neo-black/40">
                 {{ lastUpdated }}
               </div>
             </div>
@@ -48,14 +49,13 @@
             <div v-else-if="!mounted" class="h-4 pb-1"></div>
           </div>
         </div>
-      </GlassCard>
+      </div>
     </a>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import GlassCard from '~/components/ui/GlassCard.vue'
 
 interface Props {
   url: string
@@ -68,12 +68,10 @@ const repoData = ref<any>(null)
 const loading = ref(false)
 const mounted = ref(false)
 
-// Static parsing - always available for SSR
 const urlMatch = props.url.match(/github\.com\/([^\/]+)\/([^\/]+)/)
 const staticRepoOwner = urlMatch ? urlMatch[1] : ''
 const staticRepoName = urlMatch ? urlMatch[2] : ''
 
-// Dynamic data - computed properties that fallback to static
 const repoOwner = computed(() => {
   return repoData.value?.owner?.login || staticRepoOwner
 })
@@ -83,7 +81,6 @@ const repoName = computed(() => {
 })
 
 const displayDescription = computed(() => {
-  // Prioritize GitHub API description, fallback to custom description
   return repoData.value?.description || props.description || ''
 })
 
@@ -170,47 +167,11 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.repo-github-wrapper {
-  margin: 0.5rem 0 1.5rem 0;
-}
-
-.repo-github-card {
-  transition: all 0.3s ease;
-  padding: 0.5rem;
-}
-
 .no-underline {
   text-decoration: none !important;
 }
 
 .no-underline:hover {
   text-decoration: none !important;
-}
-
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  line-clamp: 1;
-}
-
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  line-clamp: 2;
-}
-
-/* Responsive adjustments */
-@media (max-width: 640px) {
-  .repo-github-card {
-    padding: 0.275rem;
-  }
-
-  .repo-github-wrapper {
-    margin: 0.275rem 0;
-  }
 }
 </style>

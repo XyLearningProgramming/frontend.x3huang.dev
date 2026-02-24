@@ -1,125 +1,96 @@
 <template>
-  <BackgroundLayout blur-background overlay-intensity="heavy">
-    <!-- Back button -->
-    <NuxtLink :to="returnPath"
-      class="inline-flex items-center gap-2 text-glass hover:text-glass-muted transition-colors mb-8">
-      <IconsArrowLeft class="w-4 h-4" />
-      Back to {{ returnTitle }}
-    </NuxtLink>
+  <div class="min-h-screen bg-neo-bg">
+    <div class="mx-auto max-w-5xl px-6 py-12 md:py-16">
+      <!-- Back button -->
+      <NuxtLink
+        :to="returnPath"
+        class="neo-btn inline-flex items-center gap-2 bg-neo-white px-3 py-1.5 text-sm font-bold mb-8"
+      >
+        <IconsArrowLeft class="w-4 h-4" />
+        Back to {{ returnTitle }}
+      </NuxtLink>
 
-    <!-- Post content -->
-    <article v-if="post" class="prose prose-lg max-w-none">
-      <header class="mb-8 text-center">
-        <h1 class="text-4xl font-bold text-glass mb-4 text-shadow-strong">
-          {{ post.title }}
-        </h1>
+      <!-- Post content -->
+      <article v-if="post">
+        <header class="mb-8">
+          <h1 class="text-3xl md:text-4xl font-bold mb-4">
+            {{ post.title }}
+          </h1>
 
-        <div class="relative mb-6">
-          <div class="absolute inset-0 bg-black/20 rounded-2xl blur-xl"></div>
-          <div class="relative flex flex-col items-center justify-center gap-2 text-sm text-glass-muted px-6 py-4">
-            <div class="flex items-center gap-4">
-              <time>{{ formatDate(post.date) }}</time>
-              <span v-if="post.author">by {{ post.author }}</span>
-              <span v-if="post.readTime">{{ post.readTime }} min read</span>
-            </div>
-            
-            <!-- Analytics display -->
-            <AnalyticsDisplay 
-              :slug="slug" 
-              :analytics="analytics" 
-              :loading="analyticsLoading"
-            />
+          <div class="flex flex-wrap items-center gap-4 text-sm text-neo-text-muted mb-4">
+            <time>{{ formatDate(post.date) }}</time>
+            <span v-if="post.author">by {{ post.author }}</span>
+            <span v-if="post.readTime">{{ post.readTime }} min read</span>
+          </div>
+
+          <!-- Analytics -->
+          <AnalyticsDisplay
+            :slug="slug"
+            :analytics="analytics"
+            :loading="analyticsLoading"
+          />
+
+          <!-- Tags -->
+          <div v-if="post.tags && post.tags.length" class="flex flex-wrap gap-2 mt-4">
+            <span
+              v-for="tag in post.tags"
+              :key="tag"
+              class="text-[10px] font-bold px-2 py-0.5 bg-neo-yellow/40 border border-neo-black"
+            >
+              {{ tag }}
+            </span>
+          </div>
+        </header>
+
+        <!-- Article body in a neo card -->
+        <div class="neo-card bg-neo-white p-6 md:p-10 mb-8">
+          <div class="blog-content">
+            <ClientOnly>
+              <ContentRenderer :value="post" />
+              <template #fallback>
+                <div class="animate-pulse space-y-4">
+                  <div class="h-4 bg-neo-bg rounded w-full" />
+                  <div class="h-4 bg-neo-bg rounded w-full" />
+                  <div class="h-4 bg-neo-bg rounded w-3/4" />
+                </div>
+              </template>
+            </ClientOnly>
           </div>
         </div>
+      </article>
 
-        <div v-if="post.tags && post.tags.length" class="flex flex-wrap gap-2 justify-center mb-6">
-          <span v-for="tag in post.tags" :key="tag"
-            class="px-3 py-1 text-xs glass-secondary rounded-full text-glass-muted">
-            {{ tag }}
-          </span>
+      <!-- Loading state -->
+      <div v-else class="text-center py-12">
+        <div class="neo-card inline-block bg-neo-white px-8 py-4">
+          <p class="text-neo-text-muted font-bold">Loading post...</p>
         </div>
-      </header>
-
-      <GlassCard variant="primary" padding="lg" radius="lg" class="mb-8">
-        <div class="text-white prose-white">
-          <ClientOnly>
-            <ContentRenderer :value="post" />
-            <template #fallback>
-              <div class="animate-pulse">
-                <div class="h-4 bg-white/20 rounded mb-4"></div>
-                <div class="h-4 bg-white/20 rounded mb-4"></div>
-                <div class="h-4 bg-white/20 rounded mb-4 w-3/4"></div>
-              </div>
-            </template>
-          </ClientOnly>
-        </div>
-      </GlassCard>
-    </article>
-
-    <!-- Loading state -->
-    <div v-else class="text-center py-12">
-      <GlassCard variant="primary" padding="lg" radius="lg">
-        <p class="text-glass">Loading post...</p>
-      </GlassCard>
-    </div>
-
-    <!-- Floating Table of Contents -->
-    <ClientOnly>
-      <div v-if="hasToc">
-        <div :class="[
-          'fixed top-16 right-4 transition-transform duration-300 z-30 shadow-xl',
-          showTocPanel ? 'translate-x-0' : 'translate-x-full'
-        ]">
-          <div class="relative">
-            <TableOfContents :links="post?.body.toc?.links || []" />
-
-            <!-- Close button -->
-            <button @click="showTocPanel = false"
-              class="absolute -top-2 -left-2 p-1 glass-secondary rounded-full hover:bg-white/30 transition-colors shadow-md"
-              aria-label="Hide table of contents">
-              <svg class="w-3 h-3 text-glass" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- TOC Toggle Button (when panel is hidden) -->
-        <button v-if="!showTocPanel" @click="showTocPanel = true"
-          class="fixed top-1/2 right-0 transform -translate-y-1/2 glass-primary rounded-l-lg p-2 shadow-lg hover:shadow-xl transition-all duration-300 z-40"
-          aria-label="Show table of contents">
-          <svg class="w-4 h-4 text-glass" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
       </div>
-    </ClientOnly>
 
-    <!-- Comments Section -->
-    <CommentSection 
-      v-if="post" 
-      :title="post.title"
-      :thread-id="`/blogs/${slug}`"
-    />
+      <!-- Comments -->
+      <CommentSection
+        v-if="post"
+        :title="post.title"
+        :thread-id="`/blogs/${slug}`"
+      />
 
-    <!-- Floating Action Buttons -->
-    <div v-if="post" class="fixed right-4 bottom-4 flex flex-col gap-2 z-50">
-      <!-- Scroll to Top -->
-      <NavScrollTopIcon />
-
-      <!-- Share Icons -->
-      <GlassCard variant="primary" padding="sm" radius="lg">
-        <NavShareIcons :headline="post.title" :description="post.description || 'Check out this blog post'"
-          :path="route.fullPath" :image="post.image?.src || ''" :slug="slug" />
-      </GlassCard>
+      <!-- Floating action buttons -->
+      <div v-if="post" class="fixed right-4 bottom-4 flex flex-col gap-2 z-50">
+        <NavScrollTopIcon />
+        <div class="neo-card bg-neo-white p-2">
+          <NavShareIcons
+            :headline="post.title"
+            :description="post.description || 'Check out this blog post'"
+            :path="route.fullPath"
+            :image="post.image?.src || ''"
+            :slug="slug"
+          />
+        </div>
+      </div>
     </div>
-  </BackgroundLayout>
+  </div>
 </template>
 
 <script setup lang="ts">
-import BackgroundLayout from '~/components/layouts/BackgroundLayout.vue'
-import GlassCard from '~/components/ui/GlassCard.vue'
-import TableOfContents from '~/components/blog/TableOfContents.vue'
 import AnalyticsDisplay from '~/components/blog/AnalyticsDisplay.vue'
 import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
 import { siteConfig, getPageMeta, getBlogPageTitle } from '~/site.config'
@@ -132,58 +103,11 @@ const { initializeTracking, trackVisit, getBlogAnalytics } = useGoatCounter()
 const analytics = ref({ visits: 0, likes: 0, shares: 0 })
 const analyticsLoading = ref(true)
 
-// TOC panel state
-const showTocPanel = ref(true)
-const hasToc = computed(() => {
-  return post.value && post.value.body && post.value.body.toc && post.value.body.toc.links && post.value.body.toc.links.length > 0
-})
-
-// Handle responsive behavior
-const handleResize = () => {
-  if (import.meta.client) {
-    // Hide TOC panel on screens smaller than 1280px (xl breakpoint)
-    if (window.innerWidth < 1280) {
-      showTocPanel.value = false
-    } else {
-      // Auto-show on large screens if TOC exists
-      if (hasToc.value) {
-        showTocPanel.value = true
-      }
-    }
-  }
-}
-
-onMounted(async () => {
-  if (import.meta.client) {
-    window.addEventListener('resize', handleResize)
-    handleResize() // Initial check
-    
-    // Initialize GoatCounter tracking and track visit
-    initializeTracking()
-    trackVisit(`/blogs/${slug}`)
-    
-    // Load analytics data (getBlogAnalytics will wait for script to load)
-    try {
-      analytics.value = await getBlogAnalytics(slug)
-    } catch (error) {
-      console.warn('Failed to load analytics:', error)
-    } finally {
-      analyticsLoading.value = false
-    }
-  }
-})
-
-onUnmounted(() => {
-  if (import.meta.client) {
-    window.removeEventListener('resize', handleResize)
-  }
-})
-
-// History stack for back button
+// Back navigation
 const returnPath = ref('/blogs')
 const returnTitle = ref('Latest Posts')
 
-// Helper function to generate slug from title
+// Slug helper
 const generateSlug = (title: string) => {
   return title
     .toLowerCase()
@@ -193,35 +117,46 @@ const generateSlug = (title: string) => {
     .trim()
 }
 
-// First try to find post by direct path
+// Fetch post
 const { data: post } = await useAsyncData(`blog-${slug}`, async () => {
-  // Get all posts to find matching slug
   const allPosts = await queryCollection('blogs').all()
-  return allPosts.find(p => generateSlug(p.title || "missing-title") === slug) || null
+  return allPosts.find((p) => generateSlug(p.title || 'missing-title') === slug) || null
 })
 
-// Handle 404 if post not found
 if (!post.value) {
-  throw createError({
-    statusCode: 404,
-    statusMessage: 'Post not found'
-  })
+  throw createError({ statusCode: 404, statusMessage: 'Post not found' })
 }
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   })
 }
 
-// SEO meta using centralized config
+onMounted(async () => {
+  if (import.meta.client) {
+    initializeTracking()
+    trackVisit(`/blogs/${slug}`)
+    try {
+      analytics.value = await getBlogAnalytics(slug)
+    }
+    catch (error) {
+      console.warn('Failed to load analytics:', error)
+    }
+    finally {
+      analyticsLoading.value = false
+    }
+  }
+})
+
+// SEO
 useHead(computed(() => getPageMeta({
   title: getBlogPageTitle(post.value?.title),
   description: post.value?.description || 'Blog post content',
   url: `${siteConfig.url}${route.fullPath}`,
   image: post.value?.image?.src ? `${siteConfig.url}${post.value.image.src}` : undefined,
-  type: 'article'
+  type: 'article',
 })))
 </script>

@@ -1,242 +1,244 @@
 <template>
-  <BackgroundLayout container-width="full" overlay-intensity="heavy" blur-background>
-    <!-- Back navigation -->
-    <div class="mb-6">
-      <button @click="$router.push('/tools')"
-        class="inline-flex items-center gap-2 text-glass hover:text-glass-muted transition-colors">
-        <IconsArrowLeft class="w-4 h-4" />
-        Back to Tools
-      </button>
-    </div>
-
-    <PageHeader title="JWT Tools" description="Decode, verify, and analyze JSON Web Tokens (JWT) securely."
-      class="!mb-6" />
-    
-    <!-- JWT Tools -->
-    <div class="space-y-6">
-      <!-- JWT Input -->
-      <GlassCard variant="primary" padding="lg" radius="lg">
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-white mb-2">JWT Token</label>
-            <textarea
-              v-model="jwtInput"
-              @input="decodeJWT"
-              placeholder="Paste your JWT token here (eyJ...)"
-              class="w-full h-32 bg-white/10 border border-white/20 rounded-lg p-4 text-white placeholder-white/50 resize-none focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/30"
-            ></textarea>
-          </div>
-          
-          <!-- Quick actions -->
-          <div class="flex gap-2">
-            <button @click="clearAll"
-              class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors text-sm">
-              Clear All
-            </button>
-            <button @click="loadSampleJWT"
-              class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors text-sm">
-              Load Sample
-            </button>
-          </div>
-        </div>
-      </GlassCard>
-
-      <!-- JWT Parts Display -->
-      <div v-if="decodedJWT" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        <!-- Header -->
-        <GlassCard variant="primary" padding="lg" radius="lg">
-          <div class="space-y-4">
-            <div class="flex items-center justify-between">
-              <h3 class="text-lg font-semibold text-white">Header</h3>
-              <button @click="copyToClipboard(JSON.stringify(decodedJWT.header, null, 2))"
-                class="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
-                title="Copy header">
-                <IconsCopy class="w-4 h-4" />
-              </button>
-            </div>
-            <div class="bg-black/20 rounded-lg p-4 overflow-x-auto">
-              <pre class="text-sm text-white whitespace-pre-wrap">{{ JSON.stringify(decodedJWT.header, null, 2) }}</pre>
-            </div>
-          </div>
-        </GlassCard>
-
-        <!-- Payload -->
-        <GlassCard variant="primary" padding="lg" radius="lg">
-          <div class="space-y-4">
-            <div class="flex items-center justify-between">
-              <h3 class="text-lg font-semibold text-white">Payload</h3>
-              <button @click="copyToClipboard(JSON.stringify(decodedJWT.payload, null, 2))"
-                class="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
-                title="Copy payload">
-                <IconsCopy class="w-4 h-4" />
-              </button>
-            </div>
-            <div class="bg-black/20 rounded-lg p-4 overflow-x-auto">
-              <pre class="text-sm text-white whitespace-pre-wrap">{{ JSON.stringify(decodedJWT.payload, null, 2) }}</pre>
-            </div>
-          </div>
-        </GlassCard>
-
-        <!-- Token Analysis -->
-        <GlassCard variant="primary" padding="lg" radius="lg" class="lg:col-span-2 xl:col-span-1">
-          <div class="space-y-4">
-            <h3 class="text-lg font-semibold text-white">Token Analysis</h3>
-            <div class="space-y-3">
-              <!-- Algorithm -->
-              <div class="flex justify-between items-center py-2 border-b border-white/10">
-                <span class="text-white/80">Algorithm:</span>
-                <span class="text-white font-mono">{{ decodedJWT.header.alg || 'Unknown' }}</span>
-              </div>
-              
-              <!-- Token Type -->
-              <div class="flex justify-between items-center py-2 border-b border-white/10">
-                <span class="text-white/80">Type:</span>
-                <span class="text-white font-mono">{{ decodedJWT.header.typ || 'Unknown' }}</span>
-              </div>
-              
-              <!-- Issued At -->
-              <div v-if="decodedJWT.payload.iat" class="flex justify-between items-center py-2 border-b border-white/10">
-                <span class="text-white/80">Issued At:</span>
-                <span class="text-white text-sm">{{ formatTimestamp(decodedJWT.payload.iat) }}</span>
-              </div>
-              
-              <!-- Expires At -->
-              <div v-if="decodedJWT.payload.exp" class="flex justify-between items-center py-2 border-b border-white/10">
-                <span class="text-white/80">Expires At:</span>
-                <span class="text-white text-sm">{{ formatTimestamp(decodedJWT.payload.exp) }}</span>
-              </div>
-              
-              <!-- Expiration Status -->
-              <div v-if="decodedJWT.payload.exp" class="flex justify-between items-center py-2 border-b border-white/10">
-                <span class="text-white/80">Status:</span>
-                <span :class="isExpired ? 'text-red-400' : 'text-green-400'" class="font-semibold">
-                  {{ isExpired ? 'Expired' : 'Valid' }}
-                </span>
-              </div>
-              
-              <!-- Issuer -->
-              <div v-if="decodedJWT.payload.iss" class="flex justify-between items-center py-2 border-b border-white/10">
-                <span class="text-white/80">Issuer:</span>
-                <span class="text-white text-sm break-all">{{ decodedJWT.payload.iss }}</span>
-              </div>
-              
-              <!-- Subject -->
-              <div v-if="decodedJWT.payload.sub" class="flex justify-between items-center py-2 border-b border-white/10">
-                <span class="text-white/80">Subject:</span>
-                <span class="text-white text-sm break-all">{{ decodedJWT.payload.sub }}</span>
-              </div>
-              
-              <!-- Audience -->
-              <div v-if="decodedJWT.payload.aud" class="flex justify-between items-center py-2">
-                <span class="text-white/80">Audience:</span>
-                <span class="text-white text-sm break-all">{{ 
-                  Array.isArray(decodedJWT.payload.aud) 
-                    ? decodedJWT.payload.aud.join(', ') 
-                    : decodedJWT.payload.aud 
-                }}</span>
-              </div>
-            </div>
-          </div>
-        </GlassCard>
+  <div class="min-h-screen bg-neo-section-tools text-neo-black py-16 px-4">
+    <div class="container mx-auto max-w-screen-xl">
+      <!-- Back navigation -->
+      <div class="mb-6">
+        <button @click="$router.push('/tools')"
+          class="inline-flex items-center gap-2 text-neo-black/70 hover:text-neo-black transition-colors">
+          <IconsArrowLeft class="w-4 h-4" />
+          Back to Tools
+        </button>
       </div>
 
-      <!-- Signature Verification -->
-      <GlassCard v-if="decodedJWT" variant="primary" padding="lg" radius="lg">
-        <div class="space-y-4">
-          <h3 class="text-lg font-semibold text-white">Signature Verification</h3>
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Secret/Key Input -->
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-white mb-2">
-                  Secret Key (for HMAC algorithms)
-                </label>
-                <input
-                  v-model="secretKey"
-                  type="text"
-                  placeholder="your-256-bit-secret"
-                  class="w-full bg-white/10 border border-white/20 rounded-lg p-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/30"
-                />
-              </div>
-              
-              <div>
-                <label class="block text-sm font-medium text-white mb-2">
-                  Public Key (for RSA/ECDSA algorithms)
-                </label>
-                <textarea
-                  v-model="publicKey"
-                  placeholder="-----BEGIN PUBLIC KEY-----&#10;...&#10;-----END PUBLIC KEY-----"
-                  class="w-full h-24 bg-white/10 border border-white/20 rounded-lg p-3 text-white placeholder-white/50 resize-none focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/30"
-                ></textarea>
-              </div>
-              
-              <button @click="verifySignature"
-                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors">
-                Verify Signature
-              </button>
+      <!-- Header -->
+      <div class="mb-6">
+        <h1 class="font-neo-heading text-h2-sm md:text-h2 font-bold mb-2">JWT Tools</h1>
+        <p class="text-lg text-neo-black/70 max-w-2xl leading-relaxed">
+          Decode, verify, and analyze JSON Web Tokens (JWT) securely.
+        </p>
+      </div>
+      
+      <!-- JWT Tools -->
+      <div class="space-y-6">
+        <!-- JWT Input -->
+        <div class="neo-border bg-neo-bg p-6 relative" style="box-shadow: 4px 4px 0px 0px #000;">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-bold text-neo-black mb-2">JWT Token</label>
+              <textarea
+                v-model="jwtInput"
+                @input="decodeJWT"
+                placeholder="Paste your JWT token here (eyJ...)"
+                class="w-full h-32 neo-border bg-neo-bg p-4 text-neo-black placeholder-neo-black/40 resize-none focus:outline-none rounded-none"
+                style="box-shadow: 2px 2px 0px 0px #000;"
+              ></textarea>
             </div>
             
-            <!-- Verification Result -->
+            <!-- Quick actions -->
+            <div class="flex gap-2">
+              <button @click="clearAll"
+                class="px-4 py-2 neo-border bg-neo-bg hover:bg-neo-yellow text-neo-black transition-colors text-sm font-bold rounded-none"
+                style="box-shadow: 2px 2px 0px 0px #000;">
+                Clear All
+              </button>
+              <button @click="loadSampleJWT"
+                class="px-4 py-2 neo-border bg-neo-yellow hover:bg-neo-orange text-neo-black transition-colors text-sm font-bold rounded-none"
+                style="box-shadow: 2px 2px 0px 0px #000;">
+                Load Sample
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- JWT Parts Display -->
+        <div v-if="decodedJWT" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          <!-- Header -->
+          <div class="neo-border bg-neo-bg p-6 relative" style="box-shadow: 4px 4px 0px 0px #000;">
             <div class="space-y-4">
-              <div class="bg-black/20 rounded-lg p-4">
-                <h4 class="text-white font-semibold mb-3">Verification Result</h4>
-                <div v-if="verificationResult !== null" class="space-y-2">
-                  <div class="flex items-center gap-2">
-                    <div :class="verificationResult ? 'bg-green-500' : 'bg-red-500'" class="w-3 h-3 rounded-full"></div>
-                    <span :class="verificationResult ? 'text-green-400' : 'text-red-400'" class="font-semibold">
-                      {{ verificationResult ? 'Signature Valid' : 'Signature Invalid' }}
-                    </span>
-                  </div>
-                  <p class="text-white/80 text-sm">
-                    {{ verificationResult 
-                      ? 'The token signature is valid and the token has not been tampered with.' 
-                      : 'The token signature is invalid or the token has been modified.' 
-                    }}
-                  </p>
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-neo-black">Header</h3>
+                <button @click="copyToClipboard(JSON.stringify(decodedJWT.header, null, 2))"
+                  class="p-2 neo-border bg-neo-bg hover:bg-neo-yellow text-neo-black transition-colors rounded-none"
+                  title="Copy header">
+                  <IconsCopy class="w-4 h-4" />
+                </button>
+              </div>
+              <div class="neo-border bg-neo-black p-4 overflow-x-auto rounded-none">
+                <pre class="text-sm text-neo-bg whitespace-pre-wrap font-neo-mono">{{ JSON.stringify(decodedJWT.header, null, 2) }}</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payload -->
+          <div class="neo-border bg-neo-bg p-6 relative" style="box-shadow: 4px 4px 0px 0px #000;">
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-neo-black">Payload</h3>
+                <button @click="copyToClipboard(JSON.stringify(decodedJWT.payload, null, 2))"
+                  class="p-2 neo-border bg-neo-bg hover:bg-neo-yellow text-neo-black transition-colors rounded-none"
+                  title="Copy payload">
+                  <IconsCopy class="w-4 h-4" />
+                </button>
+              </div>
+              <div class="neo-border bg-neo-black p-4 overflow-x-auto rounded-none">
+                <pre class="text-sm text-neo-bg whitespace-pre-wrap font-neo-mono">{{ JSON.stringify(decodedJWT.payload, null, 2) }}</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Token Analysis -->
+          <div class="neo-border bg-neo-bg p-6 relative lg:col-span-2 xl:col-span-1" style="box-shadow: 4px 4px 0px 0px #000;">
+            <div class="space-y-4">
+              <h3 class="text-lg font-bold text-neo-black">Token Analysis</h3>
+              <div class="space-y-3">
+                <div class="flex justify-between items-center py-2 border-b-2 border-neo-black/20">
+                  <span class="text-neo-black/70">Algorithm:</span>
+                  <span class="text-neo-black font-neo-mono font-bold">{{ decodedJWT.header.alg || 'Unknown' }}</span>
                 </div>
-                <div v-else class="text-white/60 text-sm">
-                  Enter a secret key or public key and click "Verify Signature" to check the token's authenticity.
+                
+                <div class="flex justify-between items-center py-2 border-b-2 border-neo-black/20">
+                  <span class="text-neo-black/70">Type:</span>
+                  <span class="text-neo-black font-neo-mono font-bold">{{ decodedJWT.header.typ || 'Unknown' }}</span>
+                </div>
+                
+                <div v-if="decodedJWT.payload.iat" class="flex justify-between items-center py-2 border-b-2 border-neo-black/20">
+                  <span class="text-neo-black/70">Issued At:</span>
+                  <span class="text-neo-black text-sm">{{ formatTimestamp(decodedJWT.payload.iat) }}</span>
+                </div>
+                
+                <div v-if="decodedJWT.payload.exp" class="flex justify-between items-center py-2 border-b-2 border-neo-black/20">
+                  <span class="text-neo-black/70">Expires At:</span>
+                  <span class="text-neo-black text-sm">{{ formatTimestamp(decodedJWT.payload.exp) }}</span>
+                </div>
+                
+                <div v-if="decodedJWT.payload.exp" class="flex justify-between items-center py-2 border-b-2 border-neo-black/20">
+                  <span class="text-neo-black/70">Status:</span>
+                  <span :class="isExpired ? 'text-neo-red' : 'text-neo-green'" class="font-bold">
+                    {{ isExpired ? 'Expired' : 'Valid' }}
+                  </span>
+                </div>
+                
+                <div v-if="decodedJWT.payload.iss" class="flex justify-between items-center py-2 border-b-2 border-neo-black/20">
+                  <span class="text-neo-black/70">Issuer:</span>
+                  <span class="text-neo-black text-sm break-all">{{ decodedJWT.payload.iss }}</span>
+                </div>
+                
+                <div v-if="decodedJWT.payload.sub" class="flex justify-between items-center py-2 border-b-2 border-neo-black/20">
+                  <span class="text-neo-black/70">Subject:</span>
+                  <span class="text-neo-black text-sm break-all">{{ decodedJWT.payload.sub }}</span>
+                </div>
+                
+                <div v-if="decodedJWT.payload.aud" class="flex justify-between items-center py-2">
+                  <span class="text-neo-black/70">Audience:</span>
+                  <span class="text-neo-black text-sm break-all">{{ 
+                    Array.isArray(decodedJWT.payload.aud) 
+                      ? decodedJWT.payload.aud.join(', ') 
+                      : decodedJWT.payload.aud 
+                  }}</span>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Signature Verification -->
+        <div v-if="decodedJWT" class="neo-border bg-neo-bg p-6 relative" style="box-shadow: 4px 4px 0px 0px #000;">
+          <div class="space-y-4">
+            <h3 class="text-lg font-bold text-neo-black">Signature Verification</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- Secret/Key Input -->
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-bold text-neo-black mb-2">
+                    Secret Key (for HMAC algorithms)
+                  </label>
+                  <input
+                    v-model="secretKey"
+                    type="text"
+                    placeholder="your-256-bit-secret"
+                    class="w-full neo-border bg-neo-bg p-3 text-neo-black placeholder-neo-black/40 focus:outline-none rounded-none"
+                    style="box-shadow: 2px 2px 0px 0px #000;"
+                  />
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-bold text-neo-black mb-2">
+                    Public Key (for RSA/ECDSA algorithms)
+                  </label>
+                  <textarea
+                    v-model="publicKey"
+                    placeholder="-----BEGIN PUBLIC KEY-----&#10;...&#10;-----END PUBLIC KEY-----"
+                    class="w-full h-24 neo-border bg-neo-bg p-3 text-neo-black placeholder-neo-black/40 resize-none focus:outline-none rounded-none"
+                    style="box-shadow: 2px 2px 0px 0px #000;"
+                  ></textarea>
+                </div>
+                
+                <button @click="verifySignature"
+                  class="px-4 py-2 neo-border bg-neo-blue hover:bg-neo-cyan text-neo-black transition-colors font-bold rounded-none"
+                  style="box-shadow: 4px 4px 0px 0px #000;">
+                  Verify Signature
+                </button>
+              </div>
               
-              <!-- Security Notice -->
-              <div class="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-4">
-                <div class="flex items-start gap-2">
-                  <div class="text-yellow-400 text-lg">⚠️</div>
-                  <div>
-                    <h4 class="text-yellow-400 font-semibold mb-1">Security Notice</h4>
-                    <p class="text-yellow-200 text-sm">
-                      This tool performs client-side verification only. For production use, always verify JWT tokens on your server.
+              <!-- Verification Result -->
+              <div class="space-y-4">
+                <div class="neo-border bg-neo-black/5 p-4 rounded-none">
+                  <h4 class="text-neo-black font-bold mb-3">Verification Result</h4>
+                  <div v-if="verificationResult !== null" class="space-y-2">
+                    <div class="flex items-center gap-2">
+                      <div :class="verificationResult ? 'bg-neo-green' : 'bg-neo-red'" class="w-3 h-3 neo-border"></div>
+                      <span :class="verificationResult ? 'text-neo-green' : 'text-neo-red'" class="font-bold">
+                        {{ verificationResult ? 'Signature Valid' : 'Signature Invalid' }}
+                      </span>
+                    </div>
+                    <p class="text-neo-black/70 text-sm">
+                      {{ verificationResult 
+                        ? 'The token signature is valid and the token has not been tampered with.' 
+                        : 'The token signature is invalid or the token has been modified.' 
+                      }}
                     </p>
+                  </div>
+                  <div v-else class="text-neo-black/50 text-sm">
+                    Enter a secret key or public key and click "Verify Signature" to check the token's authenticity.
+                  </div>
+                </div>
+                
+                <!-- Security Notice -->
+                <div class="neo-border bg-neo-yellow/30 p-4 rounded-none">
+                  <div class="flex items-start gap-2">
+                    <div class="text-lg">⚠️</div>
+                    <div>
+                      <h4 class="text-neo-black font-bold mb-1">Security Notice</h4>
+                      <p class="text-neo-black/70 text-sm">
+                        This tool performs client-side verification only. For production use, always verify JWT tokens on your server.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </GlassCard>
-    </div>
+      </div>
 
-    <!-- Error display -->
-    <div v-if="errorMessage" class="mt-4">
-      <div class="p-4 bg-red-500/20 border border-red-500/30 rounded-lg text-red-300">
-        {{ errorMessage }}
+      <!-- Error display -->
+      <div v-if="errorMessage" class="mt-4">
+        <div class="p-4 neo-border bg-neo-red/20 text-neo-black font-bold rounded-none">
+          {{ errorMessage }}
+        </div>
+      </div>
+
+      <!-- Success message -->
+      <div v-if="successMessage" class="mt-4">
+        <div class="p-4 neo-border bg-neo-green/30 text-neo-black font-bold rounded-none">
+          {{ successMessage }}
+        </div>
       </div>
     </div>
-
-    <!-- Success message -->
-    <div v-if="successMessage" class="mt-4">
-      <div class="p-4 bg-green-500/20 border border-green-500/30 rounded-lg text-green-300">
-        {{ successMessage }}
-      </div>
-    </div>
-  </BackgroundLayout>
+  </div>
 </template>
 
 <script setup lang="ts">
-import GlassCard from '~/components/ui/GlassCard.vue'
-import BackgroundLayout from '~/components/layouts/BackgroundLayout.vue'
-import PageHeader from '~/components/ui/PageHeader.vue'
 import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
 import IconsCopy from '~/components/icons/copy.vue'
 
@@ -253,9 +255,7 @@ const isExpired = computed(() => {
   return Date.now() >= decodedJWT.value.payload.exp * 1000
 })
 
-// Base64 URL decode function
 const base64UrlDecode = (str: string): string => {
-  // Add padding if needed
   let base64 = str.replace(/-/g, '+').replace(/_/g, '/')
   while (base64.length % 4) {
     base64 += '='
@@ -268,7 +268,6 @@ const base64UrlDecode = (str: string): string => {
   }
 }
 
-// Decode JWT function
 const decodeJWT = () => {
   errorMessage.value = ''
   decodedJWT.value = null
@@ -287,11 +286,9 @@ const decodeJWT = () => {
     
     const [headerPart, payloadPart, signaturePart] = parts
     
-    // Decode header
     const headerJson = base64UrlDecode(headerPart)
     const header = JSON.parse(headerJson)
     
-    // Decode payload
     const payloadJson = base64UrlDecode(payloadPart)
     const payload = JSON.parse(payloadJson)
     
@@ -306,13 +303,11 @@ const decodeJWT = () => {
   }
 }
 
-// Format timestamp
 const formatTimestamp = (timestamp: number): string => {
   const date = new Date(timestamp * 1000)
   return date.toLocaleString() + ` (${timestamp})`
 }
 
-// Copy to clipboard
 const copyToClipboard = async (text: string) => {
   try {
     await navigator.clipboard.writeText(text)
@@ -328,7 +323,6 @@ const copyToClipboard = async (text: string) => {
   }
 }
 
-// Clear all inputs
 const clearAll = () => {
   jwtInput.value = ''
   secretKey.value = ''
@@ -339,14 +333,12 @@ const clearAll = () => {
   successMessage.value = ''
 }
 
-// Load sample JWT
 const loadSampleJWT = () => {
   jwtInput.value = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE3MzU2ODk2MDAsImlzcyI6ImV4YW1wbGUuY29tIiwiYXVkIjoidGVzdCJ9.Xqx_fOElXGkGp4wxs-zLhg8Q6K7Z-mIHXEq5JgEhk9Q'
   secretKey.value = 'your-256-bit-secret'
   decodeJWT()
 }
 
-// Verify signature (simplified client-side verification)
 const verifySignature = () => {
   if (!decodedJWT.value) {
     errorMessage.value = 'Please decode a JWT token first'
@@ -360,26 +352,20 @@ const verifySignature = () => {
     return
   }
   
-  // For demonstration purposes, this is a simplified verification
-  // In a real application, you would use proper crypto libraries
   if (algorithm.startsWith('HS')) {
-    // HMAC algorithms
     if (!secretKey.value) {
       errorMessage.value = 'Secret key is required for HMAC algorithms'
       return
     }
     
-    // Simplified check - in reality you'd compute the actual HMAC
     verificationResult.value = secretKey.value === 'your-256-bit-secret'
     
   } else if (algorithm.startsWith('RS') || algorithm.startsWith('ES')) {
-    // RSA or ECDSA algorithms
     if (!publicKey.value) {
       errorMessage.value = 'Public key is required for RSA/ECDSA algorithms'
       return
     }
     
-    // Simplified check - in reality you'd verify using the public key
     verificationResult.value = publicKey.value.includes('BEGIN PUBLIC KEY')
     
   } else {
@@ -393,7 +379,6 @@ const verifySignature = () => {
   }, 3000)
 }
 
-// Clear messages when JWT input changes
 watch(jwtInput, () => {
   errorMessage.value = ''
   successMessage.value = ''
@@ -406,7 +391,3 @@ useHead({
   ]
 })
 </script>
-
-<style scoped>
-/* Additional styles if needed */
-</style>
