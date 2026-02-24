@@ -1,555 +1,614 @@
 <template>
-  <div class="relative min-h-screen">
-    <!-- Floating decorative shapes (parallax background) -->
-    <NeoFloatingShapes />
+  <DaliCanvas>
+    <!-- ===================== DISCOVERY COLUMN ===================== -->
+    <template #discovery>
+      <!-- ==================== HERO / CHATTY ==================== -->
+      <section id="hero" class="relative min-h-screen flex items-center px-6 md:px-12 py-20 overflow-hidden">
+        <!-- Decorative diagonal slash background -->
+        <div class="absolute inset-0 dali-slash pointer-events-none" />
 
-    <!-- Notion-style TOC (desktop) -->
-    <NeoNotionToc :sections="tocSections" />
-
-    <!-- ==================== HERO / CHATTY SECTION ==================== -->
-    <section id="hero" class="relative min-h-screen flex items-center justify-center px-6 md:px-12 py-20">
-      <div class="flex flex-col items-center text-center max-w-3xl mx-auto">
-        <!-- Avatar — spring bounce in -->
-        <div
-          v-motion
-          :initial="{ opacity: 0, scale: 0.5, y: 20 }"
-          :enter="{ opacity: 1, scale: 1, y: 0, transition: { type: 'spring', stiffness: 200, damping: 12, delay: 100 } }"
-          class="mb-6"
-        >
-          <div class="neo-card w-28 h-28 rounded-full mx-auto overflow-hidden flex items-center justify-center">
-            <img
-              v-show="!showFallback"
-              :src="profile.image"
-              :alt="profile.name"
-              class="w-full h-full object-cover"
-              @error="showFallback = true"
-            >
-            <span v-show="showFallback" class="text-3xl font-bold">
-              {{ profile.initials }}
-            </span>
-          </div>
+        <!-- Floating surrealist shapes -->
+        <div class="hero-shapes absolute inset-0 pointer-events-none" aria-hidden="true">
+          <div class="hero-shape hero-shape--circle" />
+          <div class="hero-shape hero-shape--diamond" />
+          <div class="hero-shape hero-shape--blob" />
         </div>
 
-        <!-- Name — fade up -->
-        <h1
-          v-motion
-          :initial="{ opacity: 0, y: 30 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 500, delay: 300 } }"
-          class="text-neo-black mb-2"
-        >
-          {{ profile.name }}
-        </h1>
+        <!-- Content: off-center (golden ratio ~38% from left) -->
+        <div class="relative z-10 w-full max-w-6xl mx-auto">
+          <div class="flex flex-col items-start" style="padding-left: 5%;">
+            <!-- Avatar in melting-clock shape -->
+            <div
+              ref="avatarRef"
+              class="hero-avatar mb-6 opacity-0"
+            >
+              <div class="hero-avatar__frame">
+                <img
+                  v-show="!showFallback"
+                  :src="profile.image"
+                  :alt="profile.name"
+                  class="w-full h-full object-cover"
+                  @error="showFallback = true"
+                >
+                <span v-show="showFallback" class="text-4xl font-bold text-dali-white">
+                  {{ profile.initials }}
+                </span>
+              </div>
+            </div>
 
-        <!-- Subtitle -->
-        <p
-          v-motion
-          :initial="{ opacity: 0, y: 20 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 500, delay: 450 } }"
-          class="text-lg md:text-xl text-neo-text-muted max-w-xl mb-2"
-        >
-          {{ profile.subtitle }}
-        </p>
+            <!-- Name — dramatic tilt -->
+            <h1
+              ref="nameRef"
+              class="hero-name opacity-0"
+            >
+              {{ profile.name }}
+            </h1>
 
-        <!-- Motto -->
-        <p
-          v-motion
-          :initial="{ opacity: 0, y: 20 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 500, delay: 600 } }"
-          class="text-xl md:text-2xl font-bold text-neo-black max-w-2xl mb-10 italic"
-        >
-          "{{ profile.motto }}"
-        </p>
+            <!-- Subtitle -->
+            <p
+              ref="subtitleRef"
+              class="text-lg md:text-xl text-dali-muted max-w-xl mb-2 opacity-0"
+            >
+              {{ profile.subtitle }}
+            </p>
 
-        <!-- Chatty input (always visible) -->
-        <div
-          v-motion
-          :initial="{ opacity: 0, y: 40 }"
-          :enter="{ opacity: 1, y: 0, transition: { type: 'spring', stiffness: 120, damping: 14, delay: 800 } }"
-          class="w-full max-w-2xl"
-        >
-          <!-- Powered by chatty note -->
-          <div class="neo-card bg-neo-white p-1 mb-4">
-            <div class="bg-neo-cyan/10 p-3">
-              <p class="text-xs text-neo-text-muted">
-                Powered by
-                <a
-                  href="https://github.com/XyLearningProgramming/chatty"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="underline font-bold text-neo-black"
-                >chatty</a> &mdash; an open-source persona-driven chatbot.
-                <span class="text-[10px] block mt-0.5">Expect 10-60s response times. Responses may be inaccurate.</span>
-              </p>
+            <!-- Motto — italic, with red accent underline -->
+            <p
+              ref="mottoRef"
+              class="hero-motto opacity-0"
+            >
+              "{{ profile.motto }}"
+              <span class="hero-motto__underline" />
+            </p>
+
+            <!-- Chat input — rotated slightly, trapezoid-ish -->
+            <div
+              ref="chatRef"
+              class="w-full max-w-2xl mt-10 opacity-0"
+            >
+              <!-- Powered by chatty note -->
+              <div class="dali-card p-1 mb-4" style="border-color: var(--color-dali-muted);">
+                <div class="p-3" style="background: rgba(46, 196, 182, 0.08);">
+                  <p class="text-xs text-dali-muted">
+                    Powered by
+                    <a
+                      href="https://github.com/XyLearningProgramming/chatty"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="underline font-bold text-dali-teal"
+                    >chatty</a> &mdash; an open-source persona-driven chatbot.
+                    <span class="text-[10px] block mt-0.5 opacity-70">Expect 10-60s response times. Responses may be inaccurate.</span>
+                  </p>
+                </div>
+              </div>
+              <ChatView @active-change="onChatActiveChange" />
             </div>
           </div>
-          <ChatView @active-change="onChatActiveChange" />
         </div>
-      </div>
 
-      <!-- Scroll indicator -->
-      <div
-        v-motion
-        :initial="{ opacity: 0 }"
-        :enter="{ opacity: 1, transition: { duration: 800, delay: 1400 } }"
-        class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 transition-opacity duration-500"
-        :class="{ 'opacity-0': hasScrolled }"
-      >
-        <span class="text-[10px] font-mono text-neo-text-muted uppercase tracking-widest">Scroll to explore</span>
-        <svg class="w-5 h-5 text-neo-text-muted animate-bounce-gentle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-        </svg>
-      </div>
-    </section>
-
-    <!-- ==================== BLOG POSTS SECTION ==================== -->
-    <section id="posts" class="relative px-6 md:px-12 py-16 md:py-24">
-      <div class="mx-auto max-w-6xl">
-        <!-- Section heading with colored strip -->
+        <!-- Scroll indicator -->
         <div
-          v-motion
-          :initial="{ opacity: 0, x: -60 }"
-          :visibleOnce="{ opacity: 1, x: 0, transition: { type: 'spring', stiffness: 100, damping: 14 } }"
-          class="mb-10"
+          ref="scrollIndicatorRef"
+          class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-0"
+          :class="{ '!opacity-0': hasScrolled }"
         >
-          <h2>
-            <span class="bg-neo-cyan px-4 py-1.5 border-2 border-neo-black inline-block -rotate-1 shadow-neo-sm">
+          <span class="text-[10px] font-mono text-dali-muted uppercase tracking-widest">Scroll to explore</span>
+          <svg class="w-5 h-5 text-dali-red animate-bounce-gentle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+        </div>
+      </section>
+
+      <!-- Melting divider -->
+      <DaliMeltingDivider variant="melt" color="var(--color-dali-red)" :height="80" />
+
+      <!-- ==================== BLOG POSTS ==================== -->
+      <section id="posts" class="relative px-6 md:px-12 py-16 md:py-24 overflow-hidden">
+        <div class="mx-auto max-w-6xl">
+          <!-- Section heading — angled -->
+          <h2
+            ref="postsHeadingRef"
+            class="posts-heading opacity-0 mb-12"
+          >
+            <span class="inline-block bg-dali-red px-5 py-2 text-dali-white border-2 border-dali-white/20 -rotate-2 shadow-dali">
               Latest Posts
             </span>
           </h2>
-        </div>
 
-        <!-- Loading skeleton while posts load -->
-        <div v-if="recentPosts.length === 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-          <div
-            v-for="i in 3"
-            :key="i"
-            class="neo-card bg-neo-white p-5 animate-pulse"
-          >
-            <div class="h-3 w-20 bg-neo-black/10 rounded mb-3" />
-            <div class="h-5 w-3/4 bg-neo-black/10 rounded mb-2" />
-            <div class="h-4 w-full bg-neo-black/10 rounded mb-1" />
-            <div class="h-4 w-2/3 bg-neo-black/10 rounded" />
-            <div class="mt-3 flex gap-1">
-              <div class="h-4 w-12 bg-neo-yellow/30 rounded" />
-              <div class="h-4 w-14 bg-neo-yellow/30 rounded" />
+          <!-- Loading skeleton -->
+          <div v-if="recentPosts.length === 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10">
+            <div
+              v-for="i in 3"
+              :key="i"
+              class="dali-card p-5 animate-pulse"
+              :class="`dali-card--v${i}`"
+            >
+              <div class="h-3 w-20 bg-dali-muted/20 rounded mb-3" />
+              <div class="h-5 w-3/4 bg-dali-muted/20 rounded mb-2" />
+              <div class="h-4 w-full bg-dali-muted/20 rounded mb-1" />
+              <div class="h-4 w-2/3 bg-dali-muted/20 rounded" />
             </div>
           </div>
-        </div>
 
-        <!-- Post cards grid — fly in alternating left/right -->
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-          <div
-            v-for="(post, idx) in recentPosts"
-            :key="post.path"
-            v-motion
-            :initial="{ opacity: 0, x: idx % 2 === 0 ? -80 : 80, y: 20 }"
-            :visibleOnce="{
-              opacity: 1, x: 0, y: 0,
-              transition: { type: 'spring', stiffness: 100, damping: 14, delay: idx * 120 },
-            }"
-            class="neo-card bg-neo-white p-5 flex flex-col cursor-pointer card-tilt"
-            @click="openPost(post)"
-          >
-            <span class="text-xs font-bold text-neo-text-muted mb-2">
-              {{ formatDate(post.date) }}
-            </span>
-            <h3 class="text-lg font-bold mb-2 leading-tight">{{ post.title }}</h3>
-            <p class="text-sm text-neo-text-muted flex-1">{{ post.description }}</p>
-            <div v-if="post.tags?.length" class="mt-3 flex flex-wrap gap-1">
-              <span
-                v-for="tag in post.tags.slice(0, 3)"
-                :key="tag"
-                class="text-[10px] font-bold px-2 py-0.5 bg-neo-yellow/40 border border-neo-black"
-              >
-                {{ tag }}
+          <!-- Post cards — scattered at angles, explode from center -->
+          <div v-else class="posts-grid mb-10">
+            <DaliIrregularCard
+              v-for="(post, idx) in recentPosts"
+              :key="post.path"
+              :ref="el => setPostCardRef(el, idx)"
+              :seed="idx * 7 + 3"
+              :rotation="postRotations[idx] || 0"
+              :accent-color="postColors[idx % postColors.length]"
+              class="posts-card opacity-0 cursor-pointer"
+              @click="openPost(post)"
+            >
+              <span class="text-[10px] font-bold text-dali-muted block mb-2">
+                {{ formatDate(post.date) }}
               </span>
-            </div>
-            <span class="mt-3 text-xs font-bold text-neo-cyan flex items-center gap-1">
-              Read more
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </span>
-          </div>
-
-          <!-- "View All" as the last card in the grid -->
-          <NuxtLink
-            v-motion
-            :initial="{ opacity: 0, scale: 0.9 }"
-            :visibleOnce="{ opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 100, damping: 14, delay: recentPosts.length * 120 } }"
-            to="/blogs"
-            class="neo-card bg-neo-bg p-5 flex flex-col items-center justify-center text-center cursor-pointer card-tilt border-dashed"
-          >
-            <span class="text-3xl mb-3">📚</span>
-            <span class="text-sm font-bold">View All Posts</span>
-            <span class="text-xs text-neo-text-muted mt-1">Browse the full archive &rarr;</span>
-          </NuxtLink>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== MY DIGITAL SPACE SECTION ==================== -->
-    <section id="space" class="relative px-6 md:px-12 py-16 md:py-24">
-      <div class="mx-auto max-w-6xl">
-        <!-- Section heading -->
-        <div
-          v-motion
-          :initial="{ opacity: 0, x: 60 }"
-          :visibleOnce="{ opacity: 1, x: 0, transition: { type: 'spring', stiffness: 100, damping: 14 } }"
-          class="mb-10"
-        >
-          <h2>
-            <span class="bg-neo-purple px-4 py-1.5 border-2 border-neo-black inline-block rotate-1 shadow-neo-sm">
-              My Digital Space
-            </span>
-          </h2>
-        </div>
-
-        <!-- Photo Gallery — fly in from right -->
-        <div
-          v-motion
-          :initial="{ opacity: 0, x: 100 }"
-          :visibleOnce="{ opacity: 1, x: 0, transition: { type: 'spring', stiffness: 80, damping: 14, delay: 100 } }"
-          class="mb-12"
-        >
-          <h3 class="text-lg font-bold mb-4">Gallery</h3>
-          <NeoPhotoGallery @open-lightbox="openGallery" />
-        </div>
-
-        <!-- About & Contact cards — alternating fly in -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div
-            v-motion
-            :initial="{ opacity: 0, x: -80 }"
-            :visibleOnce="{ opacity: 1, x: 0, transition: { type: 'spring', stiffness: 100, damping: 14, delay: 200 } }"
-            class="neo-card bg-neo-white p-6 cursor-pointer card-tilt"
-            @click="openAbout"
-          >
-            <h3 class="text-lg font-bold mb-2">About Me</h3>
-            <p class="text-sm text-neo-text-muted">
-              {{ siteConfig.author.bio }}. Learn more about my background, what I do, and what drives me.
-            </p>
-            <span class="mt-3 text-xs font-bold text-neo-purple flex items-center gap-1">
-              Read more
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </span>
-          </div>
-          <div
-            v-motion
-            :initial="{ opacity: 0, x: 80 }"
-            :visibleOnce="{ opacity: 1, x: 0, transition: { type: 'spring', stiffness: 100, damping: 14, delay: 350 } }"
-            class="neo-card bg-neo-white p-6 cursor-pointer card-tilt"
-            @click="openContact"
-          >
-            <h3 class="text-lg font-bold mb-2">Contact</h3>
-            <p class="text-sm text-neo-text-muted">
-              Get in touch via email, GitHub, or LinkedIn. Always happy to chat.
-            </p>
-            <span class="mt-3 text-xs font-bold text-neo-pink flex items-center gap-1">
-              Get in touch
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== TOOLS SECTION ==================== -->
-    <section id="tools" class="relative px-6 md:px-12 py-16 md:py-24">
-      <div class="mx-auto max-w-6xl">
-        <!-- Section heading -->
-        <div
-          v-motion
-          :initial="{ opacity: 0, x: -60 }"
-          :visibleOnce="{ opacity: 1, x: 0, transition: { type: 'spring', stiffness: 100, damping: 14 } }"
-          class="mb-10"
-        >
-          <h2>
-            <span class="bg-neo-orange px-4 py-1.5 border-2 border-neo-black inline-block -rotate-1 shadow-neo-sm">
-              Dev Tools
-            </span>
-          </h2>
-        </div>
-
-        <!-- Tool cards — scale + float in staggered -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-          <NuxtLink
-            v-for="(tool, idx) in tools"
-            :key="tool.title"
-            v-motion
-            :initial="{ opacity: 0, scale: 0.85, y: 40 }"
-            :visibleOnce="{
-              opacity: 1, scale: 1, y: 0,
-              transition: { type: 'spring', stiffness: 150, damping: 14, delay: idx * 150 },
-            }"
-            :to="tool.route"
-            class="neo-card bg-neo-white p-5 card-tilt"
-          >
-            <span class="text-2xl block mb-2">{{ tool.icon }}</span>
-            <h3 class="text-base font-bold mb-1">{{ tool.title }}</h3>
-            <p class="text-sm text-neo-text-muted">{{ tool.description }}</p>
-          </NuxtLink>
-        </div>
-        <div
-          v-motion
-          :initial="{ opacity: 0, y: 20 }"
-          :visibleOnce="{ opacity: 1, y: 0, transition: { duration: 500, delay: 300 } }"
-          class="text-center"
-        >
-          <NuxtLink
-            to="/tools"
-            class="neo-btn inline-block bg-neo-white px-6 py-3 text-sm font-bold"
-          >
-            All Tools &rarr;
-          </NuxtLink>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== FOOTER ==================== -->
-    <section id="footer" class="relative bg-neo-black px-6 md:px-12 py-12">
-      <div
-        v-motion
-        :initial="{ opacity: 0, y: 30 }"
-        :visibleOnce="{ opacity: 1, y: 0, transition: { duration: 600, delay: 100 } }"
-        class="mx-auto max-w-6xl text-center text-neo-white"
-      >
-        <h2 class="text-neo-white mb-4">
-          <span class="text-lg font-bold">{{ siteConfig.name }}</span>
-        </h2>
-        <div class="flex justify-center gap-4 mb-6">
-          <a
-            v-if="siteConfig.social.github"
-            :href="siteConfig.social.github"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="neo-btn bg-neo-white text-neo-black px-4 py-2 text-sm font-bold"
-          >
-            GitHub
-          </a>
-          <a
-            v-if="siteConfig.social.linkedin"
-            :href="siteConfig.social.linkedin"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="neo-btn bg-neo-white text-neo-black px-4 py-2 text-sm font-bold"
-          >
-            LinkedIn
-          </a>
-          <a
-            v-if="siteConfig.social.email"
-            :href="`mailto:${siteConfig.social.email}`"
-            class="neo-btn bg-neo-white text-neo-black px-4 py-2 text-sm font-bold"
-          >
-            Email
-          </a>
-        </div>
-        <p class="text-sm text-white/60">
-          Built with Nuxt, Vue, and Nuxt Content.
-        </p>
-        <p class="text-xs text-white/40 mt-1">
-          &copy; {{ new Date().getFullYear() }} {{ siteConfig.author.name }}
-        </p>
-      </div>
-    </section>
-
-    <!-- ==================== SLIDE PANELS ==================== -->
-
-    <!-- Post Detail Panel -->
-    <NeoSlidePanel
-      :open="!!activePost"
-      :title="activePost?.title"
-      @close="closePost"
-    >
-      <template v-if="activePost">
-        <article>
-          <header class="mb-8">
-            <h1 class="mb-3">{{ activePost.title }}</h1>
-            <div class="flex flex-wrap items-center gap-3 text-sm text-neo-text-muted mb-4">
-              <span class="font-bold">{{ formatDate(activePost.date) }}</span>
-              <span v-if="activePost.tags?.length" class="flex flex-wrap gap-1">
+              <h3 class="text-lg font-bold mb-2 leading-tight text-dali-white">{{ post.title }}</h3>
+              <p class="text-sm text-dali-muted flex-1">{{ post.description }}</p>
+              <div v-if="post.tags?.length" class="mt-3 flex flex-wrap gap-1">
                 <span
-                  v-for="tag in activePost.tags"
+                  v-for="tag in post.tags.slice(0, 3)"
                   :key="tag"
-                  class="text-[10px] font-bold px-2 py-0.5 bg-neo-yellow/40 border border-neo-black"
+                  class="text-[10px] font-bold px-2 py-0.5 border border-dali-gold/40 text-dali-gold"
                 >
                   {{ tag }}
                 </span>
+              </div>
+              <span class="mt-3 text-xs font-bold text-dali-teal flex items-center gap-1">
+                Read more
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
               </span>
-            </div>
-          </header>
-          <div v-if="activePostContent" class="blog-content neo-card bg-neo-white p-6 md:p-10">
-            <ContentRenderer :value="activePostContent" />
-          </div>
-          <div v-else class="flex items-center justify-center py-12">
-            <div class="w-8 h-8 border-4 border-neo-black border-t-neo-yellow rounded-full animate-spin" />
-          </div>
-          <div class="mt-8 text-center">
-            <NuxtLink
-              :to="activePost.path"
-              class="neo-btn inline-block bg-neo-yellow px-6 py-3 text-sm font-bold"
+            </DaliIrregularCard>
+
+            <!-- "View All" card -->
+            <DaliIrregularCard
+              ref="viewAllCardRef"
+              :seed="99"
+              :rotation="1"
+              accent-color="var(--color-dali-gold)"
+              class="posts-card opacity-0 cursor-pointer flex items-center justify-center text-center"
+              tag="div"
+              @click="navigateTo('/blogs')"
             >
-              Open Full Post &rarr;
+              <div class="py-4">
+                <span class="text-3xl mb-3 block">📚</span>
+                <span class="text-sm font-bold text-dali-white block">View All Posts</span>
+                <span class="text-xs text-dali-muted mt-1 block">Browse the full archive &rarr;</span>
+              </div>
+            </DaliIrregularCard>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slash divider -->
+      <DaliMeltingDivider variant="slash" color="var(--color-dali-gold)" :height="60" />
+
+      <!-- ==================== MY DIGITAL SPACE ==================== -->
+      <section id="space" class="relative px-6 md:px-12 py-16 md:py-24 overflow-hidden">
+        <div class="mx-auto max-w-6xl">
+          <!-- Section heading -->
+          <h2
+            ref="spaceHeadingRef"
+            class="space-heading opacity-0 mb-12"
+          >
+            <span class="inline-block bg-dali-violet px-5 py-2 text-dali-white border-2 border-dali-white/20 rotate-1 shadow-dali">
+              My Digital Space
+            </span>
+          </h2>
+
+          <!-- Photo Gallery — collage style -->
+          <div
+            ref="galleryRef"
+            class="mb-12 opacity-0"
+          >
+            <h3 class="text-lg font-bold mb-4 text-dali-gold">Gallery</h3>
+            <NeoPhotoGallery @open-lightbox="openGallery" />
+          </div>
+
+          <!-- About & Contact cards — scattered -->
+          <div class="space-cards grid grid-cols-1 md:grid-cols-2 gap-8">
+            <DaliIrregularCard
+              ref="aboutCardRef"
+              :seed="200"
+              :rotation="-2"
+              accent-color="var(--color-dali-teal)"
+              class="space-card opacity-0 cursor-pointer"
+              @click="openAbout"
+            >
+              <h3 class="text-lg font-bold mb-2 text-dali-white">About Me</h3>
+              <p class="text-sm text-dali-muted">
+                {{ siteConfig.author.bio }}. Learn more about my background, what I do, and what drives me.
+              </p>
+              <span class="mt-3 text-xs font-bold text-dali-teal flex items-center gap-1">
+                Read more
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </DaliIrregularCard>
+
+            <DaliIrregularCard
+              ref="contactCardRef"
+              :seed="201"
+              :rotation="2.5"
+              accent-color="var(--color-dali-gold)"
+              class="space-card opacity-0 cursor-pointer"
+              @click="openContact"
+            >
+              <h3 class="text-lg font-bold mb-2 text-dali-white">Contact</h3>
+              <p class="text-sm text-dali-muted">
+                Get in touch via email, GitHub, or LinkedIn. Always happy to chat.
+              </p>
+              <span class="mt-3 text-xs font-bold text-dali-gold flex items-center gap-1">
+                Get in touch
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </DaliIrregularCard>
+          </div>
+        </div>
+      </section>
+
+      <!-- Wave divider -->
+      <DaliMeltingDivider variant="wave" color="var(--color-dali-teal)" :height="60" />
+
+      <!-- ==================== TOOLS ==================== -->
+      <section id="tools" class="relative px-6 md:px-12 py-16 md:py-24 overflow-hidden">
+        <div class="mx-auto max-w-6xl">
+          <!-- Section heading -->
+          <h2
+            ref="toolsHeadingRef"
+            class="tools-heading opacity-0 mb-12"
+          >
+            <span class="inline-block bg-dali-gold px-5 py-2 text-dali-void border-2 border-dali-void/20 -rotate-1 shadow-dali-void">
+              Dev Tools
+            </span>
+          </h2>
+
+          <!-- Tool cards — float in sideways during vertical scroll -->
+          <div class="tools-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-6">
+            <DaliIrregularCard
+              v-for="(tool, idx) in tools"
+              :key="tool.title"
+              :ref="el => setToolCardRef(el, idx)"
+              :seed="300 + idx"
+              :rotation="toolRotations[idx] || 0"
+              :accent-color="tool.color"
+              class="tool-card opacity-0 cursor-pointer"
+              @click="navigateTo(tool.route)"
+            >
+              <span class="text-2xl block mb-2">{{ tool.icon }}</span>
+              <h3 class="text-base font-bold mb-1 text-dali-white">{{ tool.title }}</h3>
+              <p class="text-sm text-dali-muted">{{ tool.description }}</p>
+            </DaliIrregularCard>
+          </div>
+
+          <div
+            ref="allToolsRef"
+            class="text-center opacity-0"
+          >
+            <NuxtLink
+              to="/tools"
+              class="dali-btn inline-block px-6 py-3 text-sm"
+            >
+              All Tools &rarr;
             </NuxtLink>
           </div>
-        </article>
-      </template>
-    </NeoSlidePanel>
-
-    <!-- About Panel -->
-    <NeoSlidePanel
-      :open="panelMode === 'about'"
-      title="About Me"
-      @close="closePanel"
-    >
-      <div v-if="aboutContent" class="blog-content neo-card bg-neo-white p-6 md:p-10">
-        <ContentRenderer :value="aboutContent" />
-      </div>
-      <div v-else class="flex items-center justify-center py-12">
-        <div class="w-8 h-8 border-4 border-neo-black border-t-neo-yellow rounded-full animate-spin" />
-      </div>
-    </NeoSlidePanel>
-
-    <!-- Contact Panel -->
-    <NeoSlidePanel
-      :open="panelMode === 'contact'"
-      title="Get In Touch"
-      @close="closePanel"
-    >
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
-        <!-- Email -->
-        <a :href="`mailto:${siteConfig.social.email}`" class="neo-card bg-neo-white p-5 text-center card-tilt">
-          <div class="text-4xl mb-3">📧</div>
-          <h3 class="text-lg font-bold mb-1">Email</h3>
-          <p class="text-sm text-neo-text-muted">{{ siteConfig.social.email }}</p>
-        </a>
-        <!-- GitHub -->
-        <a :href="siteConfig.social.github" target="_blank" rel="noopener noreferrer" class="neo-card bg-neo-white p-5 text-center card-tilt">
-          <div class="text-4xl mb-3">💻</div>
-          <h3 class="text-lg font-bold mb-1">GitHub</h3>
-          <p class="text-sm text-neo-text-muted">{{ siteConfig.social.github?.split('/').pop() }}</p>
-        </a>
-        <!-- LinkedIn -->
-        <a :href="siteConfig.social.linkedin" target="_blank" rel="noopener noreferrer" class="neo-card bg-neo-white p-5 text-center card-tilt">
-          <div class="text-4xl mb-3">💼</div>
-          <h3 class="text-lg font-bold mb-1">LinkedIn</h3>
-          <p class="text-sm text-neo-text-muted">{{ siteConfig.social.linkedin?.split('/').slice(-2).join('/') }}</p>
-        </a>
-        <!-- Resume -->
-        <a href="/resume/20260111.pdf" target="_blank" rel="noopener noreferrer" class="neo-card bg-neo-white p-5 text-center card-tilt">
-          <div class="text-4xl mb-3">📄</div>
-          <h3 class="text-lg font-bold mb-1">Resume</h3>
-          <p class="text-sm text-neo-text-muted">Download CV</p>
-        </a>
-      </div>
-    </NeoSlidePanel>
-
-    <!-- Gallery Lightbox Panel -->
-    <NeoSlidePanel
-      :open="panelMode === 'gallery'"
-      :title="selectedGalleryImage?.title || 'Gallery'"
-      @close="closePanel"
-    >
-      <div v-if="selectedGalleryImage" class="flex flex-col items-center">
-        <div class="neo-card overflow-hidden mb-4 max-w-3xl w-full">
-          <NuxtImg
-            :src="selectedGalleryImage.url"
-            :alt="selectedGalleryImage.alt || selectedGalleryImage.title || 'Photo'"
-            class="w-full object-contain max-h-[70vh]"
-          />
         </div>
-        <div v-if="selectedGalleryImage.title || selectedGalleryImage.note" class="text-center max-w-xl">
-          <p v-if="selectedGalleryImage.title" class="font-bold text-lg mb-1">{{ selectedGalleryImage.title }}</p>
-          <p v-if="selectedGalleryImage.note" class="text-sm text-neo-text-muted italic">{{ selectedGalleryImage.note }}</p>
+      </section>
+
+      <!-- Melt divider into footer -->
+      <DaliMeltingDivider variant="melt" color="var(--color-dali-red)" :height="60" :flip="true" />
+
+      <!-- ==================== FOOTER ==================== -->
+      <section id="footer" class="relative px-6 md:px-12 py-12" style="background: var(--color-dali-smoke);">
+        <!-- Red diagonal slash accent -->
+        <div class="absolute top-0 right-0 w-1/3 h-full overflow-hidden pointer-events-none" aria-hidden="true">
+          <div class="absolute inset-0 bg-dali-red/5 -skew-x-12 origin-top-right" />
         </div>
-      </div>
-    </NeoSlidePanel>
 
-    <!-- Mobile nav drawer trigger -->
-    <button
-      class="lg:hidden fixed bottom-6 right-6 z-50 neo-btn bg-neo-yellow text-neo-black p-3 rounded-full"
-      aria-label="Open navigation"
-      @click="toggleMobileNav"
-    >
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-      </svg>
-    </button>
-
-    <!-- Mobile nav overlay -->
-    <Teleport to="body">
-      <Transition name="fade">
         <div
-          v-if="mobileNavOpen"
-          class="lg:hidden fixed inset-0 z-50 bg-black/60"
-          @click.self="mobileNavOpen = false"
+          ref="footerRef"
+          class="mx-auto max-w-6xl text-center relative z-10 opacity-0"
         >
-          <div class="absolute bottom-0 left-0 right-0 bg-neo-white border-t-4 border-neo-black p-6">
-            <div class="flex justify-between items-center mb-4">
-              <p class="text-xs font-bold uppercase tracking-widest text-neo-text-muted">Navigate</p>
-              <button class="neo-btn bg-neo-white px-2 py-1 text-xs font-bold" @click="mobileNavOpen = false">
-                Close
-              </button>
+          <h2 class="text-dali-white mb-4">
+            <span class="text-lg font-bold">{{ siteConfig.name }}</span>
+          </h2>
+          <div class="flex justify-center gap-4 mb-6">
+            <a
+              v-if="siteConfig.social.github"
+              :href="siteConfig.social.github"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="dali-btn px-4 py-2 text-sm"
+            >
+              GitHub
+            </a>
+            <a
+              v-if="siteConfig.social.linkedin"
+              :href="siteConfig.social.linkedin"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="dali-btn px-4 py-2 text-sm"
+            >
+              LinkedIn
+            </a>
+            <a
+              v-if="siteConfig.social.email"
+              :href="`mailto:${siteConfig.social.email}`"
+              class="dali-btn px-4 py-2 text-sm"
+            >
+              Email
+            </a>
+          </div>
+          <p class="text-sm text-dali-muted">
+            Built with Nuxt, Vue, and Nuxt Content.
+          </p>
+          <p class="text-xs text-dali-muted/50 mt-1">
+            &copy; {{ new Date().getFullYear() }} {{ siteConfig.author.name }}
+          </p>
+        </div>
+      </section>
+    </template>
+
+    <!-- ===================== FOCUS COLUMN ===================== -->
+    <template #focus>
+      <div class="min-h-screen">
+        <!-- Back button -->
+        <div class="sticky top-0 z-20 flex items-center justify-between px-6 py-4 bg-dali-cream border-b-2 border-dali-void/10">
+          <button
+            class="dali-btn bg-transparent text-dali-void border-dali-void px-3 py-1.5 text-sm font-bold flex items-center gap-2"
+            style="--color-dali-red: var(--color-dali-void);"
+            @click="closeAllPanels"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back
+          </button>
+          <span class="text-sm font-bold text-dali-void/60 truncate max-w-[60%]">
+            {{ focusPanelTitle }}
+          </span>
+          <button
+            class="text-xs font-bold text-dali-void/60 hover:text-dali-void px-2 py-1"
+            @click="closeAllPanels"
+          >
+            ESC
+          </button>
+        </div>
+
+        <!-- Focus content -->
+        <div class="px-6 md:px-12 py-8 max-w-4xl mx-auto">
+          <!-- Post Detail -->
+          <template v-if="activePost">
+            <article>
+              <header class="mb-8">
+                <h1 class="text-dali-void mb-3">{{ activePost.title }}</h1>
+                <div class="flex flex-wrap items-center gap-3 text-sm text-dali-void/60 mb-4">
+                  <span class="font-bold">{{ formatDate(activePost.date) }}</span>
+                  <span v-if="activePost.tags?.length" class="flex flex-wrap gap-1">
+                    <span
+                      v-for="tag in activePost.tags"
+                      :key="tag"
+                      class="text-[10px] font-bold px-2 py-0.5 bg-dali-red/10 border border-dali-red/30 text-dali-red"
+                    >
+                      {{ tag }}
+                    </span>
+                  </span>
+                </div>
+              </header>
+              <div v-if="activePostContent" class="blog-content bg-white p-6 md:p-10 border-2 border-dali-void/10">
+                <ContentRenderer :value="activePostContent" />
+              </div>
+              <div v-else class="flex items-center justify-center py-12">
+                <div class="w-8 h-8 border-4 border-dali-red border-t-dali-gold rounded-full animate-spin" />
+              </div>
+              <div class="mt-8 text-center">
+                <NuxtLink
+                  :to="activePost.path"
+                  class="dali-btn inline-block bg-dali-red text-dali-white px-6 py-3 text-sm"
+                >
+                  Open Full Post &rarr;
+                </NuxtLink>
+              </div>
+            </article>
+          </template>
+
+          <!-- About -->
+          <template v-else-if="panelMode === 'about'">
+            <div v-if="aboutContent" class="blog-content bg-white p-6 md:p-10 border-2 border-dali-void/10">
+              <ContentRenderer :value="aboutContent" />
             </div>
-            <div class="grid grid-cols-2 gap-3">
-              <button
-                v-for="section in tocSections"
-                :key="section.id"
-                class="neo-btn bg-neo-bg px-4 py-3 text-sm font-bold text-left"
-                @click="scrollToSection(section.id)"
-              >
-                {{ section.label }}
-              </button>
-              <NuxtLink
-                to="/blogs"
-                class="neo-btn bg-neo-bg px-4 py-3 text-sm font-bold text-left"
-                @click="mobileNavOpen = false"
-              >
-                All Posts
-              </NuxtLink>
-              <NuxtLink
-                to="/tools"
-                class="neo-btn bg-neo-bg px-4 py-3 text-sm font-bold text-left"
-                @click="mobileNavOpen = false"
-              >
-                All Tools
-              </NuxtLink>
+            <div v-else class="flex items-center justify-center py-12">
+              <div class="w-8 h-8 border-4 border-dali-red border-t-dali-gold rounded-full animate-spin" />
             </div>
+          </template>
+
+          <!-- Contact -->
+          <template v-else-if="panelMode === 'contact'">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+              <a :href="`mailto:${siteConfig.social.email}`" class="block p-5 border-2 border-dali-void/10 bg-white text-center hover:border-dali-red transition-colors">
+                <div class="text-4xl mb-3">📧</div>
+                <h3 class="text-lg font-bold mb-1 text-dali-void">Email</h3>
+                <p class="text-sm text-dali-void/60">{{ siteConfig.social.email }}</p>
+              </a>
+              <a :href="siteConfig.social.github" target="_blank" rel="noopener noreferrer" class="block p-5 border-2 border-dali-void/10 bg-white text-center hover:border-dali-red transition-colors">
+                <div class="text-4xl mb-3">💻</div>
+                <h3 class="text-lg font-bold mb-1 text-dali-void">GitHub</h3>
+                <p class="text-sm text-dali-void/60">{{ siteConfig.social.github?.split('/').pop() }}</p>
+              </a>
+              <a :href="siteConfig.social.linkedin" target="_blank" rel="noopener noreferrer" class="block p-5 border-2 border-dali-void/10 bg-white text-center hover:border-dali-red transition-colors">
+                <div class="text-4xl mb-3">💼</div>
+                <h3 class="text-lg font-bold mb-1 text-dali-void">LinkedIn</h3>
+                <p class="text-sm text-dali-void/60">{{ siteConfig.social.linkedin?.split('/').slice(-2).join('/') }}</p>
+              </a>
+              <a href="/resume/20260111.pdf" target="_blank" rel="noopener noreferrer" class="block p-5 border-2 border-dali-void/10 bg-white text-center hover:border-dali-red transition-colors">
+                <div class="text-4xl mb-3">📄</div>
+                <h3 class="text-lg font-bold mb-1 text-dali-void">Resume</h3>
+                <p class="text-sm text-dali-void/60">Download CV</p>
+              </a>
+            </div>
+          </template>
+
+          <!-- Gallery -->
+          <template v-else-if="panelMode === 'gallery' && selectedGalleryImage">
+            <div class="flex flex-col items-center">
+              <div class="overflow-hidden mb-4 max-w-3xl w-full border-2 border-dali-void/10">
+                <NuxtImg
+                  :src="selectedGalleryImage.url"
+                  :alt="selectedGalleryImage.alt || selectedGalleryImage.title || 'Photo'"
+                  class="w-full object-contain max-h-[70vh]"
+                />
+              </div>
+              <div v-if="selectedGalleryImage.title || selectedGalleryImage.note" class="text-center max-w-xl">
+                <p v-if="selectedGalleryImage.title" class="font-bold text-lg mb-1 text-dali-void">{{ selectedGalleryImage.title }}</p>
+                <p v-if="selectedGalleryImage.note" class="text-sm text-dali-void/60 italic">{{ selectedGalleryImage.note }}</p>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </template>
+  </DaliCanvas>
+
+  <!-- Mobile nav -->
+  <button
+    class="lg:hidden fixed bottom-6 right-6 z-50 dali-btn bg-dali-red text-dali-white p-3 rounded-full"
+    aria-label="Open navigation"
+    @click="toggleMobileNav"
+  >
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  </button>
+
+  <!-- Mobile nav overlay -->
+  <Teleport to="body">
+    <Transition name="fade">
+      <div
+        v-if="mobileNavOpen"
+        class="lg:hidden fixed inset-0 z-50 bg-black/70"
+        @click.self="mobileNavOpen = false"
+      >
+        <div class="absolute bottom-0 left-0 right-0 bg-dali-smoke border-t-2 border-dali-red p-6">
+          <div class="flex justify-between items-center mb-4">
+            <p class="text-xs font-bold uppercase tracking-widest text-dali-muted font-mono">Navigate</p>
+            <button class="dali-btn px-2 py-1 text-xs" @click="mobileNavOpen = false">
+              Close
+            </button>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <button
+              v-for="section in [
+                { id: 'hero', label: 'Home' },
+                { id: 'posts', label: 'Posts' },
+                { id: 'space', label: 'Space' },
+                { id: 'tools', label: 'Tools' },
+              ]"
+              :key="section.id"
+              class="dali-btn px-4 py-3 text-sm text-left"
+              @click="scrollToSection(section.id)"
+            >
+              {{ section.label }}
+            </button>
+            <NuxtLink
+              to="/blogs"
+              class="dali-btn px-4 py-3 text-sm text-left"
+              @click="mobileNavOpen = false"
+            >
+              All Posts
+            </NuxtLink>
+            <NuxtLink
+              to="/tools"
+              class="dali-btn px-4 py-3 text-sm text-left"
+              @click="mobileNavOpen = false"
+            >
+              All Tools
+            </NuxtLink>
           </div>
         </div>
-      </Transition>
-    </Teleport>
-  </div>
+      </div>
+    </Transition>
+  </Teleport>
+
+  <!-- Mobile focus SlidePanel (used instead of DaliCanvas pan on small screens) -->
+  <NeoSlidePanel
+    :open="isMobile && isFocused"
+    :title="focusPanelTitle"
+    @close="closeAllPanels"
+  >
+    <!-- Post reader -->
+    <template v-if="activePost">
+      <h1 class="text-2xl font-bold mb-4 text-dali-void">{{ activePost.title }}</h1>
+      <p v-if="activePost.date" class="text-sm text-dali-void/50 mb-6 font-mono">{{ formatDate(activePost.date) }}</p>
+      <div v-if="activePostContent" class="blog-content text-dali-void">
+        <ContentRenderer :value="activePostContent" />
+      </div>
+      <div v-else class="flex justify-center py-12">
+        <div class="w-6 h-6 border-2 border-dali-red border-t-transparent rounded-full animate-spin" />
+      </div>
+    </template>
+
+    <!-- About -->
+    <template v-else-if="panelMode === 'about'">
+      <div v-if="aboutContent" class="blog-content text-dali-void">
+        <ContentRenderer :value="aboutContent" />
+      </div>
+      <div v-else class="text-center py-12 text-dali-void/60">Loading about...</div>
+    </template>
+
+    <!-- Contact -->
+    <template v-else-if="panelMode === 'contact'">
+      <h2 class="text-2xl font-bold mb-4 text-dali-void">Get In Touch</h2>
+      <div class="space-y-4">
+        <a v-if="siteConfig.social.github" :href="siteConfig.social.github" target="_blank" class="dali-btn block text-center px-4 py-3 text-sm">GitHub</a>
+        <a v-if="siteConfig.social.linkedin" :href="siteConfig.social.linkedin" target="_blank" class="dali-btn block text-center px-4 py-3 text-sm">LinkedIn</a>
+        <a v-if="siteConfig.social.email" :href="`mailto:${siteConfig.social.email}`" class="dali-btn block text-center px-4 py-3 text-sm">Email</a>
+      </div>
+    </template>
+
+    <!-- Gallery -->
+    <template v-else-if="panelMode === 'gallery' && selectedGalleryImage">
+      <div class="flex flex-col items-center">
+        <div class="overflow-hidden mb-4 max-w-full border-2 border-dali-void/10">
+          <NuxtImg :src="selectedGalleryImage.url" :alt="selectedGalleryImage.alt || selectedGalleryImage.title || 'Photo'" class="w-full object-contain max-h-[70vh]" />
+        </div>
+        <p v-if="selectedGalleryImage.title" class="font-bold text-lg mb-1 text-dali-void">{{ selectedGalleryImage.title }}</p>
+        <p v-if="selectedGalleryImage.note" class="text-sm text-dali-void/60 italic">{{ selectedGalleryImage.note }}</p>
+      </div>
+    </template>
+  </NeoSlidePanel>
+
 </template>
 
 <script setup lang="ts">
 import ChatView from '~/components/chat/ChatView.vue'
 import { siteConfig, getPageMeta } from '~/site.config'
-import type { ScrollSpySection } from '~/composables/useScrollSpy'
+import { useCanvasCamera, type FocusTarget } from '~/composables/useCanvasCamera'
 import type { GalleryImage } from '~/composables/useBackgroundGallery'
+
+// ==================== CAMERA ====================
+const {
+  isFocused,
+  panToFocus,
+  panToDiscovery,
+} = useCanvasCamera()
 
 // ==================== STATE ====================
 const showFallback = ref(false)
 const mobileNavOpen = ref(false)
 const chatActive = ref(false)
 const hasScrolled = ref(false)
+const isMobile = ref(false)
 
 // Panel state
 const panelMode = ref<'none' | 'about' | 'contact' | 'gallery'>('none')
 const selectedGalleryImage = ref<GalleryImage | null>(null)
-
-// ==================== TOC SECTIONS ====================
-const tocSections: ScrollSpySection[] = [
-  { id: 'hero', label: 'Home' },
-  { id: 'posts', label: 'Posts' },
-  { id: 'space', label: 'Space' },
-  { id: 'tools', label: 'Tools' },
-  { id: 'footer', label: 'Footer' },
-]
 
 // ==================== PROFILE ====================
 const profile = {
@@ -562,10 +621,12 @@ const profile = {
 
 // ==================== TOOLS ====================
 const tools = [
-  { title: 'Base64', icon: '🔐', description: 'Encode & decode Base64 strings', route: '/tools/base64' },
-  { title: 'JSON', icon: '📋', description: 'Format & validate JSON', route: '/tools/json' },
-  { title: 'JWT', icon: '🔑', description: 'Decode JWT tokens', route: '/tools/jwt' },
+  { title: 'Base64', icon: '🔐', description: 'Encode & decode Base64 strings', route: '/tools/base64', color: 'var(--color-dali-red)' },
+  { title: 'JSON', icon: '📋', description: 'Format & validate JSON', route: '/tools/json', color: 'var(--color-dali-teal)' },
+  { title: 'JWT', icon: '🔑', description: 'Decode JWT tokens', route: '/tools/jwt', color: 'var(--color-dali-gold)' },
 ]
+
+const toolRotations = [-2, 1.5, -1]
 
 // ==================== BLOG POSTS ====================
 interface BlogPost {
@@ -576,7 +637,6 @@ interface BlogPost {
   tags?: string[]
 }
 
-// Fetch at top-level (SSR-compatible) so cards are always available immediately
 const { data: rawPosts } = await useAsyncData('recent-posts', () =>
   queryCollection('blogs')
     .where('published', '=', true)
@@ -596,11 +656,58 @@ const recentPosts = computed<BlogPost[]>(() => {
   }))
 })
 
+const postRotations = [-3, 2, -1.5, 2.5, -2, 1]
+const postColors = [
+  'var(--color-dali-red)',
+  'var(--color-dali-teal)',
+  'var(--color-dali-gold)',
+  'var(--color-dali-violet)',
+  'var(--color-dali-red)',
+  'var(--color-dali-teal)',
+]
+
 const activePost = ref<BlogPost | null>(null)
 const activePostContent = ref<any>(null)
 
 // ==================== ABOUT CONTENT ====================
 const aboutContent = ref<any>(null)
+
+// ==================== FOCUS PANEL TITLE ====================
+const focusPanelTitle = computed(() => {
+  if (activePost.value) return activePost.value.title
+  if (panelMode.value === 'about') return 'About Me'
+  if (panelMode.value === 'contact') return 'Get In Touch'
+  if (panelMode.value === 'gallery') return selectedGalleryImage.value?.title || 'Gallery'
+  return ''
+})
+
+// ==================== TEMPLATE REFS ====================
+const avatarRef = ref<HTMLElement | null>(null)
+const nameRef = ref<HTMLElement | null>(null)
+const subtitleRef = ref<HTMLElement | null>(null)
+const mottoRef = ref<HTMLElement | null>(null)
+const chatRef = ref<HTMLElement | null>(null)
+const scrollIndicatorRef = ref<HTMLElement | null>(null)
+const postsHeadingRef = ref<HTMLElement | null>(null)
+const spaceHeadingRef = ref<HTMLElement | null>(null)
+const galleryRef = ref<HTMLElement | null>(null)
+const aboutCardRef = ref<any>(null)
+const contactCardRef = ref<any>(null)
+const toolsHeadingRef = ref<HTMLElement | null>(null)
+const allToolsRef = ref<HTMLElement | null>(null)
+const footerRef = ref<HTMLElement | null>(null)
+const viewAllCardRef = ref<any>(null)
+
+// Dynamic refs for post/tool cards
+const postCardRefs = ref<(any)[]>([])
+const toolCardRefs = ref<(any)[]>([])
+
+function setPostCardRef(el: any, idx: number) {
+  if (el) postCardRefs.value[idx] = el
+}
+function setToolCardRef(el: any, idx: number) {
+  if (el) toolCardRefs.value[idx] = el
+}
 
 // ==================== METHODS ====================
 function onChatActiveChange(active: boolean) {
@@ -625,11 +732,27 @@ function formatDate(dateStr: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
+// --- Focus mode transitions ---
+async function transitionToFocus(target: FocusTarget) {
+  await panToFocus(target)
+}
+
+async function closeAllPanels() {
+  activePost.value = null
+  activePostContent.value = null
+  panelMode.value = 'none'
+  selectedGalleryImage.value = null
+  await panToDiscovery()
+  clearHash()
+}
+
 // --- Post panel ---
 async function openPost(post: BlogPost) {
   activePost.value = post
   activePostContent.value = null
+  panelMode.value = 'none'
   updateHash(`post${post.path}`)
+  transitionToFocus('post')
   try {
     const data = await queryCollection('blogs').path(post.path).first()
     activePostContent.value = data
@@ -638,16 +761,12 @@ async function openPost(post: BlogPost) {
   }
 }
 
-function closePost() {
-  activePost.value = null
-  activePostContent.value = null
-  clearHash()
-}
-
 // --- About / Contact / Gallery panels ---
 async function openAbout() {
   panelMode.value = 'about'
+  activePost.value = null
   updateHash('about')
+  transitionToFocus('about')
   if (!aboutContent.value) {
     try {
       const allPages = await queryCollection('pages').all()
@@ -660,19 +779,17 @@ async function openAbout() {
 
 function openContact() {
   panelMode.value = 'contact'
+  activePost.value = null
   updateHash('contact')
+  transitionToFocus('contact')
 }
 
 function openGallery(image: GalleryImage) {
   selectedGalleryImage.value = image
   panelMode.value = 'gallery'
+  activePost.value = null
   updateHash('gallery')
-}
-
-function closePanel() {
-  panelMode.value = 'none'
-  selectedGalleryImage.value = null
-  clearHash()
+  transitionToFocus('gallery')
 }
 
 // --- Hash routing ---
@@ -691,38 +808,353 @@ function clearHash() {
 function onPopState() {
   const hash = window.location.hash.slice(1)
   if (!hash) {
-    // Back to main page
-    activePost.value = null
-    activePostContent.value = null
-    panelMode.value = 'none'
-    selectedGalleryImage.value = null
+    closeAllPanels()
   } else if (hash === 'about') {
     openAbout()
   } else if (hash === 'contact') {
     openContact()
   } else if (hash.startsWith('post/')) {
-    const path = '/' + hash.slice(4) // hash is "post/blogs/slug" -> "/blogs/slug"
+    const path = '/' + hash.slice(4)
     const post = recentPosts.value.find(p => p.path === path)
     if (post) openPost(post)
   }
 }
 
-// Scroll tracking for scroll indicator
 function onScroll() {
   hasScrolled.value = window.scrollY > 100
+}
+
+// ==================== GSAP SCROLL ANIMATIONS ====================
+async function initScrollAnimations() {
+  const { gsap } = await import('gsap')
+  const { ScrollTrigger } = await import('gsap/ScrollTrigger')
+  gsap.registerPlugin(ScrollTrigger)
+
+  // On mobile, use simpler/smaller animations for performance
+  const mobile = isMobile.value
+  const scale = mobile ? 0.4 : 1 // Scale down travel distances on mobile
+
+  // --- Hero entrance: staggered slash-in from different directions ---
+  const heroTl = gsap.timeline({ delay: 0.3 })
+
+  if (avatarRef.value) {
+    heroTl.fromTo(avatarRef.value,
+      { opacity: 0, x: -80 * scale, y: -40 * scale, rotation: mobile ? 0 : -15, scale: 0.7 },
+      { opacity: 1, x: 0, y: 0, rotation: 0, scale: 1, duration: 0.8, ease: 'back.out(1.7)' },
+      0
+    )
+  }
+
+  if (nameRef.value) {
+    heroTl.fromTo(nameRef.value,
+      { opacity: 0, x: 120 * scale, skewX: mobile ? 0 : -10 },
+      { opacity: 1, x: 0, skewX: 0, duration: 0.7, ease: 'power3.out' },
+      0.2
+    )
+  }
+
+  if (subtitleRef.value) {
+    heroTl.fromTo(subtitleRef.value,
+      { opacity: 0, y: 30 * scale },
+      { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' },
+      0.4
+    )
+  }
+
+  if (mottoRef.value) {
+    heroTl.fromTo(mottoRef.value,
+      { opacity: 0, x: -60 * scale, rotation: mobile ? 0 : -2 },
+      { opacity: 1, x: 0, rotation: 0, duration: 0.6, ease: 'power2.out' },
+      0.55
+    )
+  }
+
+  if (chatRef.value) {
+    heroTl.fromTo(chatRef.value,
+      { opacity: 0, y: 60 * scale, rotation: mobile ? 0 : 2 },
+      { opacity: 1, y: 0, rotation: 0, duration: 0.6, ease: 'back.out(1.4)' },
+      0.7
+    )
+  }
+
+  if (scrollIndicatorRef.value) {
+    heroTl.fromTo(scrollIndicatorRef.value,
+      { opacity: 0 },
+      { opacity: 1, duration: 0.8 },
+      1.2
+    )
+  }
+
+  // Shared toggleActions: play on enter, reverse on leave-back
+  const ta = 'play none none reverse'
+
+  // --- Blog Posts: explode outward from center ---
+  if (postsHeadingRef.value) {
+    gsap.fromTo(postsHeadingRef.value,
+      { opacity: 0, x: -100 * scale, rotation: mobile ? 0 : -5 },
+      {
+        opacity: 1, x: 0, rotation: 0,
+        duration: 0.7,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: postsHeadingRef.value,
+          start: 'top 85%',
+          toggleActions: ta,
+        },
+      }
+    )
+  }
+
+  // Post cards: explode from center with rotation (simpler on mobile)
+  nextTick(() => {
+    postCardRefs.value.forEach((cardRef, idx) => {
+      const el = cardRef?.$el || cardRef
+      if (!el) return
+
+      if (mobile) {
+        gsap.fromTo(el,
+          { opacity: 0, y: 40 },
+          {
+            opacity: 1, y: 0,
+            duration: 0.5,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: '#posts',
+              start: 'top 70%',
+              toggleActions: ta,
+            },
+            delay: idx * 0.08,
+          }
+        )
+      } else {
+        const angle = (idx / Math.max(postCardRefs.value.length, 1)) * Math.PI * 2 + Math.PI / 4
+        const startX = Math.cos(angle) * 200
+        const startY = Math.sin(angle) * 150
+        const startRotation = (Math.random() - 0.5) * 30
+
+        gsap.fromTo(el,
+          { opacity: 0, x: -startX, y: -startY, rotation: startRotation, scale: 0.3 },
+          {
+            opacity: 1, x: 0, y: 0, rotation: 0, scale: 1,
+            duration: 0.8,
+            ease: 'back.out(1.2)',
+            scrollTrigger: {
+              trigger: '#posts',
+              start: 'top 70%',
+              toggleActions: ta,
+            },
+            delay: idx * 0.1,
+          }
+        )
+      }
+    })
+
+    // View All card
+    const viewAllEl = viewAllCardRef.value?.$el || viewAllCardRef.value
+    if (viewAllEl) {
+      gsap.fromTo(viewAllEl,
+        { opacity: 0, scale: 0.5, rotation: 10 },
+        {
+          opacity: 1, scale: 1, rotation: 0,
+          duration: 0.6,
+          ease: 'back.out(1.4)',
+          scrollTrigger: {
+            trigger: '#posts',
+            start: 'top 60%',
+            toggleActions: ta,
+          },
+          delay: 0.7,
+        }
+      )
+    }
+  })
+
+  // --- Digital Space section ---
+  if (spaceHeadingRef.value) {
+    gsap.fromTo(spaceHeadingRef.value,
+      { opacity: 0, x: 100 * scale, rotation: mobile ? 0 : 3 },
+      {
+        opacity: 1, x: 0, rotation: 0,
+        duration: 0.7,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: spaceHeadingRef.value,
+          start: 'top 85%',
+          toggleActions: ta,
+        },
+      }
+    )
+  }
+
+  if (galleryRef.value) {
+    gsap.fromTo(galleryRef.value,
+      { opacity: 0, x: mobile ? 40 : 120 },
+      {
+        opacity: 1, x: 0,
+        duration: 0.8,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: galleryRef.value,
+          start: 'top 80%',
+          toggleActions: ta,
+        },
+      }
+    )
+  }
+
+  // About and Contact cards: fly in from opposite sides
+  nextTick(() => {
+    const aboutEl = aboutCardRef.value?.$el || aboutCardRef.value
+    if (aboutEl) {
+      gsap.fromTo(aboutEl,
+        { opacity: 0, x: mobile ? -40 : -120, rotation: mobile ? 0 : -5 },
+        {
+          opacity: 1, x: 0, rotation: 0,
+          duration: 0.7,
+          ease: 'back.out(1.2)',
+          scrollTrigger: {
+            trigger: aboutEl,
+            start: 'top 85%',
+            toggleActions: ta,
+          },
+        }
+      )
+    }
+
+    const contactEl = contactCardRef.value?.$el || contactCardRef.value
+    if (contactEl) {
+      gsap.fromTo(contactEl,
+        { opacity: 0, x: mobile ? 40 : 120, rotation: mobile ? 0 : 5 },
+        {
+          opacity: 1, x: 0, rotation: 0,
+          duration: 0.7,
+          ease: 'back.out(1.2)',
+          scrollTrigger: {
+            trigger: contactEl,
+            start: 'top 85%',
+            toggleActions: ta,
+          },
+          delay: 0.15,
+        }
+      )
+    }
+  })
+
+  // --- Tools: float in SIDEWAYS ---
+  if (toolsHeadingRef.value) {
+    gsap.fromTo(toolsHeadingRef.value,
+      { opacity: 0, x: -80 * scale, rotation: mobile ? 0 : -3 },
+      {
+        opacity: 1, x: 0, rotation: 0,
+        duration: 0.7,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: toolsHeadingRef.value,
+          start: 'top 85%',
+          toggleActions: ta,
+        },
+      }
+    )
+  }
+
+  nextTick(() => {
+    toolCardRefs.value.forEach((cardRef, idx) => {
+      const el = cardRef?.$el || cardRef
+      if (!el) return
+
+      if (mobile) {
+        gsap.fromTo(el,
+          { opacity: 0, y: 40 },
+          {
+            opacity: 1, y: 0,
+            duration: 0.5,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: '#tools',
+              start: 'top 75%',
+              toggleActions: ta,
+            },
+            delay: idx * 0.1,
+          }
+        )
+      } else {
+        // Scrub-based: already reversible by nature
+        const fromX = idx % 2 === 0 ? -300 : 300
+        const fromRotation = idx % 2 === 0 ? -8 : 8
+
+        gsap.fromTo(el,
+          { opacity: 0, x: fromX, rotation: fromRotation },
+          {
+            opacity: 1, x: 0, rotation: 0,
+            duration: 1,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: '#tools',
+              start: 'top 75%',
+              end: 'top 25%',
+              scrub: 1,
+            },
+            delay: idx * 0.05,
+          }
+        )
+      }
+    })
+  })
+
+  if (allToolsRef.value) {
+    gsap.fromTo(allToolsRef.value,
+      { opacity: 0, y: 30 },
+      {
+        opacity: 1, y: 0,
+        duration: 0.5,
+        scrollTrigger: {
+          trigger: allToolsRef.value,
+          start: 'top 85%',
+          toggleActions: ta,
+        },
+      }
+    )
+  }
+
+  // --- Footer ---
+  if (footerRef.value) {
+    gsap.fromTo(footerRef.value,
+      { opacity: 0, y: 40 },
+      {
+        opacity: 1, y: 0,
+        duration: 0.6,
+        scrollTrigger: {
+          trigger: footerRef.value,
+          start: 'top 90%',
+          toggleActions: ta,
+        },
+      }
+    )
+  }
 }
 
 // ==================== LIFECYCLE ====================
 const { initializeTracking, trackVisit } = useGoatCounter()
 
+// Mobile detection
+function checkMobile() {
+  isMobile.value = window.innerWidth < 1024
+}
+
 onMounted(async () => {
-  // GoatCounter
   initializeTracking()
   trackVisit('/')
 
-  // Scroll listener
+  // Detect mobile
+  checkMobile()
+  window.addEventListener('resize', checkMobile, { passive: true })
+
   window.addEventListener('scroll', onScroll, { passive: true })
   window.addEventListener('popstate', onPopState)
+
+  // Initialize GSAP scroll animations
+  await nextTick()
+  initScrollAnimations()
 
   // Handle initial hash
   const hash = window.location.hash.slice(1)
@@ -734,6 +1166,7 @@ onUnmounted(() => {
   if (import.meta.client) {
     window.removeEventListener('scroll', onScroll)
     window.removeEventListener('popstate', onPopState)
+    window.removeEventListener('resize', checkMobile)
   }
 })
 
@@ -746,6 +1179,139 @@ useHead(getPageMeta({
 </script>
 
 <style scoped>
+/* ==================== Hero Styles ==================== */
+
+.hero-name {
+  font-size: clamp(3rem, 8vw, 6rem);
+  line-height: 1;
+  font-weight: 700;
+  color: var(--color-dali-white);
+  transform: rotate(-2deg);
+  margin-bottom: 0.5rem;
+  position: relative;
+}
+
+.hero-name::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 60%;
+  height: 3px;
+  background: var(--color-dali-red);
+  transform: skewX(-15deg);
+}
+
+.hero-motto {
+  font-size: 1.25rem;
+  font-style: italic;
+  color: var(--color-dali-muted);
+  max-width: 36rem;
+  margin-bottom: 0.5rem;
+  position: relative;
+}
+
+.hero-motto__underline {
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  width: 80%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-dali-gold), transparent);
+}
+
+/* Avatar with melting-clock-ish shape */
+.hero-avatar__frame {
+  width: 120px;
+  height: 120px;
+  border: 3px solid var(--color-dali-red);
+  box-shadow: var(--shadow-dali);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-dali-smoke);
+  /* Melting clock shape: irregular rounded blob */
+  border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%;
+}
+
+/* Floating surrealist shapes */
+.hero-shape {
+  position: absolute;
+  opacity: 0.08;
+  animation: floatSurreal 12s ease-in-out infinite;
+}
+
+.hero-shape--circle {
+  width: 200px;
+  height: 200px;
+  border: 2px solid var(--color-dali-red);
+  border-radius: 50%;
+  top: 10%;
+  right: 15%;
+  animation-delay: 0s;
+}
+
+.hero-shape--diamond {
+  width: 100px;
+  height: 100px;
+  border: 2px solid var(--color-dali-gold);
+  transform: rotate(45deg);
+  bottom: 20%;
+  right: 25%;
+  animation-delay: 3s;
+}
+
+.hero-shape--blob {
+  width: 150px;
+  height: 150px;
+  border: 2px solid var(--color-dali-teal);
+  border-radius: 60% 40% 70% 30% / 40% 60% 30% 70%;
+  top: 50%;
+  left: 60%;
+  animation-delay: 6s;
+}
+
+@keyframes floatSurreal {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-15px) rotate(3deg); }
+  50% { transform: translateY(8px) rotate(-2deg); }
+  75% { transform: translateY(-10px) rotate(1deg); }
+}
+
+/* ==================== Posts Grid ==================== */
+
+.posts-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .posts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .posts-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ==================== Bounce animation ==================== */
+
+@keyframes bounceGentle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+
+.animate-bounce-gentle {
+  animation: bounceGentle 2s ease-in-out infinite;
+}
+
+/* ==================== Fade transition ==================== */
+
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.2s ease;
@@ -753,32 +1319,5 @@ useHead(getPageMeta({
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-}
-
-/* Card tilt hover effect */
-.card-tilt {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.card-tilt:hover {
-  transform: translate(-2px, -2px) rotate(-0.5deg);
-  box-shadow: var(--shadow-neo-lg);
-}
-.card-tilt:active {
-  transform: translate(0, 0) rotate(0deg);
-  box-shadow: var(--shadow-neo-sm);
-}
-
-/* Gentle bounce for scroll indicator */
-@keyframes bounceGentle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(6px); }
-}
-.animate-bounce-gentle {
-  animation: bounceGentle 2s ease-in-out infinite;
-}
-
-/* Shadow utility */
-.shadow-neo-sm {
-  box-shadow: var(--shadow-neo-sm);
 }
 </style>

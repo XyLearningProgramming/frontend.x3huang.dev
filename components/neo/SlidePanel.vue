@@ -1,8 +1,10 @@
 <script setup lang="ts">
 /**
  * SlidePanel — Full-screen panel that slides in from the right.
- * Used for post detail, gallery lightbox, about, contact, etc.
- * Supports swipe-left to dismiss (touch), Escape key, and back button.
+ * Used for mobile focus mode (post detail, gallery lightbox, about, contact, etc.)
+ * Supports swipe-right to dismiss (touch), Escape key, and back button.
+ *
+ * Restyled with Dalí visual tokens for the surrealist design.
  */
 
 interface Props {
@@ -110,14 +112,14 @@ const panelStyle = computed(() => {
       >
         <!-- Backdrop -->
         <div
-          class="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+          class="absolute inset-0 bg-black/70 backdrop-blur-sm"
           @click="emit('close')"
         />
 
         <!-- Panel -->
         <div
           ref="panelRef"
-          class="relative ml-auto w-full h-full bg-neo-bg overflow-y-auto overflow-x-hidden"
+          class="relative ml-auto w-full h-full dali-focus-surface overflow-y-auto overflow-x-hidden"
           :style="panelStyle"
           @touchstart.passive="onTouchStart"
           @touchmove.passive="onTouchMove"
@@ -136,17 +138,18 @@ const panelStyle = computed(() => {
                 v-if="showHint"
                 class="relative flex flex-col items-center gap-1 pl-1.5"
               >
-                <svg class="w-5 h-5 text-neo-text-muted animate-hint-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 text-dali-void/40 animate-hint-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
               </div>
             </Transition>
           </div>
 
-          <!-- Close button -->
-          <div class="sticky top-0 z-20 flex items-center justify-between px-6 py-4 bg-neo-bg/95 border-b-2 border-neo-black">
+          <!-- Close button (Dalí styled) -->
+          <div class="sticky top-0 z-20 flex items-center justify-between px-6 py-4 bg-dali-cream border-b-2 border-dali-void/10">
             <button
-              class="neo-btn bg-neo-white px-3 py-1.5 text-sm font-bold flex items-center gap-2"
+              class="dali-btn bg-transparent text-dali-void border-dali-void px-3 py-1.5 text-sm font-bold flex items-center gap-2"
+              style="--color-dali-red: var(--color-dali-void);"
               @click="emit('close')"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,11 +157,11 @@ const panelStyle = computed(() => {
               </svg>
               Back
             </button>
-            <span v-if="title" class="text-sm font-bold text-neo-text-muted truncate max-w-[60%]">
+            <span v-if="title" class="text-sm font-bold text-dali-void/60 truncate max-w-[60%]">
               {{ title }}
             </span>
             <button
-              class="neo-btn bg-neo-white px-2 py-1.5 text-xs font-bold"
+              class="text-xs font-bold text-dali-void/60 hover:text-dali-void px-2 py-1"
               @click="emit('close')"
             >
               ESC
@@ -204,7 +207,7 @@ const panelStyle = computed(() => {
 
 /* Left edge gradient hint */
 .slide-hint-gradient {
-  background: linear-gradient(to right, rgba(0,0,0,0.08), transparent);
+  background: linear-gradient(to right, rgba(0,0,0,0.06), transparent);
   transition: opacity 0.6s ease;
 }
 

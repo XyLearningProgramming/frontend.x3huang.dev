@@ -1,10 +1,10 @@
 <template>
-  <article class="neo-card bg-neo-white overflow-hidden cursor-pointer" @click="selectPost">
+  <article class="dali-card overflow-hidden cursor-pointer" style="border-color: var(--color-dali-muted);" @click="selectPost">
     <div class="p-6">
       <!-- Title and date -->
       <div class="flex justify-between items-start">
-        <h2 class="text-xl font-bold">{{ props.post.title }}</h2>
-        <time class="text-xs font-bold text-neo-text-muted flex-shrink-0 ml-4 bg-neo-bg px-2 py-0.5 border border-neo-black">
+        <h2 class="text-xl font-bold text-dali-white">{{ props.post.title }}</h2>
+        <time class="text-xs font-bold text-dali-muted flex-shrink-0 ml-4 bg-dali-void px-2 py-0.5 border border-dali-red/40">
           {{ formatDate(props.post.date) }}
         </time>
       </div>
@@ -22,13 +22,13 @@
       <!-- Description and image -->
       <div v-if="props.post.description || hasImage" class="flex gap-6">
         <div class="flex-1 flex flex-col justify-between min-h-28">
-          <p v-if="props.post.description" class="text-sm text-neo-text-muted">{{ props.post.description }}</p>
+          <p v-if="props.post.description" class="text-sm text-dali-muted">{{ props.post.description }}</p>
           <div v-if="props.post.tags && props.post.tags.length" class="flex flex-wrap gap-1 mt-3">
             <NuxtLink
               v-for="tag in props.post.tags"
               :key="tag"
               :to="`/blogs/tags/${encodeURIComponent(tag)}`"
-              class="text-[10px] font-bold px-2 py-0.5 bg-neo-yellow/40 border border-neo-black hover:bg-neo-yellow transition-colors"
+              class="text-[10px] font-bold px-2 py-0.5 border border-dali-red/40 text-dali-red bg-dali-red/5 hover:bg-dali-red/15 transition-colors"
               @click.stop
             >
               {{ tag }}
@@ -36,7 +36,7 @@
           </div>
         </div>
         <ClientOnly v-if="hasImage">
-          <div class="w-40 h-28 flex-shrink-0 overflow-hidden border-2 border-neo-black">
+          <div class="w-40 h-28 flex-shrink-0 overflow-hidden border-2 border-dali-muted/30">
             <nuxt-img
               :src="imageSrc"
               :alt="imageAlt"
@@ -56,7 +56,7 @@
           v-for="tag in props.post.tags"
           :key="tag"
           :to="`/blogs/tags/${encodeURIComponent(tag)}`"
-          class="text-[10px] font-bold px-2 py-0.5 bg-neo-yellow/40 border border-neo-black hover:bg-neo-yellow transition-colors"
+          class="text-[10px] font-bold px-2 py-0.5 border border-dali-red/40 text-dali-red bg-dali-red/5 hover:bg-dali-red/15 transition-colors"
           @click.stop
         >
           {{ tag }}

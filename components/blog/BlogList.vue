@@ -2,19 +2,17 @@
   <div>
     <ClientOnly>
       <div v-if="!posts" class="text-center py-12">
-        <div class="neo-border bg-neo-bg p-8 relative">
-          <div class="absolute inset-0 neo-shadow -z-10 bg-neo-black"></div>
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-neo-black/60 mx-auto mb-4"></div>
-          <p class="text-lg text-neo-black">Loading posts...</p>
+        <div class="dali-card p-8" style="border-color: var(--color-dali-muted);">
+          <div class="w-8 h-8 border-4 border-dali-red border-t-dali-gold rounded-full animate-spin mx-auto mb-4" />
+          <p class="text-lg text-dali-white">Loading posts...</p>
         </div>
       </div>
-      
+
       <div v-else-if="filteredPosts.length === 0" class="text-center py-12">
-        <div class="neo-border bg-neo-bg p-8 relative">
-          <div class="absolute inset-0 neo-shadow -z-10 bg-neo-black"></div>
+        <div class="dali-card p-8" style="border-color: var(--color-dali-gold);">
           <div class="text-4xl mb-4">🔍</div>
-          <p class="text-lg text-neo-black mb-2">No posts found</p>
-          <p class="text-sm text-neo-black/60">Try adjusting your search terms or browse all posts</p>
+          <p class="text-lg text-dali-white mb-2">No posts found</p>
+          <p class="text-sm text-dali-muted">Try adjusting your search terms or browse all posts</p>
         </div>
       </div>
 
@@ -32,7 +30,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  filterTag: undefined
+  filterTag: undefined,
 })
 
 const filteredPosts = computed(() => {
@@ -44,7 +42,7 @@ const filteredPosts = computed(() => {
 
   if (props.filterTag) {
     filtered = filtered.filter(post =>
-      post.tags && post.tags.includes(props.filterTag)
+      post.tags && post.tags.includes(props.filterTag),
     )
   }
   return filtered

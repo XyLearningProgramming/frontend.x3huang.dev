@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen bg-neo-section-tools text-neo-black py-16 px-4">
+  <div class="min-h-screen py-16 px-4" style="background: var(--color-dali-void);">
     <div class="container mx-auto max-w-screen-xl">
       <!-- Back navigation -->
       <div class="mb-6">
         <button @click="$router.push('/tools')"
-          class="inline-flex items-center gap-2 text-neo-black/70 hover:text-neo-black transition-colors">
+          class="dali-btn inline-flex items-center gap-2 px-3 py-1.5 text-sm font-bold">
           <IconsArrowLeft class="w-4 h-4" />
           Back to Tools
         </button>
@@ -12,35 +12,37 @@
 
       <!-- Header -->
       <div class="mb-6">
-        <h1 class="font-neo-heading text-h2-sm md:text-h2 font-bold mb-2">JSON Editor</h1>
-        <p class="text-lg text-neo-black/70 max-w-2xl leading-relaxed">
+        <h1 class="font-bold mb-2 text-dali-white" style="transform: rotate(-1deg);">JSON Editor</h1>
+        <p class="text-lg text-dali-muted max-w-2xl leading-relaxed">
           Edit, format, and validate JSON data with a powerful online editor.
         </p>
       </div>
 
       <!-- JSON Editor -->
       <div>
-        <div class="neo-border bg-neo-bg p-4 relative h-[calc(100vh-280px)]" style="box-shadow: 4px 4px 0px 0px #000;">
+        <div class="dali-card p-4 relative h-[calc(100vh-280px)]" style="border-color: var(--color-dali-muted);">
           <div class="h-full flex">
             <!-- Left panel -->
             <div class="flex-1 flex flex-col">
-              <div ref="leftEditorContainer" class="flex-1 neo-border rounded-none"></div>
+              <div ref="leftEditorContainer" class="flex-1 border-2 border-dali-muted/30"></div>
             </div>
 
             <!-- Action buttons between panels -->
             <div class="flex flex-col justify-center items-center gap-4 px-4">
               <button @click="comparePanels"
-                class="px-3 py-2 neo-border bg-neo-yellow hover:bg-neo-orange text-neo-black transition-colors text-sm font-bold rounded-none"
+                class="dali-btn px-3 py-2 bg-dali-red text-dali-white text-sm font-bold"
                 title="Compare JSON data">
                 ≈
               </button>
               <button @click="copyLeftToRight"
-                class="px-3 py-2 neo-border bg-neo-bg hover:bg-neo-yellow text-neo-black transition-colors text-sm font-bold rounded-none"
+                class="dali-btn px-3 py-2 text-sm font-bold"
+                style="border-color: var(--color-dali-muted);"
                 title="Copy from left to right">
                 →
               </button>
               <button @click="copyRightToLeft"
-                class="px-3 py-2 neo-border bg-neo-bg hover:bg-neo-yellow text-neo-black transition-colors text-sm font-bold rounded-none"
+                class="dali-btn px-3 py-2 text-sm font-bold"
+                style="border-color: var(--color-dali-muted);"
                 title="Copy from right to left">
                 ←
               </button>
@@ -48,7 +50,7 @@
 
             <!-- Right panel -->
             <div class="flex-1 flex flex-col">
-              <div ref="rightEditorContainer" class="flex-1 neo-border rounded-none"></div>
+              <div ref="rightEditorContainer" class="flex-1 border-2 border-dali-muted/30"></div>
             </div>
           </div>
         </div>
@@ -56,7 +58,7 @@
 
       <!-- Error display -->
       <div v-if="errorMessage" class="mt-4">
-        <div class="p-4 neo-border bg-neo-red/20 text-neo-black font-bold rounded-none">
+        <div class="p-4 border-2 border-dali-red bg-dali-red/10 text-dali-white font-bold">
           {{ errorMessage }}
         </div>
       </div>
@@ -64,7 +66,7 @@
       <!-- Attribution -->
       <div class="fixed bottom-4 right-4 z-10">
         <a href="https://github.com/josdejong/svelte-jsoneditor" target="_blank" rel="noopener noreferrer"
-          class="text-xs text-neo-black/40 hover:text-neo-black/70 transition-colors" title="Powered by svelte-jsoneditor">
+          class="text-xs text-dali-muted/40 hover:text-dali-muted/70 transition-colors" title="Powered by svelte-jsoneditor">
           Powered by svelte-jsoneditor
         </a>
       </div>

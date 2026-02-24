@@ -1,9 +1,9 @@
 <template>
-  <div class="min-h-screen bg-neo-bg">
+  <div class="min-h-screen" style="background: var(--color-dali-void);">
     <div class="mx-auto max-w-5xl px-6 py-12 md:py-16">
       <!-- Back navigation -->
       <div class="mb-6">
-        <NuxtLink to="/" class="neo-btn inline-flex items-center gap-2 bg-neo-white px-3 py-1.5 text-sm font-bold">
+        <NuxtLink to="/" class="dali-btn inline-flex items-center gap-2 px-3 py-1.5 text-sm font-bold">
           <IconsArrowLeft class="w-4 h-4" />
           Home
         </NuxtLink>
@@ -12,18 +12,18 @@
       <!-- Header -->
       <div class="mb-8">
         <h1 class="mb-2">
-          <span class="bg-neo-cyan px-3 py-1 border-2 border-neo-black inline-block -rotate-1">
+          <span class="bg-dali-red px-4 py-1.5 text-dali-white font-bold border-2 border-dali-white/20 inline-block -rotate-1 shadow-dali">
             {{ blogConfig.title }}
           </span>
         </h1>
-        <p class="text-neo-text-muted text-lg">{{ blogConfig.pageDescription }}</p>
+        <p class="text-dali-muted text-lg">{{ blogConfig.pageDescription }}</p>
       </div>
 
       <!-- RSS + Visit Counter -->
       <div class="flex flex-wrap items-center gap-4 mb-8">
         <VisitCounter path="/blogs" singular-text="visit" plural-text="visits" />
         <button
-          class="neo-btn bg-neo-orange/20 px-3 py-1.5 text-sm font-bold flex items-center gap-1"
+          class="dali-btn px-3 py-1.5 text-sm font-bold flex items-center gap-1"
           @click="showRssPopup = true"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -38,26 +38,26 @@
       <Teleport to="body">
         <Transition name="fade">
           <div v-if="showRssPopup" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="closeRssPopup">
-            <div class="absolute inset-0 bg-black/60" />
-            <div class="relative neo-card bg-neo-white p-6 max-w-md w-full" @click.stop>
+            <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+            <div class="relative dali-card p-6 max-w-md w-full" style="border-color: var(--color-dali-red); background: var(--color-dali-smoke);" @click.stop>
               <div class="flex items-center justify-between mb-4">
-                <h3 class="font-bold text-lg">RSS Feed</h3>
-                <button class="neo-btn bg-neo-white px-2 py-1 text-xs font-bold" @click="closeRssPopup">
+                <h3 class="font-bold text-lg text-dali-white">RSS Feed</h3>
+                <button class="dali-btn px-2 py-1 text-xs font-bold" @click="closeRssPopup">
                   <IconsX class="w-4 h-4" />
                 </button>
               </div>
-              <p class="text-sm text-neo-text-muted mb-4">Subscribe to my blog posts with your favorite RSS reader.</p>
+              <p class="text-sm text-dali-muted mb-4">Subscribe to my blog posts with your favorite RSS reader.</p>
               <div class="space-y-3">
-                <label class="block text-sm font-bold">RSS Feed URL</label>
+                <label class="block text-sm font-bold text-dali-white">RSS Feed URL</label>
                 <div class="relative">
                   <input
                     ref="urlInput"
                     :value="rssUrl"
                     readonly
-                    class="neo-input w-full px-3 py-2 pr-20 text-sm"
+                    class="dali-input w-full px-3 py-2 pr-20 text-sm"
                   />
                   <button
-                    class="neo-btn absolute right-1 top-1/2 -translate-y-1/2 bg-neo-yellow px-3 py-1 text-xs font-bold"
+                    class="dali-btn absolute right-1 top-1/2 -translate-y-1/2 bg-dali-red text-dali-white px-3 py-1 text-xs font-bold"
                     @click="copyToClipboard"
                   >
                     {{ copied ? 'Copied!' : 'Copy' }}
@@ -65,10 +65,10 @@
                 </div>
               </div>
               <div class="flex gap-2 mt-6">
-                <a :href="rssUrl" target="_blank" class="neo-btn flex-1 text-center bg-neo-white px-4 py-2 text-sm font-bold">
+                <a :href="rssUrl" target="_blank" class="dali-btn flex-1 text-center px-4 py-2 text-sm font-bold">
                   Open Feed
                 </a>
-                <button class="neo-btn flex-1 bg-neo-bg px-4 py-2 text-sm font-bold" @click="closeRssPopup">
+                <button class="dali-btn flex-1 px-4 py-2 text-sm font-bold" @click="closeRssPopup">
                   Close
                 </button>
               </div>
@@ -84,17 +84,17 @@
             v-model="searchQuery"
             type="text"
             placeholder="Search blogs by title, description, or tag..."
-            class="neo-input w-full px-4 py-3 pl-12 pr-12 text-sm"
+            class="dali-input w-full px-4 py-3 pl-12 pr-12 text-sm"
           />
           <div class="absolute left-4 top-1/2 -translate-y-1/2">
-            <IconsSearch class="w-5 h-5 text-neo-text-muted" />
+            <IconsSearch class="w-5 h-5 text-dali-muted" />
           </div>
           <button
             v-if="searchQuery.trim()"
             class="absolute right-4 top-1/2 -translate-y-1/2"
             @click="clearSearch"
           >
-            <IconsX class="w-5 h-5 text-neo-text-muted hover:text-neo-black" />
+            <IconsX class="w-5 h-5 text-dali-muted hover:text-dali-white" />
           </button>
         </div>
       </div>
@@ -106,14 +106,14 @@
 
       <!-- Loading -->
       <div v-if="loading" class="flex justify-center py-8">
-        <div class="w-8 h-8 border-4 border-neo-black border-t-neo-yellow rounded-full animate-spin" />
+        <div class="w-8 h-8 border-4 border-dali-red border-t-dali-gold rounded-full animate-spin" />
       </div>
 
       <!-- End of posts -->
       <div v-else-if="!hasMore && posts.length > 0" class="text-center py-8">
-        <div class="neo-card inline-block bg-neo-yellow px-8 py-4">
-          <p class="text-lg font-bold mb-1">You've reached the end!</p>
-          <p class="text-sm text-neo-text-muted">Thanks for reading.</p>
+        <div class="dali-card inline-block px-8 py-4" style="border-color: var(--color-dali-gold);">
+          <p class="text-lg font-bold mb-1 text-dali-white">You've reached the end!</p>
+          <p class="text-sm text-dali-muted">Thanks for reading.</p>
         </div>
       </div>
     </div>

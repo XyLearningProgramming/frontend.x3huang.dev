@@ -1,31 +1,31 @@
 <template>
-  <div class="min-h-screen bg-neo-bg">
+  <div class="min-h-screen" style="background: var(--color-dali-void);">
     <div class="mx-auto max-w-4xl px-6 py-12 md:py-16">
       <!-- Back -->
-      <NuxtLink to="/" class="neo-btn inline-flex items-center gap-2 bg-neo-white px-3 py-1.5 text-sm font-bold mb-8">
+      <NuxtLink to="/" class="dali-btn inline-flex items-center gap-2 px-3 py-1.5 text-sm font-bold mb-8">
         <IconsArrowLeft class="w-4 h-4" />
         Home
       </NuxtLink>
 
       <!-- Loading -->
       <div v-if="!allPages" class="text-center py-12">
-        <div class="w-8 h-8 border-4 border-neo-black border-t-neo-yellow rounded-full animate-spin mx-auto mb-4" />
-        <p class="text-neo-text-muted font-bold">Loading...</p>
+        <div class="w-8 h-8 border-4 border-dali-red border-t-dali-gold rounded-full animate-spin mx-auto mb-4" />
+        <p class="text-dali-muted font-bold">Loading...</p>
       </div>
 
       <!-- Error -->
       <div v-else-if="error" class="text-center py-12">
-        <div class="neo-card bg-neo-red/10 inline-block px-8 py-4 mb-4">
-          <h2 class="text-xl font-bold mb-2">Error Loading Content</h2>
-          <p class="text-sm text-neo-text-muted">{{ error }}</p>
+        <div class="dali-card inline-block px-8 py-4 mb-4" style="border-color: var(--color-dali-red);">
+          <h2 class="text-xl font-bold mb-2 text-dali-white">Error Loading Content</h2>
+          <p class="text-sm text-dali-muted">{{ error }}</p>
         </div>
       </div>
 
       <!-- Not found -->
       <div v-else-if="!aboutContent" class="text-center py-12">
-        <div class="neo-card bg-neo-yellow inline-block px-8 py-4 mb-4">
-          <h2 class="text-xl font-bold mb-2">About Page Not Found</h2>
-          <p class="text-sm text-neo-text-muted">The about page content could not be loaded.</p>
+        <div class="dali-card inline-block px-8 py-4 mb-4" style="border-color: var(--color-dali-gold);">
+          <h2 class="text-xl font-bold mb-2 text-dali-white">About Page Not Found</h2>
+          <p class="text-sm text-dali-muted">The about page content could not be loaded.</p>
         </div>
       </div>
 
@@ -34,11 +34,11 @@
         <article>
           <header class="mb-8">
             <h1 class="mb-4">
-              <span class="bg-neo-green px-3 py-1 border-2 border-neo-black inline-block -rotate-1">
+              <span class="bg-dali-teal px-4 py-1.5 text-dali-void font-bold border-2 border-dali-teal inline-block -rotate-1 shadow-dali">
                 {{ aboutContent.title || 'About' }}
               </span>
             </h1>
-            <p v-if="aboutContent.description" class="text-lg text-neo-text-muted">
+            <p v-if="aboutContent.description" class="text-lg text-dali-muted">
               {{ aboutContent.description }}
             </p>
             <div class="mt-4">
@@ -51,7 +51,7 @@
             </div>
           </header>
 
-          <div class="neo-card bg-neo-white p-6 md:p-10 mb-8">
+          <div class="dali-focus-surface p-6 md:p-10 mb-8 border-2 border-dali-void/10">
             <div class="blog-content">
               <ContentRenderer :value="aboutContent" />
             </div>

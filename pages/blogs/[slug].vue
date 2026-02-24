@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen bg-neo-bg">
+  <div class="min-h-screen" style="background: var(--color-dali-void);">
     <div class="mx-auto max-w-5xl px-6 py-12 md:py-16">
       <!-- Back button -->
       <NuxtLink
         :to="returnPath"
-        class="neo-btn inline-flex items-center gap-2 bg-neo-white px-3 py-1.5 text-sm font-bold mb-8"
+        class="dali-btn inline-flex items-center gap-2 px-3 py-1.5 text-sm font-bold mb-8"
       >
         <IconsArrowLeft class="w-4 h-4" />
         Back to {{ returnTitle }}
@@ -13,11 +13,11 @@
       <!-- Post content -->
       <article v-if="post">
         <header class="mb-8">
-          <h1 class="text-3xl md:text-4xl font-bold mb-4">
+          <h1 class="text-3xl md:text-4xl font-bold mb-4 text-dali-white" style="transform: rotate(-1deg);">
             {{ post.title }}
           </h1>
 
-          <div class="flex flex-wrap items-center gap-4 text-sm text-neo-text-muted mb-4">
+          <div class="flex flex-wrap items-center gap-4 text-sm text-dali-muted mb-4">
             <time>{{ formatDate(post.date) }}</time>
             <span v-if="post.author">by {{ post.author }}</span>
             <span v-if="post.readTime">{{ post.readTime }} min read</span>
@@ -35,23 +35,23 @@
             <span
               v-for="tag in post.tags"
               :key="tag"
-              class="text-[10px] font-bold px-2 py-0.5 bg-neo-yellow/40 border border-neo-black"
+              class="text-[10px] font-bold px-2 py-0.5 border border-dali-red/40 text-dali-red bg-dali-red/5"
             >
               {{ tag }}
             </span>
           </div>
         </header>
 
-        <!-- Article body in a neo card -->
-        <div class="neo-card bg-neo-white p-6 md:p-10 mb-8">
+        <!-- Article body -->
+        <div class="dali-focus-surface p-6 md:p-10 mb-8 border-2 border-dali-void/10">
           <div class="blog-content">
             <ClientOnly>
               <ContentRenderer :value="post" />
               <template #fallback>
                 <div class="animate-pulse space-y-4">
-                  <div class="h-4 bg-neo-bg rounded w-full" />
-                  <div class="h-4 bg-neo-bg rounded w-full" />
-                  <div class="h-4 bg-neo-bg rounded w-3/4" />
+                  <div class="h-4 bg-dali-muted/20 rounded w-full" />
+                  <div class="h-4 bg-dali-muted/20 rounded w-full" />
+                  <div class="h-4 bg-dali-muted/20 rounded w-3/4" />
                 </div>
               </template>
             </ClientOnly>
@@ -61,8 +61,9 @@
 
       <!-- Loading state -->
       <div v-else class="text-center py-12">
-        <div class="neo-card inline-block bg-neo-white px-8 py-4">
-          <p class="text-neo-text-muted font-bold">Loading post...</p>
+        <div class="inline-block px-8 py-4">
+          <div class="w-8 h-8 border-4 border-dali-red border-t-dali-gold rounded-full animate-spin mx-auto mb-4" />
+          <p class="text-dali-muted font-bold">Loading post...</p>
         </div>
       </div>
 
@@ -76,7 +77,7 @@
       <!-- Floating action buttons -->
       <div v-if="post" class="fixed right-4 bottom-4 flex flex-col gap-2 z-50">
         <NavScrollTopIcon />
-        <div class="neo-card bg-neo-white p-2">
+        <div class="dali-card p-2" style="border-color: var(--color-dali-muted);">
           <NavShareIcons
             :headline="post.title"
             :description="post.description || 'Check out this blog post'"
@@ -91,8 +92,6 @@
 </template>
 
 <script setup lang="ts">
-import AnalyticsDisplay from '~/components/blog/AnalyticsDisplay.vue'
-import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
 import { siteConfig, getPageMeta, getBlogPageTitle } from '~/site.config'
 
 const route = useRoute()
@@ -103,9 +102,9 @@ const { initializeTracking, trackVisit, getBlogAnalytics } = useGoatCounter()
 const analytics = ref({ visits: 0, likes: 0, shares: 0 })
 const analyticsLoading = ref(true)
 
-// Back navigation
-const returnPath = ref('/blogs')
-const returnTitle = ref('Latest Posts')
+// Back navigation (static — never changes per instance)
+const returnPath = '/blogs'
+const returnTitle = 'Latest Posts'
 
 // Slug helper
 const generateSlug = (title: string) => {
