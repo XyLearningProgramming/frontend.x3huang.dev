@@ -2,102 +2,153 @@
   <DaliCanvas @close="panelBack">
     <!-- ===================== DISCOVERY COLUMN ===================== -->
     <template #discovery>
+
+      <!-- ==================== CHAT SECTION (above hero) ==================== -->
+      <section
+        v-if="chatHasMessages"
+        id="chat"
+        ref="chatSectionRef"
+        class="chat-surface relative"
+      >
+        <ChatView
+          ref="chatViewRef"
+          :messages="(chatMessages as any)"
+          :is-streaming="chatIsStreaming"
+          @send="chatSendMessage"
+          @retry="chatRetryLast"
+          @clear="handleChatClear"
+        />
+      </section>
+
+      <!-- Smooth color blend from chat surface to main page -->
+      <div v-if="chatHasMessages" class="chat-hero-blend" aria-hidden="true" />
+
       <!-- ==================== HERO / CHATTY ==================== -->
       <section id="hero" class="relative min-h-screen flex items-center px-6 md:px-12 py-20 overflow-hidden">
-        <!-- Decorative diagonal slash background -->
-        <div class="absolute inset-0 dali-slash pointer-events-none" />
+            <!-- Decorative diagonal slash background -->
+            <div class="absolute inset-0 dali-slash pointer-events-none" />
 
-        <!-- Floating surrealist shapes -->
-        <div class="hero-shapes absolute inset-0 pointer-events-none" aria-hidden="true">
-          <div class="hero-shape hero-shape--circle" />
-          <div class="hero-shape hero-shape--diamond" />
-          <div class="hero-shape hero-shape--blob" />
-        </div>
-
-        <!-- Content: off-center (golden ratio ~38% from left) -->
-        <div class="relative z-10 w-full max-w-6xl mx-auto">
-          <div class="flex flex-col items-start" style="padding-left: 5%;">
-            <!-- Avatar in melting-clock shape -->
-            <div
-              ref="avatarRef"
-              class="hero-avatar mb-6 opacity-0"
-            >
-              <div class="hero-avatar__frame">
-                <img
-                  v-show="!showFallback"
-                  :src="profile.image"
-                  :alt="profile.name"
-                  class="w-full h-full object-cover"
-                  @error="showFallback = true"
-                >
-                <span v-show="showFallback" class="text-4xl font-bold flow-text">
-                  {{ profile.initials }}
-                </span>
-              </div>
+            <!-- Floating surrealist shapes -->
+            <div class="hero-shapes absolute inset-0 pointer-events-none" aria-hidden="true">
+              <div class="hero-shape hero-shape--circle" />
+              <div class="hero-shape hero-shape--diamond" />
+              <div class="hero-shape hero-shape--blob" />
             </div>
 
-            <!-- Name — dramatic tilt -->
-            <h1
-              ref="nameRef"
-              class="hero-name opacity-0"
-            >
-              {{ profile.name }}
-            </h1>
+            <!-- Content: off-center (golden ratio ~38% from left) -->
+            <div class="relative z-10 w-full max-w-6xl mx-auto">
+              <div class="flex flex-col items-start" style="padding-left: 5%;">
+                <!-- Avatar in melting-clock shape -->
+                <div
+                  ref="avatarRef"
+                  class="hero-avatar mb-6 opacity-0"
+                >
+                  <div class="hero-avatar__frame">
+                    <img
+                      v-show="!showFallback"
+                      :src="profile.image"
+                      :alt="profile.name"
+                      class="w-full h-full object-cover"
+                      @error="showFallback = true"
+                    >
+                    <span v-show="showFallback" class="text-4xl font-bold flow-text">
+                      {{ profile.initials }}
+                    </span>
+                  </div>
+                </div>
 
-            <!-- Subtitle -->
-            <p
-              ref="subtitleRef"
-              class="text-lg md:text-xl flow-muted max-w-xl mb-2 opacity-0"
-            >
-              {{ profile.subtitle }}
-            </p>
+                <!-- Name — dramatic tilt -->
+                <h1
+                  ref="nameRef"
+                  class="hero-name opacity-0"
+                >
+                  {{ profile.name }}
+                </h1>
 
-            <!-- Motto — italic, with red accent underline -->
-            <p
-              ref="mottoRef"
-              class="hero-motto opacity-0"
-            >
-              "{{ profile.motto }}"
-              <span class="hero-motto__underline" />
-            </p>
+                <!-- Subtitle -->
+                <p
+                  ref="subtitleRef"
+                  class="text-lg md:text-xl flow-muted max-w-xl mb-2 opacity-0"
+                >
+                  {{ profile.subtitle }}
+                </p>
 
-            <!-- Chat input — rotated slightly, trapezoid-ish -->
-            <div
-              ref="chatRef"
-              class="w-full max-w-2xl mt-10 opacity-0"
-            >
-              <!-- Powered by chatty note -->
-              <div class="dali-card p-1 mb-4" style="border-color: var(--color-dali-muted);">
-                <div class="p-3" style="background: rgba(46, 196, 182, 0.08);">
-                  <p class="text-xs text-dali-muted">
-                    Powered by
-                    <a
-                      href="https://github.com/XyLearningProgramming/chatty"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="underline font-bold text-dali-teal"
-                    >chatty</a> &mdash; an open-source persona-driven chatbot.
-                    <span class="text-[10px] block mt-0.5 opacity-70">Expect 10-60s response times. Responses may be inaccurate.</span>
-                  </p>
+                <!-- Motto — italic, with red accent underline -->
+                <p
+                  ref="mottoRef"
+                  class="hero-motto opacity-0"
+                >
+                  "{{ profile.motto }}"
+                  <span class="hero-motto__underline" />
+                </p>
+
+                <!-- Chat area — input visible only when no chat; scroll-up indicator when chat exists -->
+                <div
+                  ref="chatRef"
+                  class="w-full max-w-xl mt-10 opacity-0"
+                >
+                  <template v-if="chatHasMessages">
+                    <!-- Scroll-up indicator only — no redundant input -->
+                    <div class="mb-5">
+                      <button
+                        class="group flex items-center gap-2 cursor-pointer transition-colors duration-200"
+                        @click="scrollToChat"
+                      >
+                        <svg class="w-4 h-4 flow-muted rotate-180 animate-bounce-gentle group-hover:text-dali-red transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                        <span class="text-sm font-medium flow-muted group-hover:text-dali-red transition-colors">
+                          Scroll up to see conversation
+                        </span>
+                      </button>
+                    </div>
+                    <p class="text-[10px] font-mono tracking-wide" style="color: var(--color-flow-muted, var(--color-dali-muted)); opacity: 0.35;">
+                      <a
+                        href="https://github.com/XyLearningProgramming/chatty"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="underline hover:opacity-70 transition-opacity"
+                      >chatty</a> · open source · 10-60 s response time
+                    </p>
+                  </template>
+                  <template v-else>
+                    <!-- Welcome prompt + input -->
+                    <div class="hero-chat-prompt mb-5">
+                      <h3 class="text-lg md:text-xl font-bold mb-1" style="color: var(--color-flow-text, var(--color-dali-white));">
+                        Got questions? Let's talk.
+                      </h3>
+                      <p class="text-xs" style="color: var(--color-flow-muted, var(--color-dali-muted));">
+                        AI-powered, by what I know and think.
+                      </p>
+                    </div>
+
+                    <ChatInput ref="heroInputRef" @send="handleHeroSend" />
+
+                    <p class="text-[10px] mt-3 font-mono tracking-wide" style="color: var(--color-flow-muted, var(--color-dali-muted)); opacity: 0.35;">
+                      <a
+                        href="https://github.com/XyLearningProgramming/chatty"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="underline hover:opacity-70 transition-opacity"
+                      >chatty</a> · open source · 10-60 s response time
+                    </p>
+                  </template>
                 </div>
               </div>
-              <ChatView @active-change="onChatActiveChange" />
             </div>
-          </div>
-        </div>
 
-        <!-- Scroll indicator -->
-        <div
-          ref="scrollIndicatorRef"
-          class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-0"
-          :class="{ '!opacity-0': hasScrolled }"
-        >
-          <span class="text-[10px] font-mono flow-muted uppercase tracking-widest">Scroll to explore</span>
-          <svg class="w-5 h-5 text-dali-red animate-bounce-gentle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-          </svg>
-        </div>
-      </section>
+            <!-- Scroll indicator — stays visible when chat exists so users know there's content below -->
+            <div
+              ref="scrollIndicatorRef"
+              class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-0"
+              :class="{ '!opacity-0': hasScrolled && !chatHasMessages }"
+            >
+              <span class="text-[10px] font-mono flow-muted uppercase tracking-widest">Scroll to explore</span>
+              <svg class="w-5 h-5 text-dali-red animate-bounce-gentle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              </svg>
+            </div>
+          </section>
 
       <!-- ==================== BLOG POSTS ==================== -->
       <section id="posts" class="relative px-6 md:px-12 py-16 md:py-24 overflow-hidden">
@@ -539,6 +590,15 @@
     </template>
   </DaliCanvas>
 
+  <!-- Phantom input bar — visual-only clone used for fly animation -->
+  <div
+    ref="phantomRef"
+    class="phantom-input"
+    aria-hidden="true"
+  >
+    <div class="phantom-input__bar" />
+  </div>
+
   <!-- Mobile nav -->
   <button
     class="lg:hidden fixed bottom-6 right-6 z-50 dali-btn bg-dali-red text-dali-white p-3 rounded-full"
@@ -603,6 +663,7 @@
 
 <script setup lang="ts">
 import ChatView from '~/components/chat/ChatView.vue'
+import ChatInput from '~/components/chat/ChatInput.vue'
 import { siteConfig, getPageMeta } from '~/site.config'
 import { useCanvasCamera } from '~/composables/useCanvasCamera'
 import { useFocusPanel } from '~/composables/useFocusPanel'
@@ -622,13 +683,27 @@ const {
   destroy: destroyFocusPanel,
 } = useFocusPanel()
 
+// ==================== CHATTY (shared state) ====================
+const {
+  messages: chatMessages,
+  isStreaming: chatIsStreaming,
+  sendMessage: chatSendMessage,
+  retryLast: chatRetryLast,
+  clearConversation: chatClearConversation,
+} = useChatty()
+
 // ==================== STATE ====================
 const showFallback = ref(false)
 const mobileNavOpen = ref(false)
-const chatActive = ref(false)
 const hasScrolled = ref(false)
 const isMobile = ref(false)
 const showAllPosts = ref(false)
+
+// ==================== CHAT SECTION REF ====================
+const chatSectionRef = ref<HTMLElement | null>(null)
+const chatViewRef = ref<InstanceType<typeof ChatView> | null>(null)
+const heroInputRef = ref<InstanceType<typeof ChatInput> | null>(null)
+const phantomRef = ref<HTMLElement | null>(null)
 
 // ==================== PROFILE ====================
 const profile = {
@@ -767,10 +842,179 @@ function setToolCardRef(el: any, idx: number) {
   if (el) toolCardRefs.value[idx] = el
 }
 
-// ==================== METHODS ====================
-function onChatActiveChange(active: boolean) {
-  chatActive.value = active
+// ==================== CHAT STATE ====================
+const chatHasMessages = computed(() => chatMessages.value.length > 0)
+
+// Track whether a fly animation is in progress to suppress the watcher
+const flyAnimating = ref(false)
+
+// When the chat section appears / disappears, section positions shift.
+// Tell GSAP ScrollTrigger to recalculate so the color-flow stays correct.
+// This only fires when NOT driven by the fly animation (which handles refresh itself).
+watch(chatHasMessages, async () => {
+  if (flyAnimating.value) return
+  await nextTick()
+  await nextTick()
+  if (!import.meta.client) return
+  try {
+    const { ScrollTrigger } = await import('gsap/ScrollTrigger')
+    ScrollTrigger.refresh()
+  } catch { /* gsap may not be loaded yet */ }
+})
+
+// ==================== CHAT SCROLL NAVIGATION ====================
+
+/** Position the phantom at a given DOMRect and make it visible */
+function positionPhantom(rect: DOMRect) {
+  const el = phantomRef.value
+  if (!el) return
+  el.style.top = `${rect.top}px`
+  el.style.left = `${rect.left}px`
+  el.style.width = `${rect.width}px`
+  el.style.opacity = '1'
 }
+
+async function refreshScrollTrigger() {
+  if (!import.meta.client) return
+  try {
+    const { ScrollTrigger } = await import('gsap/ScrollTrigger')
+    ScrollTrigger.refresh()
+  } catch { /* gsap may not be loaded yet */ }
+}
+
+async function handleHeroSend(message: string) {
+  // 1. Capture hero input bounding rect BEFORE it disappears
+  const heroRect = heroInputRef.value?.getRect?.()
+  if (!heroRect) {
+    // Fallback: no animation
+    chatSendMessage(message)
+    await nextTick()
+    await nextTick()
+    scrollToChat()
+    return
+  }
+
+  // 2. Position phantom at hero input location, make visible
+  positionPhantom(heroRect)
+
+  // 3. Hide hero input visually (it will be removed by v-if soon)
+  const heroInputEl = heroInputRef.value?.$el as HTMLElement | undefined
+  if (heroInputEl) heroInputEl.style.opacity = '0'
+
+  // 4. Mark animation in progress, send message → chat section renders via v-if
+  flyAnimating.value = true
+  chatSendMessage(message)
+
+  // 5. Wait for DOM to settle (chat section + ChatView render)
+  await nextTick()
+  await nextTick()
+  await nextTick()
+
+  // 6. Get ChatView's input bounding rect as the animation destination
+  const chatRect = chatViewRef.value?.getInputRect?.()
+  const chatEl = chatSectionRef.value || document.getElementById('chat')
+
+  if (chatRect && chatEl) {
+    const { gsap } = await import('gsap')
+
+    // The chat section is now in the DOM above the hero.
+    // Its absolute top in the document:
+    const chatSectionAbsTop = chatEl.getBoundingClientRect().top + window.scrollY
+
+    // Where the chat input sits relative to the chat section top:
+    const chatInputOffsetInSection = chatRect.top - chatEl.getBoundingClientRect().top
+
+    // After scrolling to chatSectionAbsTop, the chat input will be at this viewport Y:
+    const destTop = chatInputOffsetInSection
+
+    // Animate phantom from hero position to destination.
+    // Since we also scroll, the phantom (position: fixed) stays viewport-relative,
+    // so we animate to where the chat input WILL be in the viewport after scroll.
+    gsap.to(phantomRef.value, {
+      top: destTop,
+      left: chatRect.left,
+      width: chatRect.width,
+      duration: 0.7,
+      ease: 'power3.inOut',
+      onComplete: () => {
+        if (phantomRef.value) phantomRef.value.style.opacity = '0'
+        flyAnimating.value = false
+        refreshScrollTrigger()
+      },
+    })
+
+    // Scroll to the chat section simultaneously
+    window.scrollTo({ top: chatSectionAbsTop, behavior: 'smooth' })
+  } else {
+    // Fallback: scroll without animation
+    if (chatEl) chatEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    if (phantomRef.value) phantomRef.value.style.opacity = '0'
+    flyAnimating.value = false
+    refreshScrollTrigger()
+  }
+}
+
+async function handleChatClear() {
+  // 1. Capture ChatView's input bounding rect
+  const chatRect = chatViewRef.value?.getInputRect?.()
+
+  if (!chatRect) {
+    // Fallback: no animation
+    chatClearConversation()
+    nextTick(() => {
+      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
+    })
+    return
+  }
+
+  // 2. Position phantom at the ChatView input location
+  positionPhantom(chatRect)
+
+  // 3. Mark animation in progress, clear conversation → chat section removed, hero shifts to top
+  flyAnimating.value = true
+  chatClearConversation()
+
+  // 4. Snap scroll to top instantly (hero is now at top)
+  await nextTick()
+  window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
+  await nextTick()
+  await nextTick()
+
+  // 5. Get the hero input's bounding rect (now rendered again)
+  const heroRect = heroInputRef.value?.getRect?.()
+
+  // 6. Animate phantom from captured chat position → hero input position
+  const { gsap } = await import('gsap')
+
+  if (heroRect) {
+    gsap.to(phantomRef.value, {
+      top: heroRect.top,
+      left: heroRect.left,
+      width: heroRect.width,
+      duration: 0.6,
+      ease: 'power3.inOut',
+      onComplete: () => {
+        if (phantomRef.value) phantomRef.value.style.opacity = '0'
+        flyAnimating.value = false
+        refreshScrollTrigger()
+      },
+    })
+  } else {
+    // Fallback
+    if (phantomRef.value) phantomRef.value.style.opacity = '0'
+    flyAnimating.value = false
+    refreshScrollTrigger()
+  }
+}
+
+function scrollToChat() {
+  const el = chatSectionRef.value || document.getElementById('chat')
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+}
+
+// ==================== METHODS ====================
 
 function toggleMobileNav() {
   mobileNavOpen.value = !mobileNavOpen.value
@@ -1224,6 +1468,17 @@ onMounted(async () => {
 
   window.addEventListener('scroll', onScroll, { passive: true })
 
+  // If there are persisted chat messages, scroll to chat section on load
+  if (chatMessages.value.length > 0) {
+    await nextTick()
+    await nextTick()
+    const chatEl = document.getElementById('chat')
+    if (chatEl) {
+      // Instant scroll (no animation) to chat on page load
+      chatEl.scrollIntoView({ block: 'start' })
+    }
+  }
+
   // Initialize GSAP scroll animations
   await nextTick()
   initScrollAnimations()
@@ -1249,6 +1504,48 @@ useHead(getPageMeta({
 </script>
 
 <style scoped>
+/* ==================== Chat Surface (light background above hero) ==================== */
+
+.chat-surface {
+  background: #FEFBF2;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  /* Light theme overrides for chat */
+  --chat-bg: #FEFBF2;
+  --chat-text: #1A1A1A;
+  --chat-muted: #6B6B7B;
+  --chat-border: rgba(0, 0, 0, 0.08);
+  --chat-bubble-user: #FFF8E7;
+  --chat-bubble-ai: #FFFFFF;
+  --chat-accent: var(--color-dali-red);
+  color: var(--chat-text);
+}
+
+/* Gradual blend from chat cream to the color-flow background */
+.chat-hero-blend {
+  height: 120px;
+  background: linear-gradient(to bottom, #FEFBF2, transparent);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+/* Hero conversation-starter heading */
+.hero-chat-prompt h3 {
+  position: relative;
+}
+.hero-chat-prompt h3::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-dali-red), transparent);
+  border-radius: 1px;
+}
+
 /* ==================== Hero Styles ==================== */
 
 .hero-name {
@@ -1378,6 +1675,24 @@ useHead(getPageMeta({
 
 .animate-bounce-gentle {
   animation: bounceGentle 2s ease-in-out infinite;
+}
+
+/* ==================== Phantom Input (fly animation) ==================== */
+
+.phantom-input {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform, top, left, width, opacity;
+}
+
+.phantom-input__bar {
+  background: rgba(255, 255, 255, 0.85);
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  height: 44px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 /* ==================== Fade transition ==================== */
