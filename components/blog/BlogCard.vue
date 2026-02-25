@@ -24,15 +24,13 @@
         <div class="flex-1 flex flex-col justify-between min-h-28">
           <p v-if="props.post.description" class="text-sm text-dali-muted">{{ props.post.description }}</p>
           <div v-if="props.post.tags && props.post.tags.length" class="flex flex-wrap gap-1 mt-3">
-            <NuxtLink
+            <span
               v-for="tag in props.post.tags"
               :key="tag"
-              :to="`/blogs/tags/${encodeURIComponent(tag)}`"
-              class="text-[10px] font-bold px-2 py-0.5 border border-dali-red/40 text-dali-red bg-dali-red/5 hover:bg-dali-red/15 transition-colors"
-              @click.stop
+              class="text-[10px] font-bold px-2 py-0.5 border border-dali-red/40 text-dali-red bg-dali-red/5"
             >
               {{ tag }}
-            </NuxtLink>
+            </span>
           </div>
         </div>
         <ClientOnly v-if="hasImage">
@@ -52,15 +50,13 @@
 
       <!-- Tags only (no description or image) -->
       <div v-else-if="props.post.tags && props.post.tags.length" class="flex flex-wrap gap-1">
-        <NuxtLink
+        <span
           v-for="tag in props.post.tags"
           :key="tag"
-          :to="`/blogs/tags/${encodeURIComponent(tag)}`"
-          class="text-[10px] font-bold px-2 py-0.5 border border-dali-red/40 text-dali-red bg-dali-red/5 hover:bg-dali-red/15 transition-colors"
-          @click.stop
+          class="text-[10px] font-bold px-2 py-0.5 border border-dali-red/40 text-dali-red bg-dali-red/5"
         >
           {{ tag }}
-        </NuxtLink>
+        </span>
       </div>
     </div>
   </article>
@@ -76,6 +72,9 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits<{
+  select: [post: any]
+}>()
 
 const analytics = ref({ visits: 0, likes: 0, shares: 0 })
 const analyticsLoading = ref(true)
@@ -95,11 +94,7 @@ import { useSlug } from '~/composables/useSlug'
 const { generateSlug } = useSlug()
 
 const selectPost = () => {
-  if (import.meta.client) {
-    sessionStorage.setItem('blogReturnPath', useRoute().fullPath)
-  }
-  const slug = generateSlug(props.post.title)
-  navigateTo(`/blogs/${slug}`)
+  emit('select', props.post)
 }
 
 const formatDate = (dateString: string) => {

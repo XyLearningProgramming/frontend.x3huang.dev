@@ -34,57 +34,65 @@ async function ensureGsap() {
 export const useCanvasCamera = () => {
   /**
    * Pan the camera right to reveal the focus column.
+   * Returns a Promise that resolves when the animation completes.
    */
-  async function panToFocus(target: FocusTarget = 'post') {
-    if (isAnimating.value || isFocused.value) return
+  function panToFocus(target: FocusTarget = 'post'): Promise<void> {
+    if (isAnimating.value || isFocused.value) return Promise.resolve()
     isAnimating.value = true
     focusTarget.value = target
 
-    const gsap = await ensureGsap()
+    return new Promise(async (resolve) => {
+      const gsap = await ensureGsap()
 
-    if (import.meta.client) {
-      document.body.style.overflow = 'hidden'
-    }
+      if (import.meta.client) {
+        document.body.style.overflow = 'hidden'
+      }
 
-    gsap.to(focusX, {
-      value: -100,
-      duration: 0.7,
-      ease: 'power3.inOut',
-      onComplete: () => {
-        isFocused.value = true
-        isAnimating.value = false
-        if (import.meta.client) {
-          document.body.style.overflow = ''
-        }
-      },
+      gsap.to(focusX, {
+        value: -100,
+        duration: 0.7,
+        ease: 'power3.inOut',
+        onComplete: () => {
+          isFocused.value = true
+          isAnimating.value = false
+          if (import.meta.client) {
+            document.body.style.overflow = ''
+          }
+          resolve()
+        },
+      })
     })
   }
 
   /**
    * Pan the camera back to discovery mode.
+   * Returns a Promise that resolves when the animation completes.
    */
-  async function panToDiscovery() {
-    if (isAnimating.value || !isFocused.value) return
+  function panToDiscovery(): Promise<void> {
+    if (isAnimating.value || !isFocused.value) return Promise.resolve()
     isAnimating.value = true
 
-    const gsap = await ensureGsap()
+    return new Promise(async (resolve) => {
+      const gsap = await ensureGsap()
 
-    if (import.meta.client) {
-      document.body.style.overflow = 'hidden'
-    }
+      if (import.meta.client) {
+        document.body.style.overflow = 'hidden'
+      }
 
-    gsap.to(focusX, {
-      value: 0,
-      duration: 0.6,
-      ease: 'power3.inOut',
-      onComplete: () => {
-        isFocused.value = false
-        focusTarget.value = 'none'
-        isAnimating.value = false
-        if (import.meta.client) {
-          document.body.style.overflow = ''
-        }
-      },
+      gsap.to(focusX, {
+        value: 0,
+        duration: 0.6,
+        ease: 'power3.inOut',
+        onComplete: () => {
+          isFocused.value = false
+          focusTarget.value = 'none'
+          isAnimating.value = false
+          if (import.meta.client) {
+            document.body.style.overflow = ''
+          }
+          resolve()
+        },
+      })
     })
   }
 
@@ -99,18 +107,9 @@ export const useCanvasCamera = () => {
     }
   }
 
-  // Keyboard: Escape to go back to discovery
-  function onKeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape' && isFocused.value) {
-      panToDiscovery()
-    }
-  }
-
-  // Attach global listeners only once
-  if (import.meta.client && !listenersAttached) {
-    window.addEventListener('keydown', onKeydown)
-    listenersAttached = true
-  }
+  // NOTE: Escape key handling is done by useFocusPanel, NOT here.
+  // Calling panToDiscovery() directly would bypass the panel stack,
+  // hash routing, and scroll restoration.
 
   return {
     focusX: readonly(focusX),

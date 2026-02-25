@@ -162,15 +162,7 @@ const refreshGame = () => {
 // Map of route patterns to page titles
 const getPageTitle = (path: string, search: string = '') => {
   if (path === '/') return 'Home'
-  if (path === '/blogs' || path === '/blogs/') return 'Blog'
-  if (path === '/blogs/timeline') return 'Timeline'
-  if (path === '/blogs/tags') return 'Tags'
-  if (path === '/blogs/about') return 'About'
   if (path === '/games') return 'Games'
-  if (path.startsWith('/blogs/tags/')) {
-    const tag = path.split('/blogs/tags/')[1]
-    return `Posts tagged: ${decodeURIComponent(tag)}`
-  }
   if (search && search.includes('tag=')) {
     const params = new URLSearchParams(search)
     const tag = params.get('tag')

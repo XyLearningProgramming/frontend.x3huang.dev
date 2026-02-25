@@ -17,7 +17,7 @@
       </div>
 
       <div v-else class="space-y-8">
-        <BlogCard v-for="post in filteredPosts" :key="post.path" :post="post" />
+        <BlogCard v-for="post in filteredPosts" :key="post.path" :post="post" @select="(p: any) => emit('select', p)" />
       </div>
     </ClientOnly>
   </div>
@@ -32,6 +32,10 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   filterTag: undefined,
 })
+
+const emit = defineEmits<{
+  select: [post: any]
+}>()
 
 const filteredPosts = computed(() => {
   if (!props.posts) return []

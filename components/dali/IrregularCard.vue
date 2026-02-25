@@ -84,6 +84,9 @@ const cardStyle = computed(() => ({
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
               box-shadow 0.25s ease;
   will-change: transform;
+  /* Card has dark bg — override muted text to be lighter for readability */
+  --color-dali-muted: rgba(240, 237, 229, 0.55);
+  color: var(--color-dali-white, #F0EDE5);
 }
 
 .dali-irregular-card--interactive:hover {

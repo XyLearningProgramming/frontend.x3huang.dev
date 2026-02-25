@@ -1,7 +1,7 @@
 <template>
-  <div class="flex items-center gap-4 text-sm">
+  <div class="analytics-display flex items-center gap-4 text-sm">
     <!-- Visit count -->
-    <div v-if="showVisits && (analytics.visits > 0 || !loading)" class="flex items-center gap-1 text-neo-text-muted">
+    <div v-if="showVisits && (analytics.visits > 0 || !loading)" class="flex items-center gap-1">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m3 5.197v1M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
       </svg>
@@ -12,14 +12,14 @@
     </div>
 
     <!-- Like count -->
-    <div v-if="showLikes" class="flex items-center gap-1 text-neo-text-muted">
+    <div v-if="showLikes" class="flex items-center gap-1">
       <template v-if="clickable && slug">
         <LikeButton :slug="slug" :initial-count="analytics.likes" />
       </template>
       <template v-else>
         <svg
           class="w-4 h-4"
-          :class="isLiked ? 'text-neo-red' : 'text-neo-text-muted'"
+          :class="isLiked ? 'text-neo-red' : ''"
           fill="none"
           stroke="currentColor"
           stroke-width="1.5"
@@ -40,10 +40,10 @@
     </div>
 
     <!-- Share count -->
-    <div v-if="showShares" class="flex items-center gap-1 text-neo-text-muted">
+    <div v-if="showShares" class="flex items-center gap-1">
       <template v-if="clickable">
         <button
-          class="flex items-center gap-1 text-neo-text-muted hover:text-neo-blue transition-colors font-bold cursor-pointer"
+          class="flex items-center gap-1 hover:text-neo-blue transition-colors font-bold cursor-pointer"
           @click="highlightShareIcons"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,8 +69,8 @@
     </div>
 
     <!-- Loading indicator -->
-    <div v-if="loading" class="flex items-center gap-1 text-neo-text-muted">
-      <div class="w-4 h-4 animate-spin rounded-full border-2 border-neo-black border-t-neo-yellow" />
+    <div v-if="loading" class="flex items-center gap-1">
+      <div class="w-4 h-4 animate-spin rounded-full border-2 border-dali-muted border-t-dali-gold" />
     </div>
   </div>
 </template>
@@ -133,3 +133,11 @@ const highlightShareIcons = () => {
   }
 }
 </script>
+
+<style scoped>
+/* Inherit color from parent — inside .dali-focus-surface this becomes white,
+   on standalone pages it falls back to the neo muted color */
+.analytics-display {
+  color: inherit;
+}
+</style>

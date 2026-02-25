@@ -3,18 +3,20 @@
  * RulerToc — Transparent ruler on the left edge of every page.
  *
  * Detects context automatically:
- *  1. Canvas focus mode (hash routes like #post/…): scans blog headings in .dali-focus
- *  2. Full blog/about pages (/blogs/…, /about): scans .blog-content headings
- *  3. Index discovery mode: scans <section id> landmarks (excluding footer)
+ *  1. Canvas focus mode with a post open: scans blog headings in .dali-focus
+ *  2. Canvas focus mode with other panels (about, contact, gallery, blogs listing): no TOC
+ *  3. Discovery mode: scans <section id> landmarks (excluding footer)
  *
  * Uses MutationObserver to catch late-rendered <ClientOnly> content.
- * Watches useCanvasCamera's isFocused state for hash-based focus transitions.
+ * Reads useFocusPanel's activePanel to determine what's shown in focus.
  */
 
 import { useCanvasCamera } from '~/composables/useCanvasCamera'
+import { useFocusPanel } from '~/composables/useFocusPanel'
 
 const route = useRoute()
 const { isFocused, focusTarget } = useCanvasCamera()
+const { activePanel } = useFocusPanel()
 
 // ——— Detected sections ———
 interface TocItem {
@@ -41,18 +43,17 @@ function cleanLabel(raw: string): string {
 }
 
 // ——— Determine current mode ———
-type TocMode = 'discovery' | 'focus-post' | 'focus-other' | 'blog-page'
+type TocMode = 'discovery' | 'focus-post' | 'focus-other' | 'inline-post'
 
 function getMode(): TocMode {
-  const path = route.path
-
-  // Full blog/about page routes
-  if (path.startsWith('/blogs/') || path === '/about') return 'blog-page'
-
-  // On index page — check if canvas is in focus mode
+  // When the focus panel has a post open (about/contact/gallery), no TOC
   if (isFocused.value) {
-    if (focusTarget.value === 'post') return 'focus-post'
-    return 'focus-other' // about, contact, gallery — no TOC needed
+    return 'focus-other'
+  }
+
+  // Check if an inline blog reader is open (rendered in the discovery column)
+  if (import.meta.client && document.getElementById('reader')) {
+    return 'inline-post'
   }
 
   return 'discovery'
@@ -85,12 +86,9 @@ function scan() {
     })
   }
 
-  if (mode === 'focus-post' || mode === 'blog-page') {
-    // Strategy: headings in blog content
-    // Scope to focus column when in canvas focus mode, otherwise whole page
-    const container = mode === 'focus-post'
-      ? (document.querySelector('.dali-focus') || document)
-      : document
+  if (mode === 'inline-post') {
+    // Strategy: headings in the inline blog reader section
+    const container = document.getElementById('reader') || document
 
     const headings = container.querySelectorAll(
       '.blog-content h2[id], .blog-content h3[id], article h2[id], article h3[id]',
@@ -101,12 +99,9 @@ function scan() {
       found.push({ id, label, el: el as HTMLElement })
     })
 
-    // Prepend a "Top" item for the page/post title
+    // Prepend a "Top" item for the post title
     if (found.length > 0) {
-      const titleSel = mode === 'focus-post'
-        ? '.dali-focus article h1, .dali-focus h1'
-        : 'article header h1, h1'
-      const pageTitle = document.querySelector(titleSel)
+      const pageTitle = container.querySelector('article h1, h1')
       if (pageTitle) {
         const topLabel = cleanLabel(pageTitle.textContent || '') || 'Top'
         found.unshift({
@@ -162,11 +157,9 @@ function resetAndRescan(delay = 300) {
 function updateScroll() {
   if (!import.meta.client || items.value.length === 0) return
 
-  // In focus mode, the focus column scrolls independently via overflow-y
+  // Inline posts and discovery mode use native window scroll
   const mode = getMode()
-  const focusEl = mode === 'focus-post'
-    ? document.querySelector('.dali-focus') as HTMLElement | null
-    : null
+  const focusEl: HTMLElement | null = null // No separate scroll container for inline posts
 
   const vh = window.innerHeight
   let foundIdx = 0
@@ -174,7 +167,7 @@ function updateScroll() {
 
   // Use getBoundingClientRect() uniformly for all modes.
   // For focus-post: positions are relative to the scrollable .dali-focus container.
-  // For discovery/blog-page: positions are absolute document coordinates.
+  // For discovery: positions are absolute document coordinates.
   const containerRect = focusEl?.getBoundingClientRect()
   const scrollY = focusEl ? focusEl.scrollTop : window.scrollY
 
@@ -252,12 +245,10 @@ function scrollTo(idx: number) {
   if (!item) return
 
   if (item.id === '__top') {
-    // In focus mode, scroll the focus container; otherwise scroll window
-    const focusEl = getMode() === 'focus-post'
-      ? document.querySelector('.dali-focus') as HTMLElement | null
-      : null
-    if (focusEl) {
-      focusEl.scrollTo({ top: 0, behavior: 'smooth' })
+    // For inline posts, scroll to the reader section top
+    const readerEl = document.getElementById('reader')
+    if (readerEl) {
+      readerEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
     } else {
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
@@ -289,15 +280,21 @@ onUnmounted(() => {
 
 // Re-scan on route change (full navigation)
 watch(() => route.fullPath, () => {
-  const isBlog = route.path.startsWith('/blogs/') || route.path === '/about'
-  resetAndRescan(isBlog ? 600 : 300)
+  resetAndRescan(300)
 })
 
-// Re-scan when canvas focus state changes (hash-based transitions)
-watch([isFocused, focusTarget], () => {
+// Re-scan when focus panel state changes (hash-based transitions)
+watch([isFocused, activePanel], () => {
   // Give the focus panel content time to render
   resetAndRescan(isFocused.value ? 800 : 200)
 })
+
+// Re-scan on hash changes (inline blog posts use hash routing)
+if (import.meta.client) {
+  window.addEventListener('hashchange', () => {
+    resetAndRescan(500)
+  })
+}
 
 const visible = computed(() => items.value.length >= 2)
 

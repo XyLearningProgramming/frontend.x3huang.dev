@@ -32,21 +32,17 @@
   --color-neo-red: #FF6B6B;
   --color-neo-cyan: #88D8FF;
 
-  /* === Section Backgrounds (legacy) === */
-  --color-neo-section-hero: #FEFBEC;
-  --color-neo-section-posts: #E0F2FE;
-  --color-neo-section-space: #F3E8FF;
-  --color-neo-section-tools: #FEF3C7;
-  --color-neo-section-footer: #000000;
-
-  /* === Legacy color tokens (kept for compatibility) === */
-  --color-light-bg: #fdf6e3;
-  --color-light-surface: #eee8d5;
-  --color-light-border: #d3af86;
-  --color-light-text: #657b83;
-  --color-light-text-strong: #073642;
+  /* === Legacy accent (used by blog-content links & chat) === */
   --color-light-accent: #268bd2;
-  --color-light-secondary: #2aa198;
+
+  /* === Color Flow — scroll-driven background palette ===
+     Warm Parchment → Soft Amber → Bright Teal → Light Plum → Twilight Slate
+     Edit these stops to change the entire page color journey.          */
+  --color-flow-1: #F5E6B8;   /* warm parchment yellow  */
+  --color-flow-2: #D4A85A;   /* soft amber gold         */
+  --color-flow-3: #4BA89E;   /* brighter teal           */
+  --color-flow-4: #7B5E9A;   /* lighter plum            */
+  --color-flow-5: #4A5A7A;   /* twilight slate          */
 
   /* === Dalí Shadows — dramatic offsets === */
   --shadow-dali-sm: 2px 2px 0px 0px #ED1C24;
@@ -83,15 +79,26 @@ html {
 }
 
 body {
-  background-color: var(--color-dali-void);
+  background-color: var(--color-flow-1, #F5E6B8);
   overflow-x: hidden;
+}
+
+/* ── Color-flow adaptive text utilities ──
+   Use these inside the discovery column where the background
+   transitions from light → dark. They read the CSS custom
+   properties set by useColorFlow on the viewport element.     */
+.flow-text {
+  color: var(--color-flow-text, inherit);
+}
+.flow-muted {
+  color: var(--color-flow-muted, var(--color-dali-muted));
 }
 
 /* Headings use Space Grotesk */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-dali-heading);
   font-weight: 700;
-  color: var(--color-dali-white);
+  color: var(--color-flow-text, var(--color-dali-white));
 }
 
 h1 {
@@ -140,6 +147,9 @@ code, pre, .font-mono {
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
               box-shadow 0.2s ease;
   position: relative;
+  /* Card has dark bg — override muted text to be lighter for readability */
+  --color-dali-muted: rgba(240, 237, 229, 0.55);
+  color: var(--color-dali-white, #F0EDE5);
 }
 
 .dali-card:hover {
@@ -167,7 +177,7 @@ code, pre, .font-mono {
   cursor: pointer;
   transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
               box-shadow 0.15s ease;
-  color: var(--color-dali-white);
+  color: var(--color-flow-text, var(--color-dali-white));
   background: transparent;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -318,7 +328,7 @@ code, pre, .font-mono {
 .blog-content h3,
 .blog-content h4,
 .blog-content h5 {
-  color: var(--color-neo-text);
+  color: var(--color-flow-text, var(--color-neo-text));
 }
 
 .blog-content > p + p,
@@ -334,7 +344,7 @@ code, pre, .font-mono {
 .blog-content ul {
   font-size: 1.125rem;
   line-height: 1.75;
-  color: var(--color-neo-text);
+  color: var(--color-flow-text, var(--color-neo-text));
 }
 
 .blog-content :not(h1):not(h2):not(h3):not(h4):not(h5) a {
@@ -350,7 +360,7 @@ code, pre, .font-mono {
   margin: 1.5rem 0;
   background: rgba(237, 28, 36, 0.05);
   padding: 1rem 1.25rem;
-  color: var(--color-neo-text);
+  color: var(--color-flow-text, var(--color-neo-text));
 }
 
 .blog-content table {
@@ -366,13 +376,13 @@ code, pre, .font-mono {
   font-weight: 700;
   background: var(--color-neo-bg);
   text-align: left;
-  color: var(--color-neo-text);
+  color: var(--color-flow-text, var(--color-neo-text));
 }
 
 .blog-content td {
   border: 1px solid var(--color-neo-black);
   padding: 0.5rem 0.75rem;
-  color: var(--color-neo-text);
+  color: var(--color-flow-text, var(--color-neo-text));
 }
 
 .blog-content hr {
@@ -392,27 +402,7 @@ code, pre, .font-mono {
 .blog-content li {
   margin-top: 0.25rem;
   margin-bottom: 0.25rem;
-  color: var(--color-neo-text);
-}
-
-/* Blog breadcrumbs */
-.blog-breadcrumb {
-  display: inline-block;
-  text-align: center;
-  font-weight: 300;
-}
-
-.blog-breadcrumb > span { margin: 0 0.25rem; display: inline; }
-.blog-breadcrumb > li { display: inline; }
-.blog-breadcrumb > li a { color: var(--color-dali-teal); }
-.blog-breadcrumb > li a:hover { text-decoration: underline; }
-
-/* Blog aside */
-.blog-aside-title {
-  text-transform: uppercase;
-  font-weight: 800;
-  font-size: 0.75rem;
-  line-height: 1rem;
+  color: var(--color-flow-text, var(--color-neo-text));
 }
 
 /* Code block line fix */
@@ -423,41 +413,148 @@ code, pre, .font-mono {
 }
 
 /* ============================================================
-   Card tilt (legacy)
-   ============================================================ */
-
-.card-tilt {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.card-tilt:hover {
-  transform: translate(-2px, -2px) rotate(-0.5deg) !important;
-  box-shadow: var(--shadow-neo-lg) !important;
-}
-.card-tilt:active {
-  transform: translate(0, 0) rotate(0deg) !important;
-  box-shadow: var(--shadow-neo-sm) !important;
-}
-
-/* ============================================================
    Focus Mode (clean reading surface)
+   ============================================================
+   The focus column inherits the flowing background from the
+   canvas viewport (transparent). ALL text inside must be bright
+   white (#F0EDE5) regardless of the current color-flow state.
+
+   Strategy:
+   1. Override --color-flow-* CSS vars so anything referencing
+      them gets white/transparent values.
+   2. Set `color: inherit` cascade from the root so all children
+      inherit bright white by default.
+   3. Use !important on specific Tailwind utility overrides
+      (text-dali-muted, text-neo-text-muted) that would otherwise
+      resolve to dark colors.
    ============================================================ */
 
 .dali-focus-surface {
-  background: var(--color-dali-cream);
-  color: var(--color-neo-text);
+  /* Solid dark background — never changes, always readable */
+  background: var(--color-dali-void, #0D0D1A) !important;
+  /* Override the color-flow variables locally so nothing leaks through */
+  --color-flow-text: #F0EDE5 !important;
+  --color-flow-muted: rgba(240, 237, 229, 0.6) !important;
+  --color-flow-bg: var(--color-dali-void, #0D0D1A) !important;
+  /* Also override the neo legacy text vars that some components use */
+  --color-neo-text: #F0EDE5 !important;
+  --color-neo-text-muted: rgba(240, 237, 229, 0.6) !important;
+  color: #F0EDE5 !important;
 }
 
+/* Propagate the overridden custom properties to ALL descendants */
+.dali-focus-surface *:not(pre):not(code):not(.shiki):not(.shiki *) {
+  --color-flow-text: #F0EDE5;
+  --color-flow-muted: rgba(240, 237, 229, 0.6);
+  --color-neo-text: #F0EDE5;
+  --color-neo-text-muted: rgba(240, 237, 229, 0.6);
+}
+
+/* Headings: always bright white */
 .dali-focus-surface h1,
 .dali-focus-surface h2,
 .dali-focus-surface h3,
 .dali-focus-surface h4,
 .dali-focus-surface h5,
 .dali-focus-surface h6 {
-  color: var(--color-neo-text);
+  color: #F0EDE5 !important;
 }
 
+/* Body text elements: bright white — !important to beat Tailwind utilities */
 .dali-focus-surface p,
 .dali-focus-surface li,
-.dali-focus-surface span {
-  color: var(--color-neo-text);
+.dali-focus-surface span:not(.shiki span),
+.dali-focus-surface div,
+.dali-focus-surface article,
+.dali-focus-surface time,
+.dali-focus-surface label,
+.dali-focus-surface button,
+.dali-focus-surface a:not(.blog-content a) {
+  color: #F0EDE5 !important;
+}
+
+/* ── Override ALL muted utility classes to be readable on dark bg ── */
+.dali-focus-surface .text-dali-muted,
+.dali-focus-surface .text-neo-text-muted {
+  color: rgba(240, 237, 229, 0.6) !important;
+}
+
+.dali-focus-surface .text-dali-white {
+  color: #F0EDE5 !important;
+}
+
+/* ── Accent colors that should stay visible ── */
+.dali-focus-surface .text-dali-red {
+  color: var(--color-dali-red) !important;
+}
+.dali-focus-surface .text-dali-teal {
+  color: var(--color-dali-teal) !important;
+}
+.dali-focus-surface .text-dali-gold {
+  color: var(--color-dali-gold) !important;
+}
+
+/* ── Blog content inside focus surface ── */
+.dali-focus-surface .blog-content {
+  background: transparent;
+  border: none;
+  color: #F0EDE5;
+}
+
+.dali-focus-surface .blog-content h1,
+.dali-focus-surface .blog-content h2,
+.dali-focus-surface .blog-content h3,
+.dali-focus-surface .blog-content h4,
+.dali-focus-surface .blog-content h5 {
+  color: #F0EDE5 !important;
+}
+
+.dali-focus-surface .blog-content p,
+.dali-focus-surface .blog-content ol,
+.dali-focus-surface .blog-content ul,
+.dali-focus-surface .blog-content li {
+  color: #F0EDE5 !important;
+}
+
+.dali-focus-surface .blog-content blockquote {
+  color: #F0EDE5 !important;
+  background: rgba(255, 255, 255, 0.05);
+  border-left-color: var(--color-dali-gold);
+}
+
+.dali-focus-surface .blog-content th,
+.dali-focus-surface .blog-content td {
+  color: #F0EDE5 !important;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dali-focus-surface .blog-content table {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dali-focus-surface .blog-content th {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dali-focus-surface .blog-content a {
+  color: var(--color-dali-teal) !important;
+}
+
+.dali-focus-surface .blog-content strong {
+  color: #F0EDE5 !important;
+}
+
+.dali-focus-surface .blog-content hr {
+  border-top-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Blog card in focus surface ── */
+.dali-focus-surface .dali-card {
+  color: #F0EDE5 !important;
+  border-color: rgba(240, 237, 229, 0.2) !important;
+}
+
+/* ── SVG icons inside focus surface: inherit color ── */
+.dali-focus-surface svg {
+  color: inherit;
 }

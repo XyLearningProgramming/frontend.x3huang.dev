@@ -1,5 +1,5 @@
 <template>
-  <DaliCanvas>
+  <DaliCanvas @close="panelBack">
     <!-- ===================== DISCOVERY COLUMN ===================== -->
     <template #discovery>
       <!-- ==================== HERO / CHATTY ==================== -->
@@ -30,7 +30,7 @@
                   class="w-full h-full object-cover"
                   @error="showFallback = true"
                 >
-                <span v-show="showFallback" class="text-4xl font-bold text-dali-white">
+                <span v-show="showFallback" class="text-4xl font-bold flow-text">
                   {{ profile.initials }}
                 </span>
               </div>
@@ -47,7 +47,7 @@
             <!-- Subtitle -->
             <p
               ref="subtitleRef"
-              class="text-lg md:text-xl text-dali-muted max-w-xl mb-2 opacity-0"
+              class="text-lg md:text-xl flow-muted max-w-xl mb-2 opacity-0"
             >
               {{ profile.subtitle }}
             </p>
@@ -92,15 +92,12 @@
           class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-0"
           :class="{ '!opacity-0': hasScrolled }"
         >
-          <span class="text-[10px] font-mono text-dali-muted uppercase tracking-widest">Scroll to explore</span>
+          <span class="text-[10px] font-mono flow-muted uppercase tracking-widest">Scroll to explore</span>
           <svg class="w-5 h-5 text-dali-red animate-bounce-gentle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
         </div>
       </section>
-
-      <!-- Melting divider -->
-      <DaliMeltingDivider variant="melt" color="var(--color-dali-red)" :height="80" />
 
       <!-- ==================== BLOG POSTS ==================== -->
       <section id="posts" class="relative px-6 md:px-12 py-16 md:py-24 overflow-hidden">
@@ -164,15 +161,16 @@
               </span>
             </DaliIrregularCard>
 
-            <!-- "View All" card -->
+            <!-- "View All" card — expands to show full archive inline -->
             <DaliIrregularCard
+              v-if="!showAllPosts"
               ref="viewAllCardRef"
               :seed="99"
               :rotation="1"
               accent-color="var(--color-dali-gold)"
               class="posts-card opacity-0 cursor-pointer flex items-center justify-center text-center"
               tag="div"
-              @click="navigateTo('/blogs')"
+              @click="expandAllPosts"
             >
               <div class="py-4">
                 <span class="text-3xl mb-3 block">📚</span>
@@ -181,11 +179,91 @@
               </div>
             </DaliIrregularCard>
           </div>
+
+          <!-- ── Expanded: full archive inline ── -->
+          <div v-if="showAllPosts" class="mt-8">
+            <!-- Search bar -->
+            <div class="mb-6 max-w-md">
+              <div class="relative">
+                <input
+                  v-model="blogSearchQuery"
+                  type="text"
+                  placeholder="Search posts..."
+                  class="w-full px-4 py-2.5 pl-10 text-sm bg-dali-white/10 border-2 border-dali-white/20 text-dali-white placeholder-dali-white/40 focus:outline-none focus:border-dali-gold"
+                />
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dali-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="8" stroke-width="2" />
+                  <path stroke-linecap="round" stroke-width="2" d="m21 21-4.35-4.35" />
+                </svg>
+                <button
+                  v-if="blogSearchQuery.trim()"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-dali-white/40 hover:text-dali-white"
+                  @click="blogSearchQuery = ''"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Loading -->
+            <div v-if="allPostsLoading" class="flex items-center justify-center py-12">
+              <div class="w-8 h-8 border-4 border-dali-red border-t-dali-gold rounded-full animate-spin" />
+            </div>
+
+            <!-- All post cards in grid -->
+            <div v-else class="posts-grid">
+              <DaliIrregularCard
+                v-for="(post, idx) in filteredBlogPosts"
+                :key="post.path"
+                :seed="idx * 5 + 11"
+                :rotation="((idx % 5) - 2) * 1.2"
+                :accent-color="postColors[idx % postColors.length]"
+                class="cursor-pointer"
+                @click="openPost(post)"
+              >
+                <span class="text-[10px] font-bold text-dali-muted block mb-2">
+                  {{ formatDate(post.date) }}
+                </span>
+                <h3 class="text-lg font-bold mb-2 leading-tight text-dali-white">{{ post.title }}</h3>
+                <p class="text-sm text-dali-muted flex-1">{{ post.description }}</p>
+                <div v-if="post.tags?.length" class="mt-3 flex flex-wrap gap-1">
+                  <span
+                    v-for="tag in post.tags.slice(0, 3)"
+                    :key="tag"
+                    class="text-[10px] font-bold px-2 py-0.5 border border-dali-gold/40 text-dali-gold"
+                  >
+                    {{ tag }}
+                  </span>
+                </div>
+                <span class="mt-3 text-xs font-bold text-dali-teal flex items-center gap-1">
+                  Read more
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </DaliIrregularCard>
+            </div>
+
+            <!-- No results -->
+            <div v-if="!allPostsLoading && filteredBlogPosts.length === 0 && blogSearchQuery.trim()" class="text-center py-8">
+              <p class="text-lg text-dali-white mb-1">No posts found</p>
+              <p class="text-sm text-dali-muted">Try adjusting your search terms</p>
+            </div>
+
+            <!-- Collapse button -->
+            <div class="text-center mt-8 mb-4">
+              <button
+                class="dali-btn bg-dali-void/50 text-dali-white border-dali-white/30 px-5 py-2 text-sm font-bold"
+                @click="showAllPosts = false; blogSearchQuery = ''"
+              >
+                Show Less
+              </button>
+            </div>
+          </div>
         </div>
       </section>
-
-      <!-- Slash divider -->
-      <DaliMeltingDivider variant="slash" color="var(--color-dali-gold)" :height="60" />
 
       <!-- ==================== MY DIGITAL SPACE ==================== -->
       <section id="space" class="relative px-6 md:px-12 py-16 md:py-24 overflow-hidden">
@@ -254,9 +332,6 @@
         </div>
       </section>
 
-      <!-- Wave divider -->
-      <DaliMeltingDivider variant="wave" color="var(--color-dali-teal)" :height="60" />
-
       <!-- ==================== TOOLS ==================== -->
       <section id="tools" class="relative px-6 md:px-12 py-16 md:py-24 overflow-hidden">
         <div class="mx-auto max-w-6xl">
@@ -302,11 +377,8 @@
         </div>
       </section>
 
-      <!-- Melt divider into footer -->
-      <DaliMeltingDivider variant="melt" color="var(--color-dali-red)" :height="60" :flip="true" />
-
       <!-- ==================== FOOTER ==================== -->
-      <section id="footer" class="relative px-6 md:px-12 py-12" style="background: var(--color-dali-smoke);">
+      <section id="footer" class="relative px-6 md:px-12 py-12">
         <!-- Red diagonal slash accent -->
         <div class="absolute top-0 right-0 w-1/3 h-full overflow-hidden pointer-events-none" aria-hidden="true">
           <div class="absolute inset-0 bg-dali-red/5 -skew-x-12 origin-top-right" />
@@ -316,7 +388,7 @@
           ref="footerRef"
           class="mx-auto max-w-6xl text-center relative z-10 opacity-0"
         >
-          <h2 class="text-dali-white mb-4">
+          <h2 class="flow-text mb-4">
             <span class="text-lg font-bold">{{ siteConfig.name }}</span>
           </h2>
           <div class="flex justify-center gap-4 mb-6">
@@ -346,10 +418,10 @@
               Email
             </a>
           </div>
-          <p class="text-sm text-dali-muted">
+          <p class="text-sm flow-muted">
             Built with Nuxt, Vue, and Nuxt Content.
           </p>
-          <p class="text-xs text-dali-muted/50 mt-1">
+          <p class="text-xs flow-muted opacity-60 mt-1">
             &copy; {{ new Date().getFullYear() }} {{ siteConfig.author.name }}
           </p>
         </div>
@@ -358,24 +430,23 @@
 
     <!-- ===================== FOCUS COLUMN ===================== -->
     <template #focus>
-      <div class="min-h-screen">
-        <!-- Back button -->
-        <div class="sticky top-0 z-20 flex items-center justify-between px-6 py-4 bg-dali-cream border-b-2 border-dali-void/10">
+      <div class="min-h-screen dali-focus-surface">
+        <!-- Back button bar -->
+        <div class="sticky top-0 z-20 flex items-center justify-between px-6 py-4 backdrop-blur-sm" style="background: rgba(0,0,0,0.15);">
           <button
-            class="dali-btn bg-transparent text-dali-void border-dali-void px-3 py-1.5 text-sm font-bold flex items-center gap-2"
-            style="--color-dali-red: var(--color-dali-void);"
-            @click="closeAllPanels"
+            class="dali-btn bg-transparent text-dali-white border-dali-white/40 px-3 py-1.5 text-sm font-bold flex items-center gap-2"
+            @click="panelBack"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
             Back
           </button>
-          <span class="text-sm font-bold text-dali-void/60 truncate max-w-[60%]">
+          <span class="text-sm font-bold text-dali-white/60 truncate max-w-[60%]">
             {{ focusPanelTitle }}
           </span>
           <button
-            class="text-xs font-bold text-dali-void/60 hover:text-dali-void px-2 py-1"
+            class="text-xs font-bold text-dali-white/60 hover:text-dali-white px-2 py-1"
             @click="closeAllPanels"
           >
             ESC
@@ -384,44 +455,36 @@
 
         <!-- Focus content -->
         <div class="px-6 md:px-12 py-8 max-w-4xl mx-auto">
-          <!-- Post Detail -->
-          <template v-if="activePost">
+          <!-- ===== Post Detail ===== -->
+          <template v-if="activePanel === 'post' && panelPayload">
             <article>
               <header class="mb-8">
-                <h1 class="text-dali-void mb-3">{{ activePost.title }}</h1>
-                <div class="flex flex-wrap items-center gap-3 text-sm text-dali-void/60 mb-4">
-                  <span class="font-bold">{{ formatDate(activePost.date) }}</span>
-                  <span v-if="activePost.tags?.length" class="flex flex-wrap gap-1">
+                <h1 class="text-dali-white mb-3">{{ panelPayload.title }}</h1>
+                <div class="flex flex-wrap items-center gap-3 text-sm text-dali-white/60 mb-4">
+                  <span class="font-bold">{{ formatDate(panelPayload.date) }}</span>
+                  <span v-if="panelPayload.tags?.length" class="flex flex-wrap gap-1">
                     <span
-                      v-for="tag in activePost.tags"
+                      v-for="tag in panelPayload.tags"
                       :key="tag"
-                      class="text-[10px] font-bold px-2 py-0.5 bg-dali-red/10 border border-dali-red/30 text-dali-red"
+                      class="text-[10px] font-bold px-2 py-0.5 bg-dali-white/10 border border-dali-white/30 text-dali-white"
                     >
                       {{ tag }}
                     </span>
                   </span>
                 </div>
               </header>
-              <div v-if="activePostContent" class="blog-content bg-white p-6 md:p-10 border-2 border-dali-void/10">
+              <div v-if="activePostContent" class="blog-content">
                 <ContentRenderer :value="activePostContent" />
               </div>
               <div v-else class="flex items-center justify-center py-12">
                 <div class="w-8 h-8 border-4 border-dali-red border-t-dali-gold rounded-full animate-spin" />
               </div>
-              <div class="mt-8 text-center">
-                <NuxtLink
-                  :to="activePost.path"
-                  class="dali-btn inline-block bg-dali-red text-dali-white px-6 py-3 text-sm"
-                >
-                  Open Full Post &rarr;
-                </NuxtLink>
-              </div>
             </article>
           </template>
 
-          <!-- About -->
-          <template v-else-if="panelMode === 'about'">
-            <div v-if="aboutContent" class="blog-content bg-white p-6 md:p-10 border-2 border-dali-void/10">
+          <!-- ===== About ===== -->
+          <template v-else-if="activePanel === 'about'">
+            <div v-if="aboutContent" class="blog-content">
               <ContentRenderer :value="aboutContent" />
             </div>
             <div v-else class="flex items-center justify-center py-12">
@@ -429,36 +492,36 @@
             </div>
           </template>
 
-          <!-- Contact -->
-          <template v-else-if="panelMode === 'contact'">
+          <!-- ===== Contact ===== -->
+          <template v-else-if="activePanel === 'contact'">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
-              <a :href="`mailto:${siteConfig.social.email}`" class="block p-5 border-2 border-dali-void/10 bg-white text-center hover:border-dali-red transition-colors">
+              <a :href="`mailto:${siteConfig.social.email}`" class="block p-5 border-2 border-dali-white/20 bg-dali-white/5 text-center hover:border-dali-red transition-colors">
                 <div class="text-4xl mb-3">📧</div>
-                <h3 class="text-lg font-bold mb-1 text-dali-void">Email</h3>
-                <p class="text-sm text-dali-void/60">{{ siteConfig.social.email }}</p>
+                <h3 class="text-lg font-bold mb-1 text-dali-white">Email</h3>
+                <p class="text-sm text-dali-white/60">{{ siteConfig.social.email }}</p>
               </a>
-              <a :href="siteConfig.social.github" target="_blank" rel="noopener noreferrer" class="block p-5 border-2 border-dali-void/10 bg-white text-center hover:border-dali-red transition-colors">
+              <a :href="siteConfig.social.github" target="_blank" rel="noopener noreferrer" class="block p-5 border-2 border-dali-white/20 bg-dali-white/5 text-center hover:border-dali-red transition-colors">
                 <div class="text-4xl mb-3">💻</div>
-                <h3 class="text-lg font-bold mb-1 text-dali-void">GitHub</h3>
-                <p class="text-sm text-dali-void/60">{{ siteConfig.social.github?.split('/').pop() }}</p>
+                <h3 class="text-lg font-bold mb-1 text-dali-white">GitHub</h3>
+                <p class="text-sm text-dali-white/60">{{ siteConfig.social.github?.split('/').pop() }}</p>
               </a>
-              <a :href="siteConfig.social.linkedin" target="_blank" rel="noopener noreferrer" class="block p-5 border-2 border-dali-void/10 bg-white text-center hover:border-dali-red transition-colors">
+              <a :href="siteConfig.social.linkedin" target="_blank" rel="noopener noreferrer" class="block p-5 border-2 border-dali-white/20 bg-dali-white/5 text-center hover:border-dali-red transition-colors">
                 <div class="text-4xl mb-3">💼</div>
-                <h3 class="text-lg font-bold mb-1 text-dali-void">LinkedIn</h3>
-                <p class="text-sm text-dali-void/60">{{ siteConfig.social.linkedin?.split('/').slice(-2).join('/') }}</p>
+                <h3 class="text-lg font-bold mb-1 text-dali-white">LinkedIn</h3>
+                <p class="text-sm text-dali-white/60">{{ siteConfig.social.linkedin?.split('/').slice(-2).join('/') }}</p>
               </a>
-              <a href="/resume/20260111.pdf" target="_blank" rel="noopener noreferrer" class="block p-5 border-2 border-dali-void/10 bg-white text-center hover:border-dali-red transition-colors">
+              <a href="/resume/20260111.pdf" target="_blank" rel="noopener noreferrer" class="block p-5 border-2 border-dali-white/20 bg-dali-white/5 text-center hover:border-dali-red transition-colors">
                 <div class="text-4xl mb-3">📄</div>
-                <h3 class="text-lg font-bold mb-1 text-dali-void">Resume</h3>
-                <p class="text-sm text-dali-void/60">Download CV</p>
+                <h3 class="text-lg font-bold mb-1 text-dali-white">Resume</h3>
+                <p class="text-sm text-dali-white/60">Download CV</p>
               </a>
             </div>
           </template>
 
-          <!-- Gallery -->
-          <template v-else-if="panelMode === 'gallery' && selectedGalleryImage">
+          <!-- ===== Gallery ===== -->
+          <template v-else-if="activePanel === 'gallery' && selectedGalleryImage">
             <div class="flex flex-col items-center">
-              <div class="overflow-hidden mb-4 max-w-3xl w-full border-2 border-dali-void/10">
+              <div class="overflow-hidden mb-4 max-w-3xl w-full border-2 border-dali-white/20">
                 <NuxtImg
                   :src="selectedGalleryImage.url"
                   :alt="selectedGalleryImage.alt || selectedGalleryImage.title || 'Photo'"
@@ -466,8 +529,8 @@
                 />
               </div>
               <div v-if="selectedGalleryImage.title || selectedGalleryImage.note" class="text-center max-w-xl">
-                <p v-if="selectedGalleryImage.title" class="font-bold text-lg mb-1 text-dali-void">{{ selectedGalleryImage.title }}</p>
-                <p v-if="selectedGalleryImage.note" class="text-sm text-dali-void/60 italic">{{ selectedGalleryImage.note }}</p>
+                <p v-if="selectedGalleryImage.title" class="font-bold text-lg mb-1 text-dali-white">{{ selectedGalleryImage.title }}</p>
+                <p v-if="selectedGalleryImage.note" class="text-sm text-dali-white/60 italic">{{ selectedGalleryImage.note }}</p>
               </div>
             </div>
           </template>
@@ -516,13 +579,12 @@
             >
               {{ section.label }}
             </button>
-            <NuxtLink
-              to="/blogs"
+            <button
               class="dali-btn px-4 py-3 text-sm text-left"
-              @click="mobileNavOpen = false"
+              @click="mobileNavOpen = false; expandAllPosts(); scrollToPosts()"
             >
               All Posts
-            </NuxtLink>
+            </button>
             <NuxtLink
               to="/tools"
               class="dali-btn px-4 py-3 text-sm text-left"
@@ -536,68 +598,29 @@
     </Transition>
   </Teleport>
 
-  <!-- Mobile focus SlidePanel (used instead of DaliCanvas pan on small screens) -->
-  <NeoSlidePanel
-    :open="isMobile && isFocused"
-    :title="focusPanelTitle"
-    @close="closeAllPanels"
-  >
-    <!-- Post reader -->
-    <template v-if="activePost">
-      <h1 class="text-2xl font-bold mb-4 text-dali-void">{{ activePost.title }}</h1>
-      <p v-if="activePost.date" class="text-sm text-dali-void/50 mb-6 font-mono">{{ formatDate(activePost.date) }}</p>
-      <div v-if="activePostContent" class="blog-content text-dali-void">
-        <ContentRenderer :value="activePostContent" />
-      </div>
-      <div v-else class="flex justify-center py-12">
-        <div class="w-6 h-6 border-2 border-dali-red border-t-transparent rounded-full animate-spin" />
-      </div>
-    </template>
-
-    <!-- About -->
-    <template v-else-if="panelMode === 'about'">
-      <div v-if="aboutContent" class="blog-content text-dali-void">
-        <ContentRenderer :value="aboutContent" />
-      </div>
-      <div v-else class="text-center py-12 text-dali-void/60">Loading about...</div>
-    </template>
-
-    <!-- Contact -->
-    <template v-else-if="panelMode === 'contact'">
-      <h2 class="text-2xl font-bold mb-4 text-dali-void">Get In Touch</h2>
-      <div class="space-y-4">
-        <a v-if="siteConfig.social.github" :href="siteConfig.social.github" target="_blank" class="dali-btn block text-center px-4 py-3 text-sm">GitHub</a>
-        <a v-if="siteConfig.social.linkedin" :href="siteConfig.social.linkedin" target="_blank" class="dali-btn block text-center px-4 py-3 text-sm">LinkedIn</a>
-        <a v-if="siteConfig.social.email" :href="`mailto:${siteConfig.social.email}`" class="dali-btn block text-center px-4 py-3 text-sm">Email</a>
-      </div>
-    </template>
-
-    <!-- Gallery -->
-    <template v-else-if="panelMode === 'gallery' && selectedGalleryImage">
-      <div class="flex flex-col items-center">
-        <div class="overflow-hidden mb-4 max-w-full border-2 border-dali-void/10">
-          <NuxtImg :src="selectedGalleryImage.url" :alt="selectedGalleryImage.alt || selectedGalleryImage.title || 'Photo'" class="w-full object-contain max-h-[70vh]" />
-        </div>
-        <p v-if="selectedGalleryImage.title" class="font-bold text-lg mb-1 text-dali-void">{{ selectedGalleryImage.title }}</p>
-        <p v-if="selectedGalleryImage.note" class="text-sm text-dali-void/60 italic">{{ selectedGalleryImage.note }}</p>
-      </div>
-    </template>
-  </NeoSlidePanel>
 
 </template>
 
 <script setup lang="ts">
 import ChatView from '~/components/chat/ChatView.vue'
 import { siteConfig, getPageMeta } from '~/site.config'
-import { useCanvasCamera, type FocusTarget } from '~/composables/useCanvasCamera'
+import { useCanvasCamera } from '~/composables/useCanvasCamera'
+import { useFocusPanel } from '~/composables/useFocusPanel'
 import type { GalleryImage } from '~/composables/useBackgroundGallery'
 
 // ==================== CAMERA ====================
+const { isFocused } = useCanvasCamera()
+
+// ==================== FOCUS PANEL ====================
 const {
-  isFocused,
-  panToFocus,
-  panToDiscovery,
-} = useCanvasCamera()
+  activePanel,
+  panelPayload,
+  open: openPanel,
+  back: panelBack,
+  close: panelClose,
+  init: initFocusPanel,
+  destroy: destroyFocusPanel,
+} = useFocusPanel()
 
 // ==================== STATE ====================
 const showFallback = ref(false)
@@ -605,10 +628,7 @@ const mobileNavOpen = ref(false)
 const chatActive = ref(false)
 const hasScrolled = ref(false)
 const isMobile = ref(false)
-
-// Panel state
-const panelMode = ref<'none' | 'about' | 'contact' | 'gallery'>('none')
-const selectedGalleryImage = ref<GalleryImage | null>(null)
+const showAllPosts = ref(false)
 
 // ==================== PROFILE ====================
 const profile = {
@@ -666,18 +686,56 @@ const postColors = [
   'var(--color-dali-teal)',
 ]
 
-const activePost = ref<BlogPost | null>(null)
+// Active post content (loaded on demand when a post panel opens)
 const activePostContent = ref<any>(null)
+
+// ==================== ALL BLOG POSTS (for blogs listing panel) ====================
+const allPosts = ref<any[]>([])
+const allPostsLoaded = ref(false)
+const allPostsLoading = ref(false)
+const blogSearchQuery = ref('')
+
+async function loadAllPosts() {
+  if (allPostsLoaded.value || allPostsLoading.value) return
+  allPostsLoading.value = true
+  try {
+    const query = queryCollection('blogs')
+    if (!import.meta.dev) query.where('published', '=', true)
+    const result = await query
+      .select('title', 'date', 'description', 'tags', 'image', 'path')
+      .order('date', 'DESC')
+      .all()
+    allPosts.value = result || []
+    allPostsLoaded.value = true
+  } catch (e) {
+    console.warn('Failed to load all posts:', e)
+  } finally {
+    allPostsLoading.value = false
+  }
+}
+
+const filteredBlogPosts = computed(() => {
+  if (!blogSearchQuery.value.trim()) return allPosts.value
+  const q = blogSearchQuery.value.toLowerCase().trim()
+  return allPosts.value.filter((post: any) =>
+    post.title?.toLowerCase().includes(q)
+    || post.description?.toLowerCase().includes(q)
+    || post.tags?.some((tag: string) => tag.toLowerCase().includes(q)),
+  )
+})
 
 // ==================== ABOUT CONTENT ====================
 const aboutContent = ref<any>(null)
 
+// ==================== GALLERY IMAGE (for gallery panel) ====================
+const selectedGalleryImage = ref<GalleryImage | null>(null)
+
 // ==================== FOCUS PANEL TITLE ====================
 const focusPanelTitle = computed(() => {
-  if (activePost.value) return activePost.value.title
-  if (panelMode.value === 'about') return 'About Me'
-  if (panelMode.value === 'contact') return 'Get In Touch'
-  if (panelMode.value === 'gallery') return selectedGalleryImage.value?.title || 'Gallery'
+  if (activePanel.value === 'post' && panelPayload.value) return panelPayload.value.title || 'Post'
+  if (activePanel.value === 'about') return 'About Me'
+  if (activePanel.value === 'contact') return 'Get In Touch'
+  if (activePanel.value === 'gallery') return selectedGalleryImage.value?.title || 'Gallery'
   return ''
 })
 
@@ -732,27 +790,22 @@ function formatDate(dateStr: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-// --- Focus mode transitions ---
-async function transitionToFocus(target: FocusTarget) {
-  await panToFocus(target)
-}
-
+// --- Panel openers (all go through useFocusPanel) ---
 async function closeAllPanels() {
-  activePost.value = null
-  activePostContent.value = null
-  panelMode.value = 'none'
   selectedGalleryImage.value = null
-  await panToDiscovery()
-  clearHash()
+  blogSearchQuery.value = ''
+  activePostContent.value = null
+  await panelClose()
 }
 
-// --- Post panel ---
 async function openPost(post: BlogPost) {
-  activePost.value = post
+  // Clear any previous content
   activePostContent.value = null
-  panelMode.value = 'none'
-  updateHash(`post${post.path}`)
-  transitionToFocus('post')
+
+  // Open focus panel — this saves discovery scroll, pans right, updates hash
+  openPanel('post', post)
+
+  // Load full content
   try {
     const data = await queryCollection('blogs').path(post.path).first()
     activePostContent.value = data
@@ -761,12 +814,21 @@ async function openPost(post: BlogPost) {
   }
 }
 
-// --- About / Contact / Gallery panels ---
+async function expandAllPosts() {
+  blogSearchQuery.value = ''
+  showAllPosts.value = true
+  await loadAllPosts()
+}
+
+function scrollToPosts() {
+  nextTick(() => {
+    document.getElementById('posts')?.scrollIntoView({ behavior: 'smooth' })
+  })
+}
+
+
 async function openAbout() {
-  panelMode.value = 'about'
-  activePost.value = null
-  updateHash('about')
-  transitionToFocus('about')
+  await openPanel('about', null, 'about')
   if (!aboutContent.value) {
     try {
       const allPages = await queryCollection('pages').all()
@@ -777,52 +839,63 @@ async function openAbout() {
   }
 }
 
-function openContact() {
-  panelMode.value = 'contact'
-  activePost.value = null
-  updateHash('contact')
-  transitionToFocus('contact')
+async function openContact() {
+  await openPanel('contact', null, 'contact')
 }
 
-function openGallery(image: GalleryImage) {
+async function openGallery(image: GalleryImage) {
   selectedGalleryImage.value = image
-  panelMode.value = 'gallery'
-  activePost.value = null
-  updateHash('gallery')
-  transitionToFocus('gallery')
+  await openPanel('gallery', image, 'gallery')
 }
 
-// --- Hash routing ---
-function updateHash(hash: string) {
-  if (import.meta.client) {
-    window.history.pushState(null, '', `#${hash}`)
+/** Resolve a post path to a BlogPost object (used by useFocusPanel for deep links) */
+async function resolvePost(path: string): Promise<BlogPost | null> {
+  try {
+    const data = await queryCollection('blogs').path(path).first()
+    if (data) {
+      return {
+        path: data.path,
+        title: (data as any).title || 'Untitled',
+        description: (data as any).description || '',
+        date: (data as any).date || '',
+        tags: (data as any).tags || [],
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to resolve post:', path, e)
   }
-}
-
-function clearHash() {
-  if (import.meta.client) {
-    window.history.pushState(null, '', window.location.pathname)
-  }
-}
-
-function onPopState() {
-  const hash = window.location.hash.slice(1)
-  if (!hash) {
-    closeAllPanels()
-  } else if (hash === 'about') {
-    openAbout()
-  } else if (hash === 'contact') {
-    openContact()
-  } else if (hash.startsWith('post/')) {
-    const path = '/' + hash.slice(4)
-    const post = recentPosts.value.find(p => p.path === path)
-    if (post) openPost(post)
-  }
+  return null
 }
 
 function onScroll() {
   hasScrolled.value = window.scrollY > 100
 }
+
+// Watch activePanel to load content when panel changes (e.g. from deep link)
+watch(activePanel, async (panel) => {
+  if (panel === 'post' && panelPayload.value) {
+    // Load post content when a post panel opens
+    activePostContent.value = null
+    try {
+      const data = await queryCollection('blogs').path(panelPayload.value.path).first()
+      activePostContent.value = data
+    } catch (e) {
+      console.warn('Failed to load post content:', e)
+    }
+  }
+  if (panel === 'about' && !aboutContent.value) {
+    try {
+      const allPages = await queryCollection('pages').all()
+      aboutContent.value = allPages.find((page: any) => page.path === '/pages/about')
+    } catch (e) {
+      console.warn('Failed to load about content:', e)
+    }
+  }
+  if (!panel) {
+    // Returning to discovery — clear post content
+    activePostContent.value = null
+  }
+})
 
 // ==================== GSAP SCROLL ANIMATIONS ====================
 async function initScrollAnimations() {
@@ -1150,24 +1223,21 @@ onMounted(async () => {
   window.addEventListener('resize', checkMobile, { passive: true })
 
   window.addEventListener('scroll', onScroll, { passive: true })
-  window.addEventListener('popstate', onPopState)
 
   // Initialize GSAP scroll animations
   await nextTick()
   initScrollAnimations()
 
-  // Handle initial hash
-  const hash = window.location.hash.slice(1)
-  if (hash === 'about') openAbout()
-  else if (hash === 'contact') openContact()
+  // Initialize focus panel (handles hash routing for about/contact/gallery/posts)
+  initFocusPanel(resolvePost)
 })
 
 onUnmounted(() => {
   if (import.meta.client) {
     window.removeEventListener('scroll', onScroll)
-    window.removeEventListener('popstate', onPopState)
     window.removeEventListener('resize', checkMobile)
   }
+  destroyFocusPanel()
 })
 
 // ==================== SEO ====================
@@ -1185,7 +1255,7 @@ useHead(getPageMeta({
   font-size: clamp(3rem, 8vw, 6rem);
   line-height: 1;
   font-weight: 700;
-  color: var(--color-dali-white);
+  color: var(--color-flow-text, var(--color-dali-white));
   transform: rotate(-2deg);
   margin-bottom: 0.5rem;
   position: relative;
@@ -1205,7 +1275,7 @@ useHead(getPageMeta({
 .hero-motto {
   font-size: 1.25rem;
   font-style: italic;
-  color: var(--color-dali-muted);
+  color: var(--color-flow-muted, var(--color-dali-muted));
   max-width: 36rem;
   margin-bottom: 0.5rem;
   position: relative;
