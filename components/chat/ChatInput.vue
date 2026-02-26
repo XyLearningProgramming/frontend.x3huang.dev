@@ -40,7 +40,7 @@
             ? 'send-btn-active'
             : 'cursor-not-allowed shadow-none'"
           :style="canSend
-            ? 'background: var(--color-dali-red); color: white; border-color: var(--color-dali-red); box-shadow: var(--shadow-dali-sm);'
+            ? 'background: var(--color-dali-red); color: white; border-color: var(--color-dali-red); box-shadow: var(--shadow-dali-void-sm);'
             : 'background: rgba(0,0,0,0.05); color: rgba(0,0,0,0.25); border-color: rgba(0,0,0,0.1);'"
           @click="send"
         >

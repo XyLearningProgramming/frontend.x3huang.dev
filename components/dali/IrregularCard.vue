@@ -47,15 +47,15 @@ function generateClipPath(): string {
   return `polygon(${tl}, ${tr}, ${br}, ${bl})`
 }
 
-// Generate slight rotation jitter
-const rotationJitter = (rng() - 0.5) * 3 // -1.5 to +1.5 deg
-const finalRotation = props.rotation + rotationJitter
+// Generate slight rotation jitter (skip when non-interactive)
+const rotationJitter = props.interactive ? (rng() - 0.5) * 3 : 0
+const finalRotation = props.interactive ? props.rotation + rotationJitter : 0
 
 const clipPath = generateClipPath()
 
 const cardStyle = computed(() => ({
   clipPath,
-  transform: `rotate(${finalRotation}deg)`,
+  transform: finalRotation ? `rotate(${finalRotation}deg)` : undefined,
   borderColor: props.accentColor,
   '--card-accent': props.accentColor,
 }))
@@ -84,7 +84,11 @@ const cardStyle = computed(() => ({
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
               box-shadow 0.25s ease;
   will-change: transform;
-  /* Card has dark bg — override muted text to be lighter for readability */
+  /* Card has dark bg — override color-flow and muted text for readability.
+     Headings use var(--color-flow-text) globally, so we pin it to white
+     inside cards to prevent it from inheriting the scroll-driven dark value. */
+  --color-flow-text: var(--color-dali-white, #F0EDE5);
+  --color-flow-muted: rgba(240, 237, 229, 0.55);
   --color-dali-muted: rgba(240, 237, 229, 0.55);
   color: var(--color-dali-white, #F0EDE5);
 }
@@ -98,6 +102,11 @@ const cardStyle = computed(() => ({
 .dali-irregular-card--interactive:active {
   transform: translate(0, 0) rotate(0deg);
   box-shadow: 2px 2px 0px 0px var(--card-accent, var(--color-dali-red));
+}
+
+/* Non-interactive: no transform transition (avoids GSAP ↔ Vue style conflicts) */
+.dali-irregular-card:not(.dali-irregular-card--interactive) {
+  transition: box-shadow 0.25s ease;
 }
 
 .dali-irregular-card__inner {

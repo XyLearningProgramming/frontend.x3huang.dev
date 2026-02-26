@@ -81,10 +81,10 @@ onMounted(async () => {
 }
 .card-gallery:hover {
   transform: translate(-2px, -2px) rotate(-0.5deg);
-  box-shadow: var(--shadow-dali-lg);
+  box-shadow: var(--shadow-dali-void-lg);
 }
 .card-gallery:active {
   transform: translate(0, 0);
-  box-shadow: var(--shadow-dali-sm);
+  box-shadow: var(--shadow-dali-void-sm);
 }
 </style>

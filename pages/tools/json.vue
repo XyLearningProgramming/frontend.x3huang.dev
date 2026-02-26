@@ -1,82 +1,73 @@
 <template>
-  <div class="min-h-screen py-16 px-4" style="background: var(--color-dali-void);">
-    <div class="container mx-auto max-w-screen-xl">
-      <!-- Back navigation -->
-      <div class="mb-6">
-        <button @click="$router.push('/tools')"
-          class="dali-btn inline-flex items-center gap-2 px-3 py-1.5 text-sm font-bold">
-          <IconsArrowLeft class="w-4 h-4" />
-          Back to Tools
-        </button>
-      </div>
+  <LayoutsSubPageLayout
+    title="JSON Editor"
+    back-to="/#tools"
+    back-label="Tools"
+    max-width="wide"
+  >
+    <template #header>
+      <p class="text-lg text-dali-muted max-w-2xl leading-relaxed">
+        Edit, format, and validate JSON data with a powerful online editor.
+      </p>
+    </template>
 
-      <!-- Header -->
-      <div class="mb-6">
-        <h1 class="font-bold mb-2 text-dali-white" style="transform: rotate(-1deg);">JSON Editor</h1>
-        <p class="text-lg text-dali-muted max-w-2xl leading-relaxed">
-          Edit, format, and validate JSON data with a powerful online editor.
-        </p>
-      </div>
+    <!-- JSON Editor -->
+    <div>
+      <div class="dali-card dali-card--static p-4 relative h-[calc(100vh-280px)]" style="border-color: var(--color-dali-teal);">
+        <div class="h-full flex">
+          <!-- Left panel -->
+          <div class="flex-1 flex flex-col">
+            <div ref="leftEditorContainer" class="flex-1 border-2 border-dali-muted/30"></div>
+          </div>
 
-      <!-- JSON Editor -->
-      <div>
-        <div class="dali-card p-4 relative h-[calc(100vh-280px)]" style="border-color: var(--color-dali-muted);">
-          <div class="h-full flex">
-            <!-- Left panel -->
-            <div class="flex-1 flex flex-col">
-              <div ref="leftEditorContainer" class="flex-1 border-2 border-dali-muted/30"></div>
-            </div>
+          <!-- Action buttons between panels -->
+          <div class="flex flex-col justify-center items-center gap-4 px-4">
+            <button @click="comparePanels"
+              class="dali-btn px-3 py-2 bg-dali-red text-dali-white text-sm font-bold"
+              title="Compare JSON data">
+              ≈
+            </button>
+            <button @click="copyLeftToRight"
+              class="dali-btn px-3 py-2 text-sm font-bold"
+              style="border-color: var(--color-dali-muted);"
+              title="Copy from left to right">
+              →
+            </button>
+            <button @click="copyRightToLeft"
+              class="dali-btn px-3 py-2 text-sm font-bold"
+              style="border-color: var(--color-dali-muted);"
+              title="Copy from right to left">
+              ←
+            </button>
+          </div>
 
-            <!-- Action buttons between panels -->
-            <div class="flex flex-col justify-center items-center gap-4 px-4">
-              <button @click="comparePanels"
-                class="dali-btn px-3 py-2 bg-dali-red text-dali-white text-sm font-bold"
-                title="Compare JSON data">
-                ≈
-              </button>
-              <button @click="copyLeftToRight"
-                class="dali-btn px-3 py-2 text-sm font-bold"
-                style="border-color: var(--color-dali-muted);"
-                title="Copy from left to right">
-                →
-              </button>
-              <button @click="copyRightToLeft"
-                class="dali-btn px-3 py-2 text-sm font-bold"
-                style="border-color: var(--color-dali-muted);"
-                title="Copy from right to left">
-                ←
-              </button>
-            </div>
-
-            <!-- Right panel -->
-            <div class="flex-1 flex flex-col">
-              <div ref="rightEditorContainer" class="flex-1 border-2 border-dali-muted/30"></div>
-            </div>
+          <!-- Right panel -->
+          <div class="flex-1 flex flex-col">
+            <div ref="rightEditorContainer" class="flex-1 border-2 border-dali-muted/30"></div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Error display -->
-      <div v-if="errorMessage" class="mt-4">
-        <div class="p-4 border-2 border-dali-red bg-dali-red/10 text-dali-white font-bold">
-          {{ errorMessage }}
-        </div>
-      </div>
-
-      <!-- Attribution -->
-      <div class="fixed bottom-4 right-4 z-10">
-        <a href="https://github.com/josdejong/svelte-jsoneditor" target="_blank" rel="noopener noreferrer"
-          class="text-xs text-dali-muted/40 hover:text-dali-muted/70 transition-colors" title="Powered by svelte-jsoneditor">
-          Powered by svelte-jsoneditor
-        </a>
+    <!-- Error display -->
+    <div v-if="errorMessage" class="mt-4">
+      <div class="p-4 border-2 border-dali-red bg-dali-red/10 text-dali-white font-bold">
+        {{ errorMessage }}
       </div>
     </div>
-  </div>
+
+    <!-- Attribution -->
+    <div class="fixed bottom-4 right-4 z-10">
+      <a href="https://github.com/josdejong/svelte-jsoneditor" target="_blank" rel="noopener noreferrer"
+        class="text-xs text-dali-muted/40 hover:text-dali-muted/70 transition-colors" title="Powered by svelte-jsoneditor">
+        Powered by svelte-jsoneditor
+      </a>
+    </div>
+  </LayoutsSubPageLayout>
 </template>
 
 <script setup lang="ts">
 import { createJSONEditor } from 'vanilla-jsoneditor'
-import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
 
 const leftEditorContainer = ref<HTMLElement>()
 const rightEditorContainer = ref<HTMLElement>()

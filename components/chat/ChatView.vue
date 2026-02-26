@@ -83,7 +83,8 @@ const scrollContainer = ref<HTMLElement | null>(null)
 const chatInputComp = ref<InstanceType<typeof ChatInput> | null>(null)
 
 defineExpose({
-  getInputRect: () => chatInputComp.value?.getRect?.(),
+  /** Return the ChatInput root DOM element */
+  getInputEl: () => chatInputComp.value?.$el as HTMLElement | undefined,
 })
 
 onMounted(() => {

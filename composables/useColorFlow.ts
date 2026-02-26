@@ -1,4 +1,4 @@
-import { ref, readonly, onMounted, onUnmounted } from 'vue'
+import { ref, readonly, watch, onMounted, onUnmounted } from 'vue'
 
 /**
  * useColorFlow — scroll-driven background color interpolation.
@@ -27,7 +27,9 @@ export interface ColorStop {
   color: string
 }
 
-/** Default palette — warm parchment → twilight slate */
+/** Default palette — warm parchment → twilight slate.
+ *  Chat is NOT in the palette — it sits above hero with its own opaque
+ *  background (#FEFBF2) and a blend gradient bridges the two colors. */
 const DEFAULT_PALETTE: ColorStop[] = [
   { sectionId: 'hero', color: '#F5E6B8' },    // warm parchment yellow
   { sectionId: 'posts', color: '#D4A85A' },    // soft amber gold
@@ -46,6 +48,8 @@ let _initialized = false
 let _triggers: any[] = []
 let _gsap: any = null
 let _ScrollTrigger: any = null
+let _targetEl: HTMLElement | null = null
+let _activePalette: ColorStop[] = DEFAULT_PALETTE
 
 /**
  * Read-only access to the shared color flow state.
@@ -182,88 +186,113 @@ function applyColors(el: HTMLElement, bg: string, text: string, muted: string) {
   el.style.backgroundColor = bg
 }
 
+// ─── Module-level init / destroy ─────────────────────────────────────
+
+async function _ensureGsap() {
+  if (_gsap && _ScrollTrigger) return
+  const gsapModule = await import('gsap')
+  const stModule = await import('gsap/ScrollTrigger')
+  _gsap = gsapModule.gsap
+  _ScrollTrigger = stModule.ScrollTrigger
+  _gsap.registerPlugin(_ScrollTrigger)
+}
+
+async function _init() {
+  if (_initialized || !import.meta.client) return
+  _initialized = true
+
+  await _ensureGsap()
+
+  // Build section positions — missing DOM elements are automatically filtered out
+  const sections = _activePalette
+    .map(stop => ({
+      ...stop,
+      el: document.getElementById(stop.sectionId),
+    }))
+    .filter(s => s.el)
+
+  if (sections.length < 2) return
+
+  // We create one master ScrollTrigger that spans the entire scrollable area.
+  // Its progress (0→1) drives the color interpolation.
+  // Only the sections currently in the DOM participate.
+  const activePalette = sections.map(s => ({ sectionId: s.sectionId, color: s.color }))
+  const firstEl = sections[0].el!
+  const lastEl = sections[sections.length - 1].el!
+
+  const trigger = _ScrollTrigger.create({
+    trigger: firstEl,
+    start: 'top top',
+    endTrigger: lastEl,
+    end: 'bottom bottom',
+    scrub: 0.3, // smooth scrub
+    onUpdate: (self: any) => {
+      progress.value = self.progress
+      const bg = interpolatePalette(activePalette, self.progress)
+      const text = contrastText(bg)
+      const muted = contrastMuted(bg)
+
+      currentColor.value = bg
+      currentTextColor.value = text
+      currentMutedColor.value = muted
+
+      // Apply to DOM
+      if (_targetEl) {
+        applyColors(_targetEl, bg, text, muted)
+      }
+    },
+  })
+
+  _triggers.push(trigger)
+
+  // Set initial color from the first section actually in the DOM
+  const initialBg = activePalette[0].color
+  const initialText = contrastText(initialBg)
+  const initialMuted = contrastMuted(initialBg)
+  currentColor.value = initialBg
+  currentTextColor.value = initialText
+  currentMutedColor.value = initialMuted
+
+  if (_targetEl) {
+    applyColors(_targetEl, initialBg, initialText, initialMuted)
+  }
+}
+
+function _destroy() {
+  _triggers.forEach(t => t.kill())
+  _triggers = []
+  _initialized = false
+}
+
+/**
+ * Rebuild color-flow triggers from scratch.
+ * Call this when the DOM structure changes (e.g. chat section appearing/disappearing)
+ * so the color-flow picks up new or removed sections.
+ */
+export async function refreshColorFlow() {
+  _destroy()
+  await _init()
+}
+
 export const useColorFlow = (palette: ColorStop[] = DEFAULT_PALETTE) => {
+  _activePalette = palette
+
   /** The element that receives `--color-flow-bg` */
   const targetRef = ref<HTMLElement | null>(null)
 
-  async function init() {
-    if (_initialized || !import.meta.client) return
-    _initialized = true
-
-    const gsapModule = await import('gsap')
-    const stModule = await import('gsap/ScrollTrigger')
-    _gsap = gsapModule.gsap
-    _ScrollTrigger = stModule.ScrollTrigger
-    _gsap.registerPlugin(_ScrollTrigger)
-
-    // Build section positions
-    const sections = palette
-      .map(stop => ({
-        ...stop,
-        el: document.getElementById(stop.sectionId),
-      }))
-      .filter(s => s.el)
-
-    if (sections.length < 2) return
-
-    // We create one master ScrollTrigger that spans the entire scrollable area.
-    // Its progress (0→1) drives the color interpolation.
-    const firstEl = sections[0].el!
-    const lastEl = sections[sections.length - 1].el!
-
-    const trigger = _ScrollTrigger.create({
-      trigger: firstEl,
-      start: 'top top',
-      endTrigger: lastEl,
-      end: 'bottom bottom',
-      scrub: 0.3, // smooth scrub
-      onUpdate: (self: any) => {
-        progress.value = self.progress
-        const bg = interpolatePalette(palette, self.progress)
-        const text = contrastText(bg)
-        const muted = contrastMuted(bg)
-
-        currentColor.value = bg
-        currentTextColor.value = text
-        currentMutedColor.value = muted
-
-        // Apply to DOM
-        if (targetRef.value) {
-          applyColors(targetRef.value, bg, text, muted)
-        }
-      },
-    })
-
-    _triggers.push(trigger)
-
-    // Set initial color
-    const initialBg = palette[0].color
-    const initialText = contrastText(initialBg)
-    const initialMuted = contrastMuted(initialBg)
-    currentColor.value = initialBg
-    currentTextColor.value = initialText
-    currentMutedColor.value = initialMuted
-
-    if (targetRef.value) {
-      applyColors(targetRef.value, initialBg, initialText, initialMuted)
-    }
-  }
-
-  function destroy() {
-    _triggers.forEach(t => t.kill())
-    _triggers = []
-    _initialized = false
-  }
+  // Keep module-level target in sync with the ref
+  watch(targetRef, (el) => { _targetEl = el })
 
   onMounted(() => {
+    _targetEl = targetRef.value
     // Small delay to ensure DOM sections are rendered
     requestAnimationFrame(() => {
-      init()
+      _init()
     })
   })
 
   onUnmounted(() => {
-    destroy()
+    _destroy()
   })
 
   return {
@@ -280,9 +309,6 @@ export const useColorFlow = (palette: ColorStop[] = DEFAULT_PALETTE) => {
     /** The palette being used */
     palette,
     /** Re-initialize (e.g. after dynamic content changes) */
-    refresh: () => {
-      destroy()
-      init()
-    },
+    refresh: refreshColorFlow,
   }
 }

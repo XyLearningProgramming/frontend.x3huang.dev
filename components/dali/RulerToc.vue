@@ -13,10 +13,12 @@
 
 import { useCanvasCamera } from '~/composables/useCanvasCamera'
 import { useFocusPanel } from '~/composables/useFocusPanel'
+import { useScrollSections, type SectionId } from '~/composables/useScrollSections'
 
 const route = useRoute()
 const { isFocused, focusTarget } = useCanvasCamera()
 const { activePanel } = useFocusPanel()
+const { scrollTo: scrollToSection, sectionIds } = useScrollSections()
 
 // ——— Detected sections ———
 interface TocItem {
@@ -43,9 +45,14 @@ function cleanLabel(raw: string): string {
 }
 
 // ——— Determine current mode ———
-type TocMode = 'discovery' | 'focus-post' | 'focus-other' | 'inline-post'
+type TocMode = 'discovery' | 'focus-post' | 'focus-other' | 'inline-post' | 'blog-page'
 
 function getMode(): TocMode {
+  // Standalone blog page (e.g. /blogs/20250713_cicd_tips_and_tricks)
+  if (route.path.startsWith('/blogs/') && route.path !== '/blogs/') {
+    return 'blog-page'
+  }
+
   // When the focus panel has a post open (about/contact/gallery), no TOC
   if (isFocused.value) {
     return 'focus-other'
@@ -69,6 +76,34 @@ function scan() {
   if (mode === 'focus-other') {
     // No meaningful TOC for about/contact/gallery focus panels
     items.value = []
+    return
+  }
+
+  if (mode === 'blog-page') {
+    // Standalone blog page: scan h2/h3 headings within #blog-article
+    const container = document.getElementById('blog-article') || document
+
+    const headings = container.querySelectorAll('h2[id], h3[id]')
+    headings.forEach((el) => {
+      const id = (el as HTMLElement).id
+      const label = cleanLabel(el.textContent || '') || id
+      found.push({ id, label, el: el as HTMLElement })
+    })
+
+    // Prepend a "Top" item for the post title
+    if (found.length > 0) {
+      const pageTitle = document.querySelector('.sub-page h1, article h1, h1')
+      if (pageTitle) {
+        const topLabel = cleanLabel(pageTitle.textContent || '') || 'Top'
+        found.unshift({
+          id: '__top',
+          label: topLabel,
+          el: pageTitle as HTMLElement,
+        })
+      }
+    }
+
+    items.value = found
     return
   }
 
@@ -157,7 +192,6 @@ function resetAndRescan(delay = 300) {
 function updateScroll() {
   if (!import.meta.client || items.value.length === 0) return
 
-  // Inline posts and discovery mode use native window scroll
   const mode = getMode()
   const focusEl: HTMLElement | null = null // No separate scroll container for inline posts
 
@@ -165,11 +199,15 @@ function updateScroll() {
   let foundIdx = 0
   let progress = 0
 
-  // Use getBoundingClientRect() uniformly for all modes.
-  // For focus-post: positions are relative to the scrollable .dali-focus container.
-  // For discovery: positions are absolute document coordinates.
   const containerRect = focusEl?.getBoundingClientRect()
   const scrollY = focusEl ? focusEl.scrollTop : window.scrollY
+
+  // Use "inside" detection: a section is active if its top is above the
+  // threshold line AND its bottom is still visible. This prevents
+  // sections that have been fully scrolled past (e.g. #chat above the
+  // hero) from staying "active" when we're already in a later section.
+  const topThreshold = scrollY + vh * 0.3
+  const bottomThreshold = scrollY + vh * 0.1
 
   for (let i = 0; i < items.value.length; i++) {
     const el = items.value[i].el
@@ -179,20 +217,22 @@ function updateScroll() {
       ? elRect.top - containerRect.top + focusEl.scrollTop
       : elRect.top + window.scrollY
 
-    let nextTop: number
+    // Compute the bottom of this section's area (either next section's top or document end)
+    let sectionBottom: number
     if (i + 1 < items.value.length) {
       const nextRect = items.value[i + 1].el.getBoundingClientRect()
-      nextTop = focusEl && containerRect
+      sectionBottom = focusEl && containerRect
         ? nextRect.top - containerRect.top + focusEl.scrollTop
         : nextRect.top + window.scrollY
     } else {
-      nextTop = focusEl ? focusEl.scrollHeight : document.documentElement.scrollHeight
+      sectionBottom = focusEl ? focusEl.scrollHeight : document.documentElement.scrollHeight
     }
 
-    if (scrollY + vh * 0.3 >= top) {
+    // Section is active if we've scrolled past its top AND haven't fully scrolled past it
+    if (topThreshold >= top && bottomThreshold < sectionBottom) {
       foundIdx = i
-      const sectionHeight = nextTop - top
-      const scrolledInto = (scrollY + vh * 0.3) - top
+      const sectionHeight = sectionBottom - top
+      const scrolledInto = topThreshold - top
       progress = sectionHeight > 0 ? Math.min(1, Math.max(0, scrolledInto / sectionHeight)) : 0
     }
   }
@@ -250,8 +290,11 @@ function scrollTo(idx: number) {
     if (readerEl) {
       readerEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
     } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      scrollToSection('main')
     }
+  } else if ((sectionIds as readonly string[]).includes(item.id)) {
+    // Use Lenis-powered scroll for known page sections
+    scrollToSection(item.id as SectionId)
   } else {
     item.el.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }

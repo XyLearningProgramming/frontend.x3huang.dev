@@ -1,27 +1,20 @@
 <template>
-  <div class="min-h-screen py-16 px-4" style="background: var(--color-dali-void);">
-    <div class="container mx-auto max-w-screen-xl">
-      <!-- Back navigation -->
-      <div class="mb-6">
-        <button @click="$router.push('/tools')"
-          class="dali-btn inline-flex items-center gap-2 px-3 py-1.5 text-sm font-bold">
-          <IconsArrowLeft class="w-4 h-4" />
-          Back to Tools
-        </button>
-      </div>
-
-      <!-- Header -->
-      <div class="mb-6">
-        <h1 class="font-bold mb-2 text-dali-white" style="transform: rotate(-1deg);">JWT Tools</h1>
-        <p class="text-lg text-dali-muted max-w-2xl leading-relaxed">
-          Decode, verify, and analyze JSON Web Tokens (JWT) securely.
-        </p>
-      </div>
+  <LayoutsSubPageLayout
+    title="JWT Tools"
+    back-to="/#tools"
+    back-label="Tools"
+    max-width="wide"
+  >
+    <template #header>
+      <p class="text-lg text-dali-muted max-w-2xl leading-relaxed">
+        Decode, verify, and analyze JSON Web Tokens (JWT) securely.
+      </p>
+    </template>
 
       <!-- JWT Tools -->
       <div class="space-y-6">
         <!-- JWT Input -->
-        <div class="dali-card p-6" style="border-color: var(--color-dali-muted);">
+        <div class="dali-card dali-card--static p-6" style="border-color: var(--color-dali-muted);">
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-bold text-dali-white mb-2">JWT Token</label>
@@ -52,7 +45,7 @@
         <!-- JWT Parts Display -->
         <div v-if="decodedJWT" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           <!-- Header -->
-          <div class="dali-card p-6" style="border-color: var(--color-dali-red);">
+          <div class="dali-card dali-card--static p-6" style="border-color: var(--color-dali-red);">
             <div class="space-y-4">
               <div class="flex items-center justify-between">
                 <h3 class="text-lg font-bold text-dali-white">Header</h3>
@@ -70,7 +63,7 @@
           </div>
 
           <!-- Payload -->
-          <div class="dali-card p-6" style="border-color: var(--color-dali-teal);">
+          <div class="dali-card dali-card--static p-6" style="border-color: var(--color-dali-teal);">
             <div class="space-y-4">
               <div class="flex items-center justify-between">
                 <h3 class="text-lg font-bold text-dali-white">Payload</h3>
@@ -88,7 +81,7 @@
           </div>
 
           <!-- Token Analysis -->
-          <div class="dali-card p-6 lg:col-span-2 xl:col-span-1" style="border-color: var(--color-dali-gold);">
+          <div class="dali-card dali-card--static p-6 lg:col-span-2 xl:col-span-1" style="border-color: var(--color-dali-gold);">
             <div class="space-y-4">
               <h3 class="text-lg font-bold text-dali-white">Token Analysis</h3>
               <div class="space-y-3">
@@ -143,7 +136,7 @@
         </div>
 
         <!-- Signature Verification -->
-        <div v-if="decodedJWT" class="dali-card p-6" style="border-color: var(--color-dali-violet);">
+        <div v-if="decodedJWT" class="dali-card dali-card--static p-6" style="border-color: var(--color-dali-violet);">
           <div class="space-y-4">
             <h3 class="text-lg font-bold text-dali-white">Signature Verification</h3>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -233,12 +226,10 @@
           {{ successMessage }}
         </div>
       </div>
-    </div>
-  </div>
+  </LayoutsSubPageLayout>
 </template>
 
 <script setup lang="ts">
-import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
 import IconsCopy from '~/components/icons/copy.vue'
 
 const jwtInput = ref('')

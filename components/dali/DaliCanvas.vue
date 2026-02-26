@@ -212,6 +212,12 @@ const panelStyle = computed(() => {
   /* Color flow: initial color set by useColorFlow, transitions smoothly */
   background-color: var(--color-flow-bg, #F5E6B8);
   will-change: background-color;
+  /* Initial color-flow values matching the first palette stop (light parchment
+     background → dark text). These prevent a flash of white text before the
+     JS-driven useColorFlow kicks in. Once initialized, GSAP overwrites them
+     via inline styles as the user scrolls. */
+  --color-flow-text: #1A1A2E;
+  --color-flow-muted: #6B6B7B;
 }
 
 .dali-canvas {

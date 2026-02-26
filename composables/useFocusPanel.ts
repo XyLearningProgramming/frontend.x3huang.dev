@@ -199,13 +199,10 @@ export function useFocusPanel() {
     } else if (hash === 'gallery') {
       await open('gallery', null, 'gallery')
     } else if (hash.startsWith('post/')) {
-      // Blog post deep link — resolve the post and open in focus panel
-      if (resolver) {
+      // Blog post deep links now redirect to standalone blog page
+      if (import.meta.client) {
         const path = '/' + hash.slice(5) // Remove 'post/' prefix, add leading /
-        const post = await resolver(path)
-        if (post) {
-          await open('post', post, hash)
-        }
+        navigateTo(path)
       }
     } else if (hash.startsWith('tool/')) {
       await open('tool', { id: hash.slice(5) }, hash)

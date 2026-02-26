@@ -44,12 +44,19 @@
   --color-flow-4: #7B5E9A;   /* lighter plum            */
   --color-flow-5: #4A5A7A;   /* twilight slate          */
 
-  /* === Dalí Shadows — dramatic offsets === */
+  /* === Dalí Shadows — dramatic offsets ===
+     Three accent families (red / gold / void) at three sizes (sm / md / lg).
+     Design rule: pair a shadow with a *different* accent from the element's
+     border or background for surrealist "chromatic offset" depth.         */
   --shadow-dali-sm: 2px 2px 0px 0px #ED1C24;
   --shadow-dali: 4px 4px 0px 0px #ED1C24;
   --shadow-dali-lg: 8px 8px 0px 0px #ED1C24;
+  --shadow-dali-gold-sm: 2px 2px 0px 0px #D4A843;
   --shadow-dali-gold: 4px 4px 0px 0px #D4A843;
+  --shadow-dali-gold-lg: 8px 8px 0px 0px #D4A843;
+  --shadow-dali-void-sm: 2px 2px 0px 0px #0B0B0F;
   --shadow-dali-void: 4px 4px 0px 0px #0B0B0F;
+  --shadow-dali-void-lg: 8px 8px 0px 0px #0B0B0F;
 
   /* === Neo Shadows (legacy) === */
   --shadow-neo-sm: 2px 2px 0px 0px #000;
@@ -140,26 +147,39 @@ code, pre, .font-mono {
    Dalí Card — irregular borders + red shadow
    ============================================================ */
 
+/* Dalí card — red border + void shadow for clean depth;
+   hover reveals gold shadow as a warm, rewarding "lift" effect. */
 .dali-card {
   background: var(--color-dali-smoke);
   border: 2px solid var(--color-dali-red);
-  box-shadow: var(--shadow-dali);
+  box-shadow: var(--shadow-dali-void);
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
               box-shadow 0.2s ease;
   position: relative;
-  /* Card has dark bg — override muted text to be lighter for readability */
+  /* Card has dark bg — override color-flow and muted text for readability.
+     Headings use var(--color-flow-text) globally, so pin it to white
+     inside cards to prevent inheriting the scroll-driven dark value. */
+  --color-flow-text: var(--color-dali-white, #F0EDE5);
+  --color-flow-muted: rgba(240, 237, 229, 0.55);
   --color-dali-muted: rgba(240, 237, 229, 0.55);
   color: var(--color-dali-white, #F0EDE5);
 }
 
 .dali-card:hover {
   transform: translate(-4px, -4px) rotate(-0.5deg);
-  box-shadow: var(--shadow-dali-lg);
+  box-shadow: var(--shadow-dali-void-lg);
 }
 
 .dali-card:active {
   transform: translate(0, 0) rotate(0deg);
-  box-shadow: var(--shadow-dali-sm);
+  box-shadow: var(--shadow-dali-void-sm);
+}
+
+/* Static card variant — no hover lift/rotate (used for tool page containers) */
+.dali-card--static:hover,
+.dali-card--static:active {
+  transform: none;
+  box-shadow: var(--shadow-dali-void);
 }
 
 /* Irregular clip-path card variants */
@@ -169,14 +189,17 @@ code, pre, .font-mono {
 .dali-card--v4 { clip-path: polygon(0% 0%, 100% 1%, 99% 98%, 1% 100%); }
 .dali-card--v5 { clip-path: polygon(1% 2%, 98% 0%, 100% 100%, 0% 98%); }
 
-/* Dalí button */
+/* Dalí button — red border + void shadow; hover fills red + gold shadow.
+   The two-tone pairing avoids "double red" while keeping the Dalí identity. */
 .dali-btn {
   border: 2px solid var(--color-dali-red);
-  box-shadow: var(--shadow-dali-sm);
+  box-shadow: var(--shadow-dali-void-sm);
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.15s ease;
+              box-shadow 0.15s ease,
+              background 0.15s ease,
+              color 0.15s ease;
   color: var(--color-flow-text, var(--color-dali-white));
   background: transparent;
   text-transform: uppercase;
@@ -186,7 +209,7 @@ code, pre, .font-mono {
 
 .dali-btn:hover {
   transform: translate(-2px, -2px) skewX(-2deg);
-  box-shadow: var(--shadow-dali);
+  box-shadow: var(--shadow-dali-void);
   background: var(--color-dali-red);
   color: var(--color-dali-white);
 }
@@ -194,6 +217,15 @@ code, pre, .font-mono {
 .dali-btn:active {
   transform: translate(1px, 1px) skewX(0deg);
   box-shadow: none;
+}
+
+/* Sub-pages (tools etc): no skew on buttons — cleaner for utility interfaces */
+.sub-page .dali-btn:hover {
+  transform: translate(-2px, -2px);
+}
+
+.sub-page .dali-btn:active {
+  transform: translate(1px, 1px);
 }
 
 /* Dalí input */
@@ -208,7 +240,7 @@ code, pre, .font-mono {
 .dali-input:focus {
   outline: none;
   border-color: var(--color-dali-red);
-  box-shadow: var(--shadow-dali-sm);
+  box-shadow: var(--shadow-dali-void-sm);
 }
 
 /* ============================================================

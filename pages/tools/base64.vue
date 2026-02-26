@@ -1,97 +1,86 @@
 <template>
-  <div class="min-h-screen py-16 px-4" style="background: var(--color-dali-void);">
-    <div class="container mx-auto max-w-screen-xl">
-      <!-- Back navigation -->
-      <div class="mb-6">
+  <LayoutsSubPageLayout
+    title="Base64 Encoder/Decoder"
+    back-to="/#tools"
+    back-label="Tools"
+    max-width="wide"
+  >
+    <template #header>
+      <p class="text-lg text-dali-muted max-w-2xl leading-relaxed">
+        Encode and decode Base64 strings quickly and easily.
+      </p>
+    </template>
+
+    <!-- Tool interface -->
+    <div class="space-y-6">
+      <!-- Input section -->
+      <div class="dali-card dali-card--static p-6" style="border-color: var(--color-dali-red);">
+        <h3 class="text-lg font-bold text-dali-white mb-4">
+          Input Text
+        </h3>
+        <textarea
+          v-model="inputText"
+          placeholder="Enter text to encode or Base64 string to decode..."
+          class="dali-input w-full h-32 p-4 resize-none"
+        />
+      </div>
+
+      <!-- Action buttons -->
+      <div class="flex flex-wrap gap-4 justify-center">
         <button
-          class="dali-btn inline-flex items-center gap-2 px-3 py-1.5 text-sm font-bold"
-          @click="$router.push('/tools')"
+          :disabled="!inputText.trim()"
+          class="dali-btn px-6 py-3 bg-dali-red text-dali-white disabled:opacity-50 disabled:cursor-not-allowed"
+          @click="encodeText"
         >
-          <IconsArrowLeft class="w-4 h-4" />
-          Back to Tools
+          Encode to Base64
+        </button>
+        <button
+          :disabled="!inputText.trim()"
+          class="dali-btn px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+          style="border-color: var(--color-dali-teal);"
+          @click="decodeText"
+        >
+          Decode from Base64
+        </button>
+        <button
+          class="dali-btn px-6 py-3"
+          style="border-color: var(--color-dali-muted);"
+          @click="clearAll"
+        >
+          Clear All
         </button>
       </div>
 
-      <!-- Header -->
-      <div class="mb-8">
-        <h1 class="font-bold mb-2 text-dali-white" style="transform: rotate(-1deg);">Base64 Encoder/Decoder</h1>
-        <p class="text-lg text-dali-muted max-w-2xl leading-relaxed">
-          Encode and decode Base64 strings quickly and easily.
-        </p>
-      </div>
-
-      <!-- Tool interface -->
-      <div class="space-y-6">
-        <!-- Input section -->
-        <div class="dali-card p-6" style="border-color: var(--color-dali-muted);">
-          <h3 class="text-lg font-bold text-dali-white mb-4">
-            Input Text
+      <!-- Output section -->
+      <div class="dali-card dali-card--static p-6" style="border-color: var(--color-dali-red);">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-bold text-dali-white">
+            Output
           </h3>
-          <textarea
-            v-model="inputText"
-            placeholder="Enter text to encode or Base64 string to decode..."
-            class="dali-input w-full h-32 p-4 resize-none"
-          />
-        </div>
-
-        <!-- Action buttons -->
-        <div class="flex flex-wrap gap-4 justify-center">
           <button
-            :disabled="!inputText.trim()"
-            class="dali-btn px-6 py-3 bg-dali-red text-dali-white disabled:opacity-50 disabled:cursor-not-allowed"
-            @click="encodeText"
-          >
-            Encode to Base64
-          </button>
-          <button
-            :disabled="!inputText.trim()"
-            class="dali-btn px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            v-if="outputText"
+            class="dali-btn px-4 py-2 text-sm bg-dali-teal text-dali-void"
             style="border-color: var(--color-dali-teal);"
-            @click="decodeText"
+            @click="copyOutput"
           >
-            Decode from Base64
-          </button>
-          <button
-            class="dali-btn px-6 py-3"
-            style="border-color: var(--color-dali-muted);"
-            @click="clearAll"
-          >
-            Clear All
+            {{ copied ? 'Copied!' : 'Copy' }}
           </button>
         </div>
-
-        <!-- Output section -->
-        <div class="dali-card p-6" style="border-color: var(--color-dali-muted);">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-dali-white">
-              Output
-            </h3>
-            <button
-              v-if="outputText"
-              class="dali-btn px-4 py-2 text-sm bg-dali-teal text-dali-void"
-              style="border-color: var(--color-dali-teal);"
-              @click="copyOutput"
-            >
-              {{ copied ? 'Copied!' : 'Copy' }}
-            </button>
-          </div>
-          <textarea
-            v-model="outputText"
-            readonly
-            placeholder="Output will appear here..."
-            class="dali-input w-full h-32 p-4 resize-none opacity-80"
-          />
-          <div v-if="errorMessage" class="mt-2 text-dali-red text-sm font-bold">
-            {{ errorMessage }}
-          </div>
+        <textarea
+          v-model="outputText"
+          readonly
+          placeholder="Output will appear here..."
+          class="dali-input w-full h-32 p-4 resize-none opacity-80"
+        />
+        <div v-if="errorMessage" class="mt-2 text-dali-red text-sm font-bold">
+          {{ errorMessage }}
         </div>
       </div>
     </div>
-  </div>
+  </LayoutsSubPageLayout>
 </template>
 
 <script setup lang="ts">
-import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
 
 const inputText = ref('')
 const outputText = ref('')
