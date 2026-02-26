@@ -35,7 +35,7 @@
         >{{ charCount }}/{{ MAX_LENGTH }}</span>
         <button
           :disabled="!canSend"
-          class="p-1.5 transition-all duration-200 border-2 cursor-pointer"
+          class="p-1.5 transition-all duration-200 border-2 rounded-lg cursor-pointer"
           :class="canSend
             ? 'send-btn-active'
             : 'cursor-not-allowed shadow-none'"

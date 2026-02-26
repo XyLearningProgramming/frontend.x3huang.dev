@@ -88,6 +88,20 @@ if (import.meta.client) {
       } catch { /* ScrollTrigger may not be loaded */ }
 
       await scrollHashTarget(hashTarget)
+
+      // Final verification — if the element drifted after ScrollTrigger
+      // refresh, force the native scroll to match.
+      const verifyEl = document.getElementById(hashTarget)
+      if (verifyEl) {
+        const rect = verifyEl.getBoundingClientRect()
+        if (Math.abs(rect.top) > 2) {
+          window.scrollTo({
+            top: rect.top + window.scrollY,
+            behavior: 'instant' as ScrollBehavior,
+          })
+          await new Promise(r => requestAnimationFrame(r))
+        }
+      }
     }
 
     // Fade out the overlay to reveal the new page
@@ -110,6 +124,13 @@ if (import.meta.client) {
       el.style.display = 'none'
       el.style.pointerEvents = 'none'
     }
+
+    // Sync Lenis to the current native scroll position so it doesn't
+    // animate from a stale offset when it resumes.
+    try {
+      const lenis = useNuxtApp().$lenis as any
+      if (lenis) lenis.scrollTo(window.scrollY, { immediate: true })
+    } catch { /* lenis may not be available */ }
   })
 }
 </script>

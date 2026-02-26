@@ -156,6 +156,7 @@ export interface BlogPost {
 import { usePageTransition } from '~/composables/usePageTransition'
 
 const { transitionTo } = usePageTransition()
+const route = useRoute()
 
 // ── Data fetching: recent posts ──
 const { data: rawPosts } = await useAsyncData('recent-posts', () =>
@@ -188,12 +189,48 @@ const postColors = [
   'var(--color-dali-teal)',
 ]
 
-// ── "Show More" state (paginated in batches) ──
+// ── "Show More" state (paginated in batches, synced with URL + sessionStorage) ──
 const BATCH_SIZE = 6
+const STORAGE_KEY = 'posts-visible-extra'
 const allPosts = ref<any[]>([])
 const allPostsLoaded = ref(false)
 const allPostsLoading = ref(false)
-const visibleExtra = ref(0) // how many extra posts beyond the initial 6 to show
+
+// Restore visibleExtra from URL query (?posts=N) — SSR-safe since route.query
+// is available on both server and client.  sessionStorage is deferred to
+// onMounted to avoid hydration mismatches.
+const initialExtra = Number(route.query.posts) || 0
+const visibleExtra = ref(initialExtra) // how many extra posts beyond the initial 6 to show
+
+// If the URL already has ?posts=N, eagerly load all posts so they render immediately
+if (initialExtra > 0) {
+  loadAllPosts()
+}
+
+/** Persist visibleExtra to both the URL bar and sessionStorage.
+ *  Uses history.replaceState (NOT router.replace) so clicking "Show More"
+ *  never triggers Vue Router navigation, scroll behavior, or relocation. */
+function syncState() {
+  if (!import.meta.client) return
+
+  // Silently update the URL bar — no routing side-effects
+  const url = new URL(window.location.href)
+  if (visibleExtra.value > 0) {
+    url.searchParams.set('posts', String(visibleExtra.value))
+  } else {
+    url.searchParams.delete('posts')
+  }
+  // Strip the hash so the URL stays clean (e.g. /?posts=6, not /?posts=6#posts)
+  url.hash = ''
+  window.history.replaceState(history.state, '', url.pathname + url.search)
+
+  // sessionStorage — survives cross-page navigation (blog → home)
+  if (visibleExtra.value > 0) {
+    sessionStorage.setItem(STORAGE_KEY, String(visibleExtra.value))
+  } else {
+    sessionStorage.removeItem(STORAGE_KEY)
+  }
+}
 
 const extraPosts = computed(() => {
   if (!allPostsLoaded.value) return []
@@ -230,10 +267,12 @@ async function loadAllPosts() {
 async function showMore() {
   if (!allPostsLoaded.value) await loadAllPosts()
   visibleExtra.value = Math.min(visibleExtra.value + BATCH_SIZE, extraPosts.value.length)
+  syncState()
 }
 
 function showLess() {
   visibleExtra.value = Math.max(visibleExtra.value - BATCH_SIZE, 0)
+  syncState()
 }
 
 function scrollToPosts() {
@@ -260,6 +299,18 @@ function setPostCardRef(el: any, idx: number) {
 
 // ── Expose for parent ──
 defineExpose({ showMore, scrollToPosts })
+
+// ── Restore expansion state from sessionStorage (client-only, post-hydration) ──
+onMounted(() => {
+  // Only restore if the URL didn't already carry the state (avoids double-load)
+  if (visibleExtra.value === 0) {
+    const stored = Number(sessionStorage.getItem(STORAGE_KEY)) || 0
+    if (stored > 0) {
+      visibleExtra.value = stored
+      loadAllPosts()
+    }
+  }
+})
 
 // ── GSAP scroll animations ──
 onMounted(async () => {

@@ -1,4 +1,5 @@
 import { ref, readonly } from 'vue'
+import { isPageTransitioning } from '~/composables/usePageTransition'
 
 /**
  * useScrollSections — Reusable scroll-section manager with hash routing.
@@ -237,6 +238,26 @@ export function useScrollSections() {
    */
   function _resolveHashOnLoad() {
     if (!import.meta.client) return
+
+    // If a page transition (usePageTransition) is in progress, skip all scroll
+    // logic here — transitionTo() handles scroll restoration itself (Phases 2.5
+    // and 2.8). Running both would race: _resolveHashOnLoad resets Lenis to 0
+    // before scrolling to the target, and for sections far down the page (like
+    // #tools) the scroll may fail because layout hasn't settled yet. The
+    // subsequent reenableHashSync → _updateActiveSectionFromScroll could then
+    // detect the wrong section and trigger a smooth scroll that overrides the
+    // transition's own scroll-to-hash.
+    if (isPageTransitioning()) {
+      // Still set up observer / hash sync — just don't scroll.
+      // Keep hash sync suppressed briefly so the observer doesn't clobber the
+      // hash that usePageTransition will set.
+      _hashSyncEnabled = false
+      setTimeout(() => {
+        _hashSyncEnabled = true
+      }, 2000) // generous delay: let the transition finish first
+      return
+    }
+
     // Suppress observer-driven hash rewrites while we snap to the initial hash.
     _hashSyncEnabled = false
     const reenableHashSync = () => {

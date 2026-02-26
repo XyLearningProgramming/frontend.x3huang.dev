@@ -35,6 +35,11 @@ const DARK_COLOR = '#161622'
 const overlayEl = ref<HTMLElement | null>(null)
 const isTransitioning = ref(false)
 
+/** Check whether a page transition is currently in progress (usable outside the composable). */
+export function isPageTransitioning(): boolean {
+  return isTransitioning.value
+}
+
 /** Wait for N animation frames (lets the DOM truly settle). */
 function waitFrames(n: number): Promise<void> {
   return new Promise((resolve) => {
@@ -79,11 +84,21 @@ async function scrollHashTarget(hashTarget: string): Promise<boolean> {
   }
   if (!targetEl) return false
 
+  // Native scroll first — works synchronously regardless of Lenis state.
+  // Lenis rapid start/stop cycles during transitions can silently miss
+  // the scrollTo for sections far down the page (e.g. #tools).
+  const targetTop = targetEl.getBoundingClientRect().top + window.scrollY
+  window.scrollTo({ top: targetTop, behavior: 'instant' as ScrollBehavior })
+
+  // Sync Lenis internal state so it doesn't fight the native position
+  // when it's restarted after the transition completes.
   const lenis = getLenis()
   if (lenis) {
-    lenis.scrollTo(targetEl, { immediate: true })
-  } else {
-    targetEl.scrollIntoView({ behavior: 'instant' as ScrollBehavior, block: 'start' })
+    const wasStopped = lenis.isStopped
+    if (wasStopped) lenis.start()
+    lenis.scrollTo(targetTop, { immediate: true })
+    await waitFrames(1) // let Lenis process the scroll before stopping
+    if (wasStopped) lenis.stop()
   }
 
   await waitFrames(1)
@@ -121,7 +136,23 @@ export function usePageTransition() {
     const sectionColor = SECTION_COLORS[opts.sectionId || ''] || SECTION_COLORS.hero
     const isBack = opts.isBack ?? false
 
-    // Make sure overlay is visible immediately
+    // Read the current background color BEFORE showing the overlay.
+    // getComputedStyle() forces a synchronous layout flush; doing it while
+    // the overlay is display:none avoids flashing the overlay at its CSS
+    // default state (opacity 1, transparent bg) during that flush.
+    const startColor = !isBack
+      ? (getCurrentBgColor() || sectionColor)
+      : DARK_COLOR
+
+    // Freeze Lenis during the transition so it can't scroll-to-top
+    // (its afterEach hook does lenis.scrollTo(0) on cross-page nav).
+    const lenis = getLenis()
+    if (lenis) lenis.stop()
+
+    // Ensure the overlay is invisible BEFORE making it visible in layout.
+    // On the very first use, the CSS default opacity is 1 (no inline style
+    // yet). Setting opacity: 0 inline first prevents any single-frame flash.
+    el.style.opacity = '0'
     el.style.display = 'block'
     el.style.pointerEvents = 'auto'
 
@@ -151,30 +182,41 @@ export function usePageTransition() {
       // This makes page elements "disappear" gradually (matching the back
       // transition feel) instead of snapping an opaque color block on top.
       //
-      // IMPORTANT: Do NOT set body background to dark here — the overlay
-      // starts at opacity 0, so the body color change would be visible
-      // through the transparent overlay (causing a flash on the first visit
-      // when the body is still its light color-flow color).
-      const startColor = getCurrentBgColor() || sectionColor
+      // We resolve the promise EARLY — when the tween is ~85% done (overlay
+      // nearly opaque) — so navigation starts concurrently with the tail of
+      // the animation. This eliminates the dead gap between "animation done"
+      // and "navigateTo" where the browser could de-composite the layer and
+      // flash the underlying content.
       gsap.set(el, { opacity: 0, backgroundColor: startColor })
       await new Promise<void>((resolve) => {
-        gsap.to(el, {
+        let resolved = false
+        const tween = gsap.to(el, {
           opacity: 1,
           backgroundColor: DARK_COLOR,
           duration: 0.55,
           ease: 'power2.inOut',
-          onComplete: resolve,
+          onUpdate() {
+            // At 85% progress with power2.inOut easing the rendered
+            // opacity is ~0.96 — content is essentially invisible.
+            if (!resolved && tween.progress() >= 0.85) {
+              resolved = true
+              resolve()
+            }
+          },
+          onComplete() {
+            if (!resolved) { resolved = true; resolve() }
+          },
         })
       })
-      // Now that the overlay is fully opaque, safely set the body dark
-      // so there's no parchment flash during navigation behind the overlay.
+      // Overlay is nearly/fully opaque now — set the body dark.
       if (import.meta.client) {
         document.body.style.backgroundColor = DARK_COLOR
       }
     }
 
-    // Give the overlay one frame to paint before navigation
-    await waitFrames(1)
+    // Back: wait for the overlay to be fully painted before navigating.
+    // Forward: we already resolved early, so just one extra frame for safety.
+    await waitFrames(isBack ? 2 : 1)
 
     // ── Phase 2: Navigate while overlay is fully opaque ─────────────
     await navigateTo(url)
@@ -185,14 +227,27 @@ export function usePageTransition() {
     // (GSAP ScrollTrigger, async data, Lenis recalculation)
     await waitFrames(3)
 
-    // ── Phase 2.5: Scroll restoration for back-to-section nav ───────
-    // If navigating back to a URL with a hash (e.g. /#posts), explicitly
-    // scroll while the overlay is still opaque so the user never sees the
-    // wrong position.
+    // ── Phase 2.5: Scroll positioning while overlay is opaque ─────────
+    // Lenis is frozen during the transition (to prevent its afterEach from
+    // scrolling to 0 and causing a flash). We must do the scroll ourselves.
     const hashTarget = url.includes('#') ? url.split('#')[1] : null
 
     if (hashTarget) {
+      // Back-to-section: scroll to the target section
       await scrollHashTarget(hashTarget)
+    } else if (!isBack) {
+      // Forward to sub-page: scroll to top (replaces the Lenis afterEach
+      // scroll-to-0 that we skipped by freezing Lenis).
+      const l = getLenis()
+      if (l) {
+        const wasStopped = l.isStopped
+        if (wasStopped) l.start()
+        l.scrollTo(0, { immediate: true })
+        if (wasStopped) l.stop()
+      } else {
+        window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
+      }
+      await waitFrames(1)
     }
 
     // ── Phase 2.75: Ensure color flow is initialized ────────────────
@@ -224,6 +279,24 @@ export function usePageTransition() {
       await scrollHashTarget(hashTarget)
     }
 
+    // ── Phase 2.9: Final scroll verification ─────────────────────────
+    // Belt-and-suspenders check right before the overlay fades: if the
+    // target element drifted (layout shift from ScrollTrigger refresh,
+    // color-flow rebuild, etc.), force the native scroll to match.
+    if (hashTarget) {
+      const verifyEl = document.getElementById(hashTarget)
+      if (verifyEl) {
+        const rect = verifyEl.getBoundingClientRect()
+        if (Math.abs(rect.top) > 2) {
+          window.scrollTo({
+            top: rect.top + window.scrollY,
+            behavior: 'instant' as ScrollBehavior,
+          })
+          await waitFrames(1)
+        }
+      }
+    }
+
     // ── Phase 3: Overlay fades out to reveal the new page ───────────
     await new Promise<void>((resolve) => {
       gsap.to(el, {
@@ -238,6 +311,14 @@ export function usePageTransition() {
     el.style.display = 'none'
     el.style.pointerEvents = 'none'
     isTransitioning.value = false
+
+    // Restart Lenis — sync it to the current native scroll position first
+    // so it doesn't animate from a stale internal offset to the actual one.
+    const lenisAfter = getLenis()
+    if (lenisAfter) {
+      lenisAfter.start()
+      lenisAfter.scrollTo(window.scrollY, { immediate: true })
+    }
   }
 
   return {

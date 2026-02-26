@@ -309,8 +309,9 @@ code, pre, .font-mono {
   inset: 0;
   z-index: 10000; /* above grain (9999) */
   display: none;
+  opacity: 0; /* start invisible — prevents first-use flash before GSAP sets inline opacity */
   pointer-events: none;
-  will-change: transform, background-color;
+  will-change: transform, background-color, opacity;
 }
 
 /* ============================================================

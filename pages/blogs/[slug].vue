@@ -1,7 +1,7 @@
 <template>
   <LayoutsSubPageLayout
     :title="post?.title || 'Loading...'"
-    back-to="/#posts"
+    :back-to="backToUrl"
     back-label="Posts"
     max-width="default"
     :has-sidebar="true"
@@ -75,7 +75,7 @@
       <div class="text-4xl mb-4">404</div>
       <h2 class="text-xl font-bold text-dali-white mb-2">Post Not Found</h2>
       <p class="text-dali-muted mb-6">The blog post you're looking for doesn't exist.</p>
-      <NuxtLink to="/#posts" class="dali-btn px-6 py-2">
+      <NuxtLink :to="backToUrl" class="dali-btn px-6 py-2">
         Back to Posts
       </NuxtLink>
     </div>
@@ -120,6 +120,15 @@ import { siteConfig, getPageMeta } from '~/site.config'
 
 const route = useRoute()
 const slug = route.params.slug as string
+
+// Build a dynamic back-to URL that preserves the "Show More" expansion state.
+// If the user expanded extra posts before clicking into this article, the count
+// is stored in sessionStorage so the back navigation restores it.
+const backToUrl = computed(() => {
+  if (!import.meta.client) return '/#posts'
+  const extra = Number(sessionStorage.getItem('posts-visible-extra')) || 0
+  return extra > 0 ? `/?posts=${extra}#posts` : '/#posts'
+})
 
 // ── Fetch blog post content ──
 const { data: post, pending, error } = await useAsyncData(`blog-${slug}`, () =>
