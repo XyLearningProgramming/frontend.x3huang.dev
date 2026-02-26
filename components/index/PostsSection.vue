@@ -14,10 +14,11 @@
         <a
           href="/blogs/rss.xml"
           target="_blank"
-          class="rss-link group flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold border-2 border-dali-gold/40 text-dali-gold hover:bg-dali-gold hover:text-dali-void transition-all"
+          class="rss-link group flex items-center gap-2 px-4 py-2 text-sm font-bold border-2 border-white/20 bg-dali-void/50 hover:bg-dali-void hover:text-dali-gold hover:border-dali-gold transition-all shadow-dali-void-sm backdrop-blur-sm"
+          style="color: rgba(255,255,255,0.75)"
           title="Subscribe via RSS"
         >
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M4 11a9 9 0 0 1 9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M4 4a16 16 0 0 1 16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <circle cx="5" cy="19" r="1" fill="currentColor"/>
@@ -51,7 +52,7 @@
           :rotation="postRotations[idx] || 0"
           :accent-color="postColors[idx % postColors.length]"
           class="posts-card opacity-0 cursor-pointer"
-          @click="navigateTo(post.path)"
+          @click="transitionTo(post.path, { sectionId: 'posts' })"
         >
           <span class="text-[10px] font-bold text-dali-muted block mb-2">
             {{ formatDate(post.date) }}
@@ -83,16 +84,16 @@
           <div class="w-6 h-6 border-3 border-dali-red border-t-dali-gold rounded-full animate-spin" />
         </div>
 
-        <!-- Extra posts grid (shown when expanded) -->
-        <div v-if="showAllPosts && extraPosts.length > 0" class="posts-grid mb-8 text-left">
+        <!-- Extra posts grid (shown in batches) -->
+        <div v-if="visibleExtraPosts.length > 0" class="posts-grid mb-8 text-left">
           <DaliIrregularCard
-            v-for="(post, idx) in extraPosts"
+            v-for="(post, idx) in visibleExtraPosts"
             :key="post.path"
             :seed="idx * 5 + 11"
             :rotation="((idx % 5) - 2) * 1.2"
             :accent-color="postColors[(idx + recentPosts.length) % postColors.length]"
             class="cursor-pointer"
-            @click="navigateTo(post.path)"
+            @click="transitionTo(post.path, { sectionId: 'posts' })"
           >
             <span class="text-[10px] font-bold text-dali-muted block mb-2">
               {{ formatDate(post.date) }}
@@ -117,21 +118,25 @@
           </DaliIrregularCard>
         </div>
 
-        <button
-          v-if="!showAllPosts && hasMorePosts"
-          ref="viewAllCardRef"
-          class="posts-card opacity-0 dali-btn bg-dali-void/50 text-dali-white border-dali-gold/40 px-6 py-2.5 text-sm font-bold hover:border-dali-gold hover:bg-dali-gold/10 transition-all"
-          @click="expandAllPosts"
-        >
-          Show More Posts
-        </button>
-        <button
-          v-else-if="showAllPosts"
-          class="dali-btn bg-dali-void/50 text-dali-white border-dali-white/30 px-5 py-2 text-sm font-bold"
-          @click="showAllPosts = false"
-        >
-          Show Less
-        </button>
+        <div class="flex items-center justify-center gap-3">
+          <button
+            v-if="canShowLess"
+            class="dali-btn bg-dali-void/50 border-white/15 px-5 py-2 text-sm font-bold hover:border-white/40 hover:bg-white/5 transition-all"
+            style="color: rgba(255,255,255,0.5)"
+            @click="showLess"
+          >
+            Show Less
+          </button>
+          <button
+            v-if="canShowMore"
+            ref="viewAllCardRef"
+            class="dali-btn bg-dali-void/50 border-white/20 px-6 py-2.5 text-sm font-bold hover:border-white/50 hover:bg-white/5 transition-all"
+            style="color: rgba(255,255,255,0.75)"
+            @click="showMore"
+          >
+            Show More Posts
+          </button>
+        </div>
       </div>
     </div>
   </section>
@@ -148,6 +153,10 @@ export interface BlogPost {
 </script>
 
 <script setup lang="ts">
+import { usePageTransition } from '~/composables/usePageTransition'
+
+const { transitionTo } = usePageTransition()
+
 // ── Data fetching: recent posts ──
 const { data: rawPosts } = await useAsyncData('recent-posts', () =>
   queryCollection('blogs')
@@ -179,23 +188,25 @@ const postColors = [
   'var(--color-dali-teal)',
 ]
 
-// ── "Show More" state ──
-const showAllPosts = ref(false)
+// ── "Show More" state (paginated in batches) ──
+const BATCH_SIZE = 6
 const allPosts = ref<any[]>([])
 const allPostsLoaded = ref(false)
 const allPostsLoading = ref(false)
-
-const hasMorePosts = computed(() => {
-  // Show the button if we haven't loaded all posts yet, or there are more than 6
-  if (!allPostsLoaded.value) return true
-  return allPosts.value.length > recentPosts.value.length
-})
+const visibleExtra = ref(0) // how many extra posts beyond the initial 6 to show
 
 const extraPosts = computed(() => {
   if (!allPostsLoaded.value) return []
   const recentPaths = new Set(recentPosts.value.map(p => p.path))
   return allPosts.value.filter((p: any) => !recentPaths.has(p.path))
 })
+
+const visibleExtraPosts = computed(() => extraPosts.value.slice(0, visibleExtra.value))
+const canShowMore = computed(() => {
+  if (!allPostsLoaded.value) return true // haven't loaded yet, assume there's more
+  return visibleExtra.value < extraPosts.value.length
+})
+const canShowLess = computed(() => visibleExtra.value > 0)
 
 async function loadAllPosts() {
   if (allPostsLoaded.value || allPostsLoading.value) return
@@ -216,9 +227,13 @@ async function loadAllPosts() {
   }
 }
 
-async function expandAllPosts() {
-  showAllPosts.value = true
-  await loadAllPosts()
+async function showMore() {
+  if (!allPostsLoaded.value) await loadAllPosts()
+  visibleExtra.value = Math.min(visibleExtra.value + BATCH_SIZE, extraPosts.value.length)
+}
+
+function showLess() {
+  visibleExtra.value = Math.max(visibleExtra.value - BATCH_SIZE, 0)
 }
 
 function scrollToPosts() {
@@ -244,7 +259,7 @@ function setPostCardRef(el: any, idx: number) {
 }
 
 // ── Expose for parent ──
-defineExpose({ expandAllPosts, scrollToPosts })
+defineExpose({ showMore, scrollToPosts })
 
 // ── GSAP scroll animations ──
 onMounted(async () => {

@@ -36,7 +36,8 @@ components/index/
 | `/#space` | Space | Gallery, About, Contact — grouped. |
 | `/#tools` | Tools | Dev tools grid. |
 
-Focus-panel hashes (`#about`, `#post/…`, `#contact`, `#gallery`, `#tool/…`) are handled by `useFocusPanel` — the scroll-sections composable ignores them.
+Focus-panel hashes (`#tool/…`) are handled by `useFocusPanel` — the scroll-sections composable ignores them.
+`#about` → redirects to `/about`, `#contact` → redirects to `/contact`, `#gallery` → redirects to `/#space`, `#post/…` → redirects to standalone blog page.
 
 ## Key patterns
 

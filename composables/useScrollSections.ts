@@ -226,9 +226,25 @@ export function useScrollSections() {
     _scrollRaf = requestAnimationFrame(_updateActiveSectionFromScroll)
   }
 
-  // ─── Hash → scroll (page load / hashchange) ───────────────────────
+  // ─── Hash → scroll (page load / SPA cross-page nav) ────────────────
+  /**
+   * Single authority for hash-based scrolling. Called synchronously from
+   * init() (which runs in onMounted), so the DOM is ready and we can
+   * scroll before the browser paints — zero visual flash.
+   *
+   * Also handles stale Lenis state from a previous page by resetting
+   * Lenis to 0 before scrolling to the target section.
+   */
   function _resolveHashOnLoad() {
     if (!import.meta.client) return
+    // Suppress observer-driven hash rewrites while we snap to the initial hash.
+    _hashSyncEnabled = false
+    const reenableHashSync = () => {
+      setTimeout(() => {
+        _hashSyncEnabled = true
+        _updateActiveSectionFromScroll()
+      }, 120)
+    }
     const hash = window.location.hash.slice(1)
 
     // No hash: if a chat section exists above the hero, the browser starts at
@@ -238,28 +254,61 @@ export function useScrollSections() {
       if (chatEl) {
         const heroEl = document.getElementById('hero')
         if (heroEl) {
-          // Instant jump (no smooth scroll) so there's no flash of chat
-          heroEl.scrollIntoView({ behavior: 'instant', block: 'start' })
+          const lenis = getLenis()
+          if (lenis) {
+            lenis.scrollTo(heroEl, { immediate: true })
+          } else {
+            heroEl.scrollIntoView({ behavior: 'instant', block: 'start' })
+          }
         }
       }
+      reenableHashSync()
       return
     }
 
-    // Ignore focus-panel hashes
-    if (isFocusPanelHash(hash)) return
+    // Ignore focus-panel hashes — useFocusPanel handles these
+    if (isFocusPanelHash(hash)) {
+      reenableHashSync()
+      return
+    }
 
     // Check if it's a known section
     if ((SECTION_IDS as readonly string[]).includes(hash)) {
-      // Scroll to the section. Use immediate to avoid the entrance animation
-      // competing with a long smooth scroll.
-      const el = document.getElementById(hash)
-      if (el) {
-        scrollTo(hash as SectionId, { duration: 0.01, immediate: true })
+      const scrollToHash = () => {
+        const el = document.getElementById(hash)
+        if (el) {
+          const lenis = getLenis()
+          if (lenis) {
+            // Reset stale Lenis state (may be left over from a previous page),
+            // then immediately scroll to the target. Both calls are synchronous
+            // with immediate:true, so only the final position is painted.
+            lenis.scrollTo(0, { immediate: true })
+            lenis.scrollTo(el, { immediate: true })
+          } else {
+            el.scrollIntoView({ behavior: 'instant', block: 'start' })
+          }
+          reenableHashSync()
+          return true
+        }
+        return false
       }
-      // If element doesn't exist (e.g. #chat with no messages), clear hash
-      else {
-        _clearHash()
+
+      // Try immediately — DOM should be ready since we're called from onMounted
+      if (!scrollToHash()) {
+        // Edge case: element not yet in DOM (e.g. async component). Retry once
+        // after the next animation frame.
+        requestAnimationFrame(() => {
+          if (!scrollToHash()) {
+            _clearHash()
+          }
+          reenableHashSync()
+        })
+      } else {
+        // Already scrolled; allow observer-driven updates after a short delay
+        reenableHashSync()
       }
+    } else {
+      reenableHashSync()
     }
   }
 
@@ -288,8 +337,9 @@ export function useScrollSections() {
     window.addEventListener('scroll', _onScroll, { passive: true })
     window.addEventListener('hashchange', _onHashChange)
 
-    // Resolve hash on load (after a small delay to let DOM settle)
-    setTimeout(_resolveHashOnLoad, 100)
+    // Resolve hash immediately — DOM is ready at onMounted time.
+    // No setTimeout needed; this runs before the browser paints.
+    _resolveHashOnLoad()
   }
 
   function destroy() {

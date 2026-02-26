@@ -45,6 +45,7 @@ const currentMutedColor = ref('#6B6B7B')
 const progress = ref(0)
 
 let _initialized = false
+let _ready = false // true after trigger is created + initial color is computed
 let _triggers: any[] = []
 let _gsap: any = null
 let _ScrollTrigger: any = null
@@ -211,7 +212,10 @@ async function _init() {
     }))
     .filter(s => s.el)
 
-  if (sections.length < 2) return
+  if (sections.length < 2) {
+    _ready = true
+    return
+  }
 
   // We create one master ScrollTrigger that spans the entire scrollable area.
   // Its progress (0→1) drives the color interpolation.
@@ -245,8 +249,26 @@ async function _init() {
 
   _triggers.push(trigger)
 
-  // Set initial color from the first section actually in the DOM
-  const initialBg = activePalette[0].color
+  // ── Compute initial color from current scroll position ──────────────
+  // Instead of always defaulting to palette[0] (parchment yellow), calculate
+  // the correct color for the current scroll position. This prevents a flash
+  // of wrong color when SPA-navigating back to the page at a non-zero scroll.
+  //
+  // ScrollTrigger config: start = firstEl "top top", end = lastEl "bottom bottom"
+  // Progress 0 = firstEl.top is at viewport top
+  // Progress 1 = lastEl.bottom is at viewport bottom
+  const scrollY = window.scrollY
+  const triggerStart = firstEl.getBoundingClientRect().top + scrollY
+  const triggerEnd = lastEl.getBoundingClientRect().bottom + scrollY
+  const range = (triggerEnd - window.innerHeight) - triggerStart
+
+  let initialProgress = 0
+  if (range > 0) {
+    initialProgress = Math.max(0, Math.min(1, (scrollY - triggerStart) / range))
+  }
+
+  progress.value = initialProgress
+  const initialBg = interpolatePalette(activePalette, initialProgress)
   const initialText = contrastText(initialBg)
   const initialMuted = contrastMuted(initialBg)
   currentColor.value = initialBg
@@ -256,12 +278,15 @@ async function _init() {
   if (_targetEl) {
     applyColors(_targetEl, initialBg, initialText, initialMuted)
   }
+
+  _ready = true
 }
 
 function _destroy() {
   _triggers.forEach(t => t.kill())
   _triggers = []
   _initialized = false
+  _ready = false
 }
 
 /**
@@ -274,14 +299,42 @@ export async function refreshColorFlow() {
   await _init()
 }
 
+/**
+ * Whether color flow is fully initialized with the correct color.
+ */
+export function isColorFlowReady(): boolean {
+  return _ready
+}
+
+/**
+ * Wait until color flow is fully initialized.
+ * Used by page transition logic to keep the overlay opaque until
+ * the page behind it has the correct background color.
+ */
+export async function waitForColorFlowReady(timeoutMs = 2000): Promise<void> {
+  if (_ready) return
+  const start = Date.now()
+  while (!_ready && Date.now() - start < timeoutMs) {
+    await new Promise(resolve => requestAnimationFrame(resolve))
+  }
+}
+
 export const useColorFlow = (palette: ColorStop[] = DEFAULT_PALETTE) => {
   _activePalette = palette
 
   /** The element that receives `--color-flow-bg` */
   const targetRef = ref<HTMLElement | null>(null)
 
-  // Keep module-level target in sync with the ref
-  watch(targetRef, (el) => { _targetEl = el })
+  // Keep module-level target in sync with the ref.
+  // When the target element appears AFTER color flow has already initialized
+  // (e.g. SPA navigation back to index), immediately apply the current colors
+  // to the DOM element so it doesn't flash the CSS fallback color.
+  watch(targetRef, (el) => {
+    _targetEl = el
+    if (_ready && el) {
+      applyColors(el, currentColor.value, currentTextColor.value, currentMutedColor.value)
+    }
+  })
 
   onMounted(() => {
     _targetEl = targetRef.value

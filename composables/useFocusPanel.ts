@@ -193,11 +193,17 @@ export function useFocusPanel() {
     }
 
     if (hash === 'about') {
-      await open('about', null, 'about')
+      // Redirect to standalone about page
+      if (import.meta.client) navigateTo('/about')
+      return
     } else if (hash === 'contact') {
-      await open('contact', null, 'contact')
+      // Contact page hidden — redirect to space section
+      if (import.meta.client) navigateTo('/#space')
+      return
     } else if (hash === 'gallery') {
-      await open('gallery', null, 'gallery')
+      // Gallery is now a standalone page
+      if (import.meta.client) navigateTo('/gallery')
+      return
     } else if (hash.startsWith('post/')) {
       // Blog post deep links now redirect to standalone blog page
       if (import.meta.client) {

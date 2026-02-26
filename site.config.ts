@@ -38,7 +38,7 @@ export const siteConfig: SiteConfig = {
   },
   social: {
     github: 'https://github.com/XyLearningProgramming',
-    linkedin: 'https://linkedin.com/in/xinyu-huang-dev',
+    linkedin: 'https://www.linkedin.com/in/xinyu-huang-019650170/',
     email: 'contact@x3huang.dev'
   },
   seo: {

@@ -17,50 +17,52 @@
         class="mb-12 opacity-0"
       >
         <h3 class="text-lg font-bold mb-4 text-dali-gold">Gallery</h3>
-        <NeoPhotoGallery @open-lightbox="(img: GalleryImage) => emit('openGallery', img)" />
+        <NeoPhotoGallery />
       </div>
 
-      <!-- About & Contact cards — scattered -->
+      <!-- About & Resume cards — scattered -->
       <div class="space-cards grid grid-cols-1 md:grid-cols-2 gap-8">
-        <DaliIrregularCard
-          ref="aboutCardRef"
-          :seed="200"
-          :rotation="-2"
-          accent-color="var(--color-dali-teal)"
-          class="space-card opacity-0 cursor-pointer"
-          @click="emit('openAbout')"
-        >
-          <h3 class="text-lg font-bold mb-2 text-dali-white">About Me</h3>
-          <p class="text-sm text-dali-muted">
-            {{ siteConfig.author.bio }}. Learn more about my background, what I do, and what drives me.
-          </p>
-          <span class="mt-3 text-xs font-bold text-dali-teal flex items-center gap-1">
-            Read more
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </span>
-        </DaliIrregularCard>
+        <a href="/about" class="block" @click.prevent="transitionTo('/about', { sectionId: 'space' })">
+          <DaliIrregularCard
+            ref="aboutCardRef"
+            :seed="200"
+            :rotation="-2"
+            accent-color="var(--color-dali-teal)"
+            class="space-card opacity-0 cursor-pointer"
+          >
+            <h3 class="text-lg font-bold mb-2 text-dali-white">About Me</h3>
+            <p class="text-sm text-dali-muted">
+              {{ siteConfig.author.bio }}. Learn more about my background, what I do, and what drives me.
+            </p>
+            <span class="mt-3 text-xs font-bold text-dali-teal flex items-center gap-1">
+              Read more
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </span>
+          </DaliIrregularCard>
+        </a>
 
-        <DaliIrregularCard
-          ref="contactCardRef"
-          :seed="201"
-          :rotation="2.5"
-          accent-color="var(--color-dali-gold)"
-          class="space-card opacity-0 cursor-pointer"
-          @click="emit('openContact')"
-        >
-          <h3 class="text-lg font-bold mb-2 text-dali-white">Contact</h3>
-          <p class="text-sm text-dali-muted">
-            Get in touch via email, GitHub, or LinkedIn. Always happy to chat.
-          </p>
-          <span class="mt-3 text-xs font-bold text-dali-gold flex items-center gap-1">
-            Get in touch
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </span>
-        </DaliIrregularCard>
+        <a :href="resumePath" target="_blank" rel="noopener noreferrer" class="block">
+          <DaliIrregularCard
+            ref="resumeCardRef"
+            :seed="201"
+            :rotation="2.5"
+            accent-color="var(--color-dali-gold)"
+            class="space-card opacity-0 cursor-pointer"
+          >
+            <h3 class="text-lg font-bold mb-2 text-dali-white">Resume</h3>
+            <p class="text-sm text-dali-muted">
+              View my resume — experience, skills, and background at a glance.
+            </p>
+            <span class="mt-3 text-xs font-bold text-dali-gold flex items-center gap-1">
+              View resume
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </span>
+          </DaliIrregularCard>
+        </a>
       </div>
     </div>
   </section>
@@ -68,19 +70,17 @@
 
 <script setup lang="ts">
 import { siteConfig } from '~/site.config'
-import type { GalleryImage } from '~/composables/useBackgroundGallery'
+import { usePageTransition } from '~/composables/usePageTransition'
 
-const emit = defineEmits<{
-  openAbout: []
-  openContact: []
-  openGallery: [image: GalleryImage]
-}>()
+const { transitionTo } = usePageTransition()
+
+const resumePath = '/resume/20260111.pdf'
 
 // ── Template refs ──
 const spaceHeadingRef = ref<HTMLElement | null>(null)
 const galleryRef = ref<HTMLElement | null>(null)
 const aboutCardRef = ref<any>(null)
-const contactCardRef = ref<any>(null)
+const resumeCardRef = ref<any>(null)
 
 // ── GSAP scroll animations ──
 onMounted(async () => {
@@ -146,7 +146,7 @@ onMounted(async () => {
       )
     }
 
-    const contactEl = contactCardRef.value?.$el || contactCardRef.value
+    const contactEl = resumeCardRef.value?.$el || resumeCardRef.value
     if (contactEl) {
       gsap.fromTo(contactEl,
         { opacity: 0, x: isMobile ? 40 : 120, rotation: isMobile ? 0 : 5 },

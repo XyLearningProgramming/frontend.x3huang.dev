@@ -1,18 +1,17 @@
 <template>
   <div class="my-2 mb-6">
     <a :href="props.url" target="_blank" rel="noopener noreferrer" class="block no-underline">
-      <div class="neo-border bg-neo-bg p-3 relative cursor-pointer hover:-translate-y-0.5 transition-transform group"
-        style="box-shadow: 4px 4px 0px 0px #000;">
+      <div class="repo-card p-3 relative cursor-pointer hover:-translate-y-0.5 transition-all group">
         <div class="flex items-center gap-2 pb-1">
           <!-- Repository Info -->
           <div class="flex-1 min-w-0">
             <!-- Repository Name -->
             <div class="flex items-center justify-between gap-2 mb-0.5">
-              <h4 class="text-xs font-bold text-neo-black truncate leading-tight">
+              <h4 class="text-xs font-bold repo-title truncate leading-tight">
                 {{ repoOwner }}/{{ repoName }}
               </h4>
               <div class="opacity-0 group-hover:opacity-60 transition-opacity duration-200">
-                <svg class="w-3 h-3 text-neo-black/50 flex-shrink-0" fill="none" stroke="currentColor"
+                <svg class="w-3 h-3 repo-icon flex-shrink-0" fill="none" stroke="currentColor"
                   viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -21,13 +20,13 @@
             </div>
 
             <!-- Description -->
-            <p v-if="displayDescription" class="text-sm text-neo-black/70 mb-1.5 line-clamp-2 leading-relaxed">
+            <p v-if="displayDescription" class="text-sm repo-desc mb-1.5 line-clamp-2 leading-relaxed">
               {{ displayDescription }}
             </p>
 
             <!-- Repository Stats -->
             <div v-if="mounted && !loading && (language || stars !== null || forks !== null || lastUpdated)"
-              class="flex items-center gap-3 text-xs text-neo-black/60">
+              class="flex items-center gap-3 text-xs repo-stats">
               <div v-if="language" class="flex items-center gap-1">
                 <span class="w-1.5 h-1.5 rounded-full" :style="{ backgroundColor: getLanguageColor(language) }"></span>
                 <span>{{ language }}</span>
@@ -40,7 +39,7 @@
                 <span>🍴</span>
                 <span>{{ formatNumber(forks) }}</span>
               </div>
-              <div v-if="lastUpdated" class="text-neo-black/40">
+              <div v-if="lastUpdated" class="repo-stats-muted">
                 {{ lastUpdated }}
               </div>
             </div>
@@ -173,5 +172,38 @@ onMounted(() => {
 
 .no-underline:hover {
   text-decoration: none !important;
+}
+
+/* Dark-native repo card — works on the dali-focus-surface dark bg */
+.repo-card {
+  background: rgba(240, 237, 229, 0.05);
+  border: 1px solid rgba(240, 237, 229, 0.12);
+  border-radius: 0;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.repo-card:hover {
+  background: rgba(240, 237, 229, 0.08);
+  border-color: rgba(240, 237, 229, 0.2);
+}
+
+.repo-title {
+  color: #F0EDE5 !important;
+}
+
+.repo-icon {
+  color: rgba(240, 237, 229, 0.5) !important;
+}
+
+.repo-desc {
+  color: rgba(240, 237, 229, 0.65) !important;
+}
+
+.repo-stats {
+  color: rgba(240, 237, 229, 0.55) !important;
+}
+
+.repo-stats-muted {
+  color: rgba(240, 237, 229, 0.35) !important;
 }
 </style>

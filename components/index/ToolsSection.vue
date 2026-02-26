@@ -22,7 +22,7 @@
           :accent-color="tool.color"
           :interactive="false"
           class="tool-card opacity-0 cursor-pointer"
-          @click="navigateTo(tool.route)"
+          @click="transitionTo(tool.route, { sectionId: 'tools' })"
         >
           <span class="text-2xl block mb-2">{{ tool.icon }}</span>
           <h3 class="text-base font-bold mb-1 text-dali-white">{{ tool.title }}</h3>
@@ -34,6 +34,10 @@
 </template>
 
 <script setup lang="ts">
+import { usePageTransition } from '~/composables/usePageTransition'
+
+const { transitionTo } = usePageTransition()
+
 // ── Static data ──
 const tools = [
   { title: 'Base64', icon: '🔐', description: 'Encode & decode Base64 strings', route: '/tools/base64', color: 'var(--color-dali-red)' },

@@ -13,9 +13,11 @@
 
 import { useCanvasCamera } from '~/composables/useCanvasCamera'
 import { useFocusPanel } from '~/composables/useFocusPanel'
+import { usePageTransition } from '~/composables/usePageTransition'
 import { useScrollSections, type SectionId } from '~/composables/useScrollSections'
 
 const route = useRoute()
+const { isTransitioning } = usePageTransition()
 const { isFocused, focusTarget } = useCanvasCamera()
 const { activePanel } = useFocusPanel()
 const { scrollTo: scrollToSection, sectionIds } = useScrollSections()
@@ -69,6 +71,9 @@ function getMode(): TocMode {
 // ——— DOM scanning ———
 function scan() {
   if (!import.meta.client) return
+  // Don't scan while a page transition overlay is active — the DOM is
+  // about to be torn down/rebuilt, so any element refs would be stale.
+  if (isTransitioning.value) return
 
   const mode = getMode()
   const found: TocItem[] = []
@@ -80,30 +85,8 @@ function scan() {
   }
 
   if (mode === 'blog-page') {
-    // Standalone blog page: scan h2/h3 headings within #blog-article
-    const container = document.getElementById('blog-article') || document
-
-    const headings = container.querySelectorAll('h2[id], h3[id]')
-    headings.forEach((el) => {
-      const id = (el as HTMLElement).id
-      const label = cleanLabel(el.textContent || '') || id
-      found.push({ id, label, el: el as HTMLElement })
-    })
-
-    // Prepend a "Top" item for the post title
-    if (found.length > 0) {
-      const pageTitle = document.querySelector('.sub-page h1, article h1, h1')
-      if (pageTitle) {
-        const topLabel = cleanLabel(pageTitle.textContent || '') || 'Top'
-        found.unshift({
-          id: '__top',
-          label: topLabel,
-          el: pageTitle as HTMLElement,
-        })
-      }
-    }
-
-    items.value = found
+    // Standalone blog pages have their own sidebar TOC — skip ruler
+    items.value = []
     return
   }
 
@@ -319,6 +302,9 @@ onUnmounted(() => {
   cancelAnimationFrame(raf)
   observer?.disconnect()
   window.removeEventListener('mousemove', onMouseMove)
+  if (_hashChangeHandler) {
+    window.removeEventListener('hashchange', _hashChangeHandler)
+  }
 })
 
 // Re-scan on route change (full navigation)
@@ -333,10 +319,10 @@ watch([isFocused, activePanel], () => {
 })
 
 // Re-scan on hash changes (inline blog posts use hash routing)
+let _hashChangeHandler: (() => void) | null = null
 if (import.meta.client) {
-  window.addEventListener('hashchange', () => {
-    resetAndRescan(500)
-  })
+  _hashChangeHandler = () => resetAndRescan(500)
+  window.addEventListener('hashchange', _hashChangeHandler)
 }
 
 const visible = computed(() => items.value.length >= 2)
@@ -353,7 +339,7 @@ const rulerHeight = computed(() => {
 <template>
   <nav
     ref="navRef"
-    v-show="visible"
+    v-if="visible"
     class="ruler-toc"
     :style="{ height: rulerHeight }"
     aria-label="Page navigation"

@@ -86,7 +86,10 @@ html {
 }
 
 body {
-  background-color: var(--color-flow-1, #F5E6B8);
+  /* Dark by default — sub-pages are dark, and the index page's DaliCanvas
+     viewport covers the body with its own color-flow background.
+     Using a dark default prevents a light flash during SPA page transitions. */
+  background-color: #161622;
   overflow-x: hidden;
 }
 
@@ -295,6 +298,22 @@ code, pre, .font-mono {
 }
 
 /* ============================================================
+   Page Transition Overlay (usePageTransition)
+   ============================================================
+   Full-screen overlay animated by GSAP during cross-page navigation.
+   Slides across the viewport with a color interpolation so the page
+   swap happens invisibly behind it.                                */
+
+.page-transition-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000; /* above grain (9999) */
+  display: none;
+  pointer-events: none;
+  will-change: transform, background-color;
+}
+
+/* ============================================================
    Film Grain Texture Overlay (Dalí mood)
    ============================================================ */
 
@@ -462,24 +481,24 @@ code, pre, .font-mono {
    ============================================================ */
 
 .dali-focus-surface {
-  /* Solid dark background — never changes, always readable */
-  background: var(--color-dali-void, #0D0D1A) !important;
+  /* Warm dark background — softer than pure void for comfortable reading */
+  background: #161622 !important;
   /* Override the color-flow variables locally so nothing leaks through */
-  --color-flow-text: #F0EDE5 !important;
-  --color-flow-muted: rgba(240, 237, 229, 0.6) !important;
-  --color-flow-bg: var(--color-dali-void, #0D0D1A) !important;
+  --color-flow-text: rgba(240, 237, 229, 0.88) !important;
+  --color-flow-muted: rgba(240, 237, 229, 0.5) !important;
+  --color-flow-bg: #161622 !important;
   /* Also override the neo legacy text vars that some components use */
-  --color-neo-text: #F0EDE5 !important;
-  --color-neo-text-muted: rgba(240, 237, 229, 0.6) !important;
-  color: #F0EDE5 !important;
+  --color-neo-text: rgba(240, 237, 229, 0.88) !important;
+  --color-neo-text-muted: rgba(240, 237, 229, 0.5) !important;
+  color: rgba(240, 237, 229, 0.88) !important;
 }
 
 /* Propagate the overridden custom properties to ALL descendants */
 .dali-focus-surface *:not(pre):not(code):not(.shiki):not(.shiki *) {
-  --color-flow-text: #F0EDE5;
-  --color-flow-muted: rgba(240, 237, 229, 0.6);
-  --color-neo-text: #F0EDE5;
-  --color-neo-text-muted: rgba(240, 237, 229, 0.6);
+  --color-flow-text: rgba(240, 237, 229, 0.88);
+  --color-flow-muted: rgba(240, 237, 229, 0.5);
+  --color-neo-text: rgba(240, 237, 229, 0.88);
+  --color-neo-text-muted: rgba(240, 237, 229, 0.5);
 }
 
 /* Headings: always bright white */
@@ -492,7 +511,7 @@ code, pre, .font-mono {
   color: #F0EDE5 !important;
 }
 
-/* Body text elements: bright white — !important to beat Tailwind utilities */
+/* Body text elements: slightly softened for reading comfort */
 .dali-focus-surface p,
 .dali-focus-surface li,
 .dali-focus-surface span:not(.shiki span),
@@ -502,13 +521,13 @@ code, pre, .font-mono {
 .dali-focus-surface label,
 .dali-focus-surface button,
 .dali-focus-surface a:not(.blog-content a) {
-  color: #F0EDE5 !important;
+  color: rgba(240, 237, 229, 0.88) !important;
 }
 
 /* ── Override ALL muted utility classes to be readable on dark bg ── */
 .dali-focus-surface .text-dali-muted,
 .dali-focus-surface .text-neo-text-muted {
-  color: rgba(240, 237, 229, 0.6) !important;
+  color: rgba(240, 237, 229, 0.5) !important;
 }
 
 .dali-focus-surface .text-dali-white {
@@ -530,7 +549,7 @@ code, pre, .font-mono {
 .dali-focus-surface .blog-content {
   background: transparent;
   border: none;
-  color: #F0EDE5;
+  color: rgba(240, 237, 229, 0.85);
 }
 
 .dali-focus-surface .blog-content h1,
@@ -545,27 +564,27 @@ code, pre, .font-mono {
 .dali-focus-surface .blog-content ol,
 .dali-focus-surface .blog-content ul,
 .dali-focus-surface .blog-content li {
-  color: #F0EDE5 !important;
+  color: rgba(240, 237, 229, 0.82) !important;
 }
 
 .dali-focus-surface .blog-content blockquote {
-  color: #F0EDE5 !important;
-  background: rgba(255, 255, 255, 0.05);
+  color: rgba(240, 237, 229, 0.82) !important;
+  background: rgba(212, 168, 67, 0.06);
   border-left-color: var(--color-dali-gold);
 }
 
 .dali-focus-surface .blog-content th,
 .dali-focus-surface .blog-content td {
-  color: #F0EDE5 !important;
-  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(240, 237, 229, 0.85) !important;
+  border-color: rgba(240, 237, 229, 0.12);
 }
 
 .dali-focus-surface .blog-content table {
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(240, 237, 229, 0.12);
 }
 
 .dali-focus-surface .blog-content th {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(240, 237, 229, 0.06);
 }
 
 .dali-focus-surface .blog-content a {
@@ -577,13 +596,14 @@ code, pre, .font-mono {
 }
 
 .dali-focus-surface .blog-content hr {
-  border-top-color: rgba(255, 255, 255, 0.2);
+  border-top-color: rgba(240, 237, 229, 0.15);
 }
 
 /* ── Blog card in focus surface ── */
 .dali-focus-surface .dali-card {
-  color: #F0EDE5 !important;
-  border-color: rgba(240, 237, 229, 0.2) !important;
+  color: rgba(240, 237, 229, 0.88) !important;
+  border-color: rgba(240, 237, 229, 0.1) !important;
+  background: rgba(240, 237, 229, 0.03);
 }
 
 /* ── SVG icons inside focus surface: inherit color ── */

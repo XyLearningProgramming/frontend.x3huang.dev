@@ -36,11 +36,7 @@
       <IndexPostsSection ref="postsSectionRef" />
 
       <!-- ==================== MY DIGITAL SPACE ==================== -->
-      <IndexSpaceSection
-        @open-about="openAbout"
-        @open-contact="openContact"
-        @open-gallery="openGallery"
-      />
+      <IndexSpaceSection />
 
       <!-- ==================== TOOLS ==================== -->
       <IndexToolsSection />
@@ -54,11 +50,9 @@
       <IndexFocusContent
         :active-panel="activePanel"
         :panel-payload="panelPayload"
-        :about-content="aboutContent"
-        :selected-gallery-image="selectedGalleryImage"
+        :selected-gallery-image="null"
         :focus-panel-title="focusPanelTitle"
         @back="panelBack"
-        @close="closeAllPanels"
       />
     </template>
   </DaliCanvas>
@@ -79,7 +73,6 @@ import { useCanvasCamera } from '~/composables/useCanvasCamera'
 import { useFocusPanel } from '~/composables/useFocusPanel'
 import { useScrollSections } from '~/composables/useScrollSections'
 import { refreshColorFlow } from '~/composables/useColorFlow'
-import type { GalleryImage } from '~/composables/useBackgroundGallery'
 
 // ==================== CAMERA ====================
 const { isFocused } = useCanvasCamera()
@@ -88,7 +81,6 @@ const { isFocused } = useCanvasCamera()
 const {
   activePanel,
   panelPayload,
-  open: openPanel,
   back: panelBack,
   close: panelClose,
   init: initFocusPanel,
@@ -172,26 +164,8 @@ async function setupChatScrollAnimation() {
 }
 
 // ==================== FOCUS PANEL CONTENT ====================
-const aboutContent = ref<any>(null)
-const selectedGalleryImage = ref<GalleryImage | null>(null)
-
 const focusPanelTitle = computed(() => {
-  if (activePanel.value === 'about') return 'About Me'
-  if (activePanel.value === 'contact') return 'Get In Touch'
-  if (activePanel.value === 'gallery') return selectedGalleryImage.value?.title || 'Gallery'
   return ''
-})
-
-// Watch activePanel to load content when panel changes (e.g. from deep link)
-watch(activePanel, async (panel) => {
-  if (panel === 'about' && !aboutContent.value) {
-    try {
-      const allPages = await queryCollection('pages').all()
-      aboutContent.value = allPages.find((page: any) => page.path === '/pages/about')
-    } catch (e) {
-      console.warn('Failed to load about content:', e)
-    }
-  }
 })
 
 // ==================== CHAT TRANSITIONS ====================
@@ -318,36 +292,14 @@ function handleScrollTo(id: string) {
 }
 
 function expandAndScrollToPosts() {
-  postsSectionRef.value?.expandAllPosts()
+  postsSectionRef.value?.showMore()
   postsSectionRef.value?.scrollToPosts()
 }
 
 // ==================== PANEL OPENERS ====================
 
 async function closeAllPanels() {
-  selectedGalleryImage.value = null
   await panelClose()
-}
-
-async function openAbout() {
-  await openPanel('about', null, 'about')
-  if (!aboutContent.value) {
-    try {
-      const allPages = await queryCollection('pages').all()
-      aboutContent.value = allPages.find((page: any) => page.path === '/pages/about')
-    } catch (e) {
-      console.warn('Failed to load about content:', e)
-    }
-  }
-}
-
-async function openContact() {
-  await openPanel('contact', null, 'contact')
-}
-
-async function openGallery(image: GalleryImage) {
-  selectedGalleryImage.value = image
-  await openPanel('gallery', image, 'gallery')
 }
 
 // ==================== SCROLL TRACKING ====================

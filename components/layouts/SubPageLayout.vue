@@ -1,5 +1,5 @@
 <template>
-  <div class="sub-page min-h-screen dali-focus-surface">
+  <div class="sub-page min-h-screen dali-focus-surface relative">
     <!-- Sticky top bar -->
     <div class="sticky top-0 z-30 sub-page-topbar">
       <div class="mx-auto flex items-center justify-between px-6 py-3" :class="maxWidthClass">
@@ -22,6 +22,9 @@
         </div>
       </div>
     </div>
+
+    <!-- Subtle top glow for depth -->
+    <div class="sub-page-glow" />
 
     <!-- Page content -->
     <div class="px-6 md:px-12 py-8" :class="maxWidthClass + ' mx-auto'">
@@ -49,6 +52,10 @@
 </template>
 
 <script setup lang="ts">
+import { usePageTransition } from '~/composables/usePageTransition'
+
+const { transitionTo } = usePageTransition()
+
 interface Props {
   title?: string
   backTo?: string
@@ -75,24 +82,40 @@ const maxWidthClass = computed(() => {
   }
 })
 
-const router = useRouter()
+// Override body background to dark while sub-page is mounted — prevents
+// the light body (#F5E6B8) from flashing during page transitions.
+useHead({
+  bodyAttrs: {
+    style: 'background-color: #161622',
+  },
+})
 
 function goBack() {
-  // If user has history and came from the same origin, go back
-  // Otherwise, navigate to the specified backTo route
-  if (window.history.length > 1 && document.referrer && new URL(document.referrer).origin === window.location.origin) {
-    router.back()
-  } else {
-    navigateTo(props.backTo)
-  }
+  // Extract the section ID from backTo: '/#tools' → 'tools', '/#posts' → 'posts'
+  const hashMatch = props.backTo.match(/#(\w+)/)
+  const sectionId = hashMatch ? hashMatch[1] : 'hero'
+  transitionTo(props.backTo, { sectionId, isBack: true })
 }
 </script>
 
 <style scoped>
 .sub-page-topbar {
-  background: rgba(11, 11, 15, 0.85);
+  background: rgba(22, 22, 34, 0.92);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(240, 237, 229, 0.08);
+  border-bottom: 1px solid rgba(240, 237, 229, 0.06);
+}
+
+.sub-page-glow {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  max-width: 600px;
+  height: 200px;
+  background: radial-gradient(ellipse at center top, rgba(212, 168, 67, 0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .sub-page-grid {

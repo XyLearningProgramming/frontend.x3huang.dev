@@ -1,14 +1,11 @@
 <script setup lang="ts">
-import type { GalleryImage } from '~/composables/useBackgroundGallery'
+import { usePageTransition } from '~/composables/usePageTransition'
 
 const { images } = usePhotoGallery()
+const { transitionTo } = usePageTransition()
 
-const emit = defineEmits<{
-  'open-lightbox': [image: GalleryImage]
-}>()
-
-function handleClick(image: GalleryImage) {
-  emit('open-lightbox', image)
+function handleClick(index: number) {
+  transitionTo(`/gallery?img=${index}`, { sectionId: 'space' })
 }
 
 // GSAP entrance animation (replaces v-motion which breaks SSR)
@@ -53,7 +50,7 @@ onMounted(async () => {
         :key="index"
         class="dali-card flex-shrink-0 w-72 md:w-80 cursor-pointer overflow-hidden snap-center card-gallery opacity-0"
         style="border-color: var(--color-dali-muted);"
-        @click="handleClick(image)"
+        @click="handleClick(index)"
       >
         <ClientOnly>
           <NuxtImg
