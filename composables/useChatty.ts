@@ -254,7 +254,9 @@ export const useChatty = () => {
       case 'thinking':
         if (typeof event.content === 'string' && event.content) {
           aiMsg.statusText = ''
-          aiMsg.thinking.push(event.content)
+          const t = aiMsg.thinking
+          if (t.length === 0) t.push(event.content)
+          else t[t.length - 1] += event.content
         }
         break
       case 'content':

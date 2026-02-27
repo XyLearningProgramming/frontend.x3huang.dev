@@ -1,311 +1,369 @@
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-br from-light-accent/20 to-dark-accent/20 dark:from-dark-accent/30 dark:to-light-accent/30 bg-cover bg-center bg-no-repeat relative"
-    :style="{ backgroundImage: currentBackground ? `url(${currentBackground.url})` : 'none' }">
-    <!-- Background overlay for better readability -->
-    <div class="absolute inset-0 bg-black/20 dark:bg-black/40" />
+  <DaliCanvas @close="panelBack">
+    <!-- ===================== DISCOVERY COLUMN ===================== -->
+    <template #discovery>
 
-    <!-- Photo notes (hidden when chat is active to avoid overlapping the input) -->
-    <div v-if="currentBackground?.note && showFullLayout" class="absolute bottom-4 left-4 md:left-6 md:max-w-md">
-      <div class="bg-black/30 backdrop-blur-sm rounded-lg p-3 text-white border border-white/20">
-        <h4 v-if="currentBackground.title" class="font-medium text-sm mb-1">{{ currentBackground.title }}</h4>
-        <p class="text-xs text-white/90">{{ currentBackground.note }}</p>
-      </div>
-    </div>
+      <!-- ==================== CHAT SECTION (above hero) ==================== -->
+      <section
+        v-if="chatHasMessages"
+        id="chat"
+        ref="chatSectionRef"
+        class="chat-surface relative"
+      >
+        <ChatView
+          ref="chatViewRef"
+          :messages="(chatMessages as any)"
+          :is-streaming="chatIsStreaming"
+          @send="chatSendMessage"
+          @retry="chatRetryLast"
+          @clear="handleChatClear"
+        />
+      </section>
 
-    <!-- Main content -->
-    <div
-      class="relative z-10 min-h-screen flex flex-col items-center p-8"
-      :class="showFullLayout ? 'justify-center' : 'justify-start pt-6'"
-    >
-      <!-- Profile section -->
-      <div class="text-center" :class="showFullLayout ? 'mb-12' : 'mb-4'">
-        <!-- Profile photo -->
-        <div v-if="showFullLayout" class="mb-6">
-          <div
-            class="w-32 h-32 rounded-full mx-auto shadow-2xl border-4 border-white/30 overflow-hidden bg-gradient-to-br from-light-accent to-dark-accent flex items-center justify-center ring-4 ring-white/10">
-            <img v-show="!showFallback" :src="profile.image" :alt="profile.name" class="w-full h-full object-cover"
-              @error="showFallback = true">
-            <span v-show="showFallback" class="text-4xl text-white font-bold drop-shadow-lg">{{ profile.initials
-              }}</span>
-          </div>
-        </div>
+      <!-- Smooth color blend from chat surface to main page -->
+      <div v-if="chatHasMessages" class="chat-hero-blend" aria-hidden="true" />
 
-        <!-- Name and title -->
-        <h1
-          class="font-bold text-white drop-shadow-2xl text-shadow-strong"
-          :class="showFullLayout ? 'text-4xl md:text-5xl mb-4' : 'text-2xl mb-2'"
-        >
-          {{ profile.name }}
-        </h1>
+      <!-- ==================== HERO ==================== -->
+      <IndexHeroSection
+        ref="heroSectionRef"
+        :chat-has-messages="chatHasMessages"
+        :has-scrolled="hasScrolled"
+        @send="handleHeroSend"
+        @scroll-to-chat="scrollToChat"
+      />
 
-        <!-- Motto/Introduction -->
-        <div v-if="showFullLayout" class="relative">
-          <div class="absolute inset-0 bg-black/20 rounded-2xl blur-xl" />
-          <p
-            class="relative text-lg md:text-xl text-white/90 max-w-2xl mx-auto leading-relaxed drop-shadow-xl text-shadow-medium px-6 py-2">
-            {{ profile.subtitle }}
-          </p>
-          <p
-            class="relative text-xl md:text-2xl text-white max-w-2xl mx-auto leading-relaxed drop-shadow-xl text-shadow-medium px-6 py-4 whitespace-nowrap">
-            {{ profile.motto }}
-          </p>
-        </div>
-      </div>
+      <!-- ==================== BLOG POSTS ==================== -->
+      <IndexPostsSection ref="postsSectionRef" />
 
-      <!-- Mode toggle -->
-      <div class="flex justify-center mb-8 relative">
-        <div class="inline-flex items-center bg-white/10 backdrop-blur-md rounded-full p-1 border border-white/20">
-          <!-- Classical button -->
-          <button
-            @click="mode = 'home'"
-            @mouseenter="hoverTarget = 'classical'"
-            @mouseleave="hoverTarget = null"
-            @touchstart.passive="onLongPressStart('classical')"
-            @touchend.passive="onLongPressEnd"
-            @touchcancel.passive="onLongPressEnd"
-            class="px-6 py-2 rounded-full text-sm font-medium transition-all duration-200"
-            :class="mode === 'home'
-              ? 'bg-white/25 text-white shadow-lg'
-              : 'text-white/60 hover:text-white/80'"
-          >
-            Classical
-          </button>
-          <!-- AI Chatbot button -->
-          <button
-            @click="mode = 'chat'"
-            @mouseenter="hoverTarget = 'chatbot'"
-            @mouseleave="hoverTarget = null"
-            @touchstart.passive="onLongPressStart('chatbot')"
-            @touchend.passive="onLongPressEnd"
-            @touchcancel.passive="onLongPressEnd"
-            class="px-6 py-2 rounded-full text-sm font-medium transition-all duration-200"
-            :class="mode === 'chat'
-              ? 'bg-white/25 text-white shadow-lg'
-              : 'text-white/60 hover:text-white/80'"
-          >
-            Chatty
-          </button>
-        </div>
+      <!-- ==================== MY DIGITAL SPACE ==================== -->
+      <IndexSpaceSection />
 
-        <!-- Tooltip (hover / long-press) -->
-        <Transition name="tooltip-fade">
-          <div
-            v-if="activeTooltip"
-            class="absolute top-full mt-2 z-50 w-72 bg-black/60 backdrop-blur-lg rounded-xl border border-white/20 p-3 text-white shadow-2xl pointer-events-none"
-          >
-            <template v-if="activeTooltip === 'classical'">
-              <p class="text-xs text-white/70 leading-relaxed">
-                Browse the site through navigation cards -- blogs, tools, about, contact, and more.
-              </p>
-            </template>
-            <template v-else>
-              <p class="text-xs text-white/70 leading-relaxed mb-1.5">
-                Powered by
-                <a href="https://github.com/XyLearningProgramming/chatty" target="_blank" rel="noopener noreferrer" class="underline text-white/90 pointer-events-auto">chatty</a>,
-                an open-source persona-driven chatbot running on a locally hosted small model.
-              </p>
-              <p class="text-xs text-white/50 leading-relaxed mb-1.5">
-                Expect 10-60s response times depending on queue and query complexity.
-              </p>
-              <p class="text-xs text-amber-300/70 leading-relaxed">
-                ⚠ Responses may be inaccurate or incomplete — treat as experimental, not a source of truth.
-              </p>
-            </template>
-          </div>
-        </Transition>
-      </div>
+      <!-- ==================== TOOLS ==================== -->
+      <IndexToolsSection />
 
-      <!-- Home mode content -->
-      <template v-if="mode === 'home'">
-        <!-- Navigation cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl w-full place-content-center">
-          <template v-for="card in navigationCards" :key="card.title">
-            <!-- Interactive card with route -->
-            <NuxtLink v-if="card.route" :to="card.route" class="block group h-full">
-              <Card variant="default" padding="lg" radius="lg" hover clickable
-                class="bg-white/10 backdrop-blur-md border-white/20 text-center transition-all duration-300 group-hover:bg-white/20 group-hover:scale-105 h-full flex flex-col justify-between">
-                <div class="text-white">
-                  <div class="text-3xl mb-4">{{ card.icon }}</div>
-                  <h3 class="text-xl font-semibold mb-2">{{ card.title }}</h3>
-                  <p class="text-white/80 text-sm">{{ card.description }}</p>
-                </div>
-              </Card>
-            </NuxtLink>
-            <!-- Non-interactive card without route -->
-            <div v-else class="h-full">
-              <Card variant="default" padding="lg" radius="lg"
-                class="bg-white/5 backdrop-blur-md border-white/10 text-center opacity-60 h-full flex flex-col justify-between cursor-not-allowed">
-                <div class="text-white">
-                  <div class="text-3xl mb-4">{{ card.icon }}</div>
-                  <h3 class="text-xl font-semibold mb-2">{{ card.title }}</h3>
-                  <p class="text-white/80 text-sm">{{ card.description }}</p>
-                </div>
-              </Card>
-            </div>
-          </template>
-        </div>
+      <!-- ==================== FOOTER ==================== -->
+      <IndexFooterSection />
+    </template>
 
-        <!-- Footer note -->
-        <div class="mt-12 text-center">
-          <div class="mt-4 text-center">
-            <p class="text-white/80 text-sm mb-2">
-              {{ profile.welcomeMessage }}
-            </p>
-            <div class="flex justify-center">
-              <VisitCounter path="/" singular-text="visitor to this site" plural-text="visitors to this site" />
-            </div>
-          </div>
-        </div>
-      </template>
+    <!-- ===================== FOCUS COLUMN ===================== -->
+    <template #focus>
+      <IndexFocusContent
+        :active-panel="activePanel"
+        :panel-payload="panelPayload"
+        :focus-panel-title="focusPanelTitle"
+        @back="panelBack"
+      />
+    </template>
+  </DaliCanvas>
 
-      <!-- Chat mode content -->
-      <template v-else>
-        <ChatView @active-change="onChatActiveChange" />
-      </template>
-    </div>
-
-  </div>
+  <!-- Mobile nav -->
+  <IndexMobileNav
+    @scroll-to="handleScrollTo"
+  />
 </template>
 
 <script setup lang="ts">
-import Card from '~/components/ui/Card.vue'
-import VisitCounter from '~/components/ui/VisitCounter.vue'
 import ChatView from '~/components/chat/ChatView.vue'
+import IndexHeroSection from '~/components/index/HeroSection.vue'
+import IndexPostsSection from '~/components/index/PostsSection.vue'
 import { siteConfig, getPageMeta } from '~/site.config'
+import { useCanvasCamera } from '~/composables/useCanvasCamera'
+import { useFocusPanel } from '~/composables/useFocusPanel'
+import { useScrollSections } from '~/composables/useScrollSections'
+import { refreshColorFlow } from '~/composables/useColorFlow'
 
-const MODE_STORAGE_KEY = 'home-mode'
-const mode = ref<'home' | 'chat'>('home')
-const chatActive = ref(false)
+// ==================== CAMERA ====================
+const { isFocused } = useCanvasCamera()
 
-const hoverTarget = ref<'classical' | 'chatbot' | null>(null)
-const longPressTarget = ref<'classical' | 'chatbot' | null>(null)
-let longPressTimer: ReturnType<typeof setTimeout> | null = null
+// ==================== FOCUS PANEL ====================
+const {
+  activePanel,
+  panelPayload,
+  back: panelBack,
+  close: panelClose,
+  init: initFocusPanel,
+  destroy: destroyFocusPanel,
+} = useFocusPanel()
 
-const activeTooltip = computed(() => longPressTarget.value || hoverTarget.value)
+// ==================== CHATTY (shared state) ====================
+const {
+  messages: chatMessages,
+  isStreaming: chatIsStreaming,
+  sendMessage: chatSendMessage,
+  retryLast: chatRetryLast,
+  clearConversation: chatClearConversation,
+} = useChatty()
 
-function onLongPressStart(target: 'classical' | 'chatbot') {
-  longPressTimer = setTimeout(() => { longPressTarget.value = target }, 400)
-}
+// ==================== SCROLL SECTIONS ====================
+const {
+  scrollTo: scrollToSection,
+  refresh: refreshSections,
+  init: initScrollSections,
+  destroy: destroyScrollSections,
+} = useScrollSections()
 
-function onLongPressEnd() {
-  if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null }
-  longPressTarget.value = null
-}
+// ==================== STATE ====================
+const hasScrolled = ref(false)
 
-const showFullLayout = computed(() => mode.value === 'home' || !chatActive.value)
+// ==================== TEMPLATE REFS ====================
+const chatSectionRef = ref<HTMLElement | null>(null)
+const chatViewRef = ref<InstanceType<typeof ChatView> | null>(null)
+const heroSectionRef = ref<InstanceType<typeof IndexHeroSection> | null>(null)
+const postsSectionRef = ref<InstanceType<typeof IndexPostsSection> | null>(null)
 
-function onChatActiveChange(active: boolean) {
-  chatActive.value = active
-}
+// ==================== CHAT STATE ====================
+const chatHasMessages = computed(() => chatMessages.value.length > 0)
 
-onMounted(() => {
-  const saved = localStorage.getItem(MODE_STORAGE_KEY)
-  if (saved === 'chat') mode.value = 'chat'
+// Provide to child components (MobileNav, etc.) so they can reactively
+// show/hide the Chat navigation entry without module-singleton concerns.
+provide('chatHasMessages', chatHasMessages)
+
+// When the chat section appears / disappears, section positions shift.
+// Rebuild the color-flow (so its palette includes/excludes #chat),
+// refresh scroll sections, and set up chat entrance animation.
+watch(chatHasMessages, async (hasMessages) => {
+  await nextTick()
+  await nextTick()
+  if (!import.meta.client) return
+
+  // Re-observe scroll sections
+  refreshSections()
+
+  // Rebuild color-flow triggers — the chat section is now in/out of the DOM,
+  // so the palette needs to be rebuilt to include/exclude it.
+  await refreshColorFlow()
+
+  // Set up scroll-attached entrance for the chat section when it appears
+  if (hasMessages) {
+    setupChatScrollAnimation()
+  }
 })
 
-watch(mode, (val) => {
-  if (import.meta.client) localStorage.setItem(MODE_STORAGE_KEY, val)
-})
+/** Scroll-attached entrance animation for the chat section.
+ *  Fades/slides in when scrolled into view; reverses when scrolled away. */
+async function setupChatScrollAnimation() {
+  const chatEl = chatSectionRef.value
+  if (!chatEl || !import.meta.client) return
 
-// ========== CUSTOMIZABLE CONTENT ==========
-// Profile Information
-const profile = {
-  name: siteConfig.author.name,
-  initials: siteConfig.author.name.split(' ').map(n => n[0]).join('').toUpperCase(),
-  image: '/images/profile.png',
-  motto: 'Code with passion, learn for life, run freely, and read deeply.',
-  subtitle: siteConfig.author.bio,
-  welcomeMessage: 'Welcome to my digital space powered by vue, nuxt, and nuxt content'
+  const { gsap } = await import('gsap')
+  const { ScrollTrigger } = await import('gsap/ScrollTrigger')
+  gsap.registerPlugin(ScrollTrigger)
+
+  // Animate the chat section content with a subtle entrance
+  gsap.fromTo(chatEl,
+    { opacity: 0.5, y: -30 },
+    {
+      opacity: 1, y: 0,
+      duration: 0.6,
+      ease: 'power2.out',
+      scrollTrigger: {
+        trigger: chatEl,
+        start: 'top 95%',
+        toggleActions: 'play none none reverse',
+      },
+    },
+  )
 }
 
-// Navigation Cards
-const navigationCards = [
-  {
-    title: 'Blogs',
-    icon: '📝',
-    description: 'Technical articles and thoughts',
-    route: '/blogs'
-  },
-  {
-    title: 'Tools',
-    icon: '🛠️',
-    description: 'Useful utilities and converters',
-    route: '/tools'
-  },
-  {
-    title: 'About',
-    icon: '👋',
-    description: 'More about this site and me',
-    route: '/about'
-  },
-  {
-    title: 'Contact',
-    icon: '💬',
-    description: 'Get in touch with me',
-    route: '/contact'
-  },
-  {
-    title: '勉強中',
-    icon: '🗒️',
-    description: 'Japanese Grammar Notes from "新标日"',
-    route: 'https://xylearningprogramming.github.io/nihongo_pages/'
-  },
-  {
-    title: 'Life',
-    icon: '🍾',
-    description: 'Incoming - My book picks, hobbies, my life',
-  },
-]
-// ========== END CUSTOMIZABLE CONTENT ==========
+// ==================== FOCUS PANEL CONTENT ====================
+const focusPanelTitle = computed(() => {
+  return ''
+})
 
-const { currentBackground, initializeBackground } = useBackgroundGallery()
+// ==================== CHAT TRANSITIONS ====================
+
+async function refreshScrollTrigger() {
+  if (!import.meta.client) return
+  try {
+    const { ScrollTrigger } = await import('gsap/ScrollTrigger')
+    ScrollTrigger.refresh()
+  } catch { /* gsap may not be loaded yet */ }
+  // Also rebuild color-flow so it covers the current DOM structure
+  await refreshColorFlow()
+}
+
+async function handleHeroSend(message: string) {
+  if (!import.meta.client) return
+
+  // 1. Remember where the hero sits in the viewport BEFORE the chat section
+  //    is inserted above it (which pushes everything down).
+  const heroEl = heroSectionRef.value?.$el as HTMLElement | undefined
+  const heroViewportTop = heroEl?.getBoundingClientRect().top ?? 0
+
+  // 2. Send the message → chat section renders above hero via v-if
+  chatSendMessage(message)
+
+  // Wait for the chat section to render in the DOM
+  await nextTick()
+  await nextTick()
+
+  // 3. Anchor scroll: the chat section was inserted above the hero, pushing it down.
+  //    Snap scrollTop so the hero appears at the same viewport position it was before.
+  if (heroEl) {
+    const heroNewDocTop = heroEl.getBoundingClientRect().top + window.scrollY
+    document.documentElement.scrollTop = heroNewDocTop - heroViewportTop
+  }
+
+  // Refresh ScrollTrigger + observers
+  refreshScrollTrigger()
+
+  // 4. Smooth scroll up to the chat section via Lenis
+  scrollToSection('chat', { duration: 1.2 })
+}
+
+async function handleChatClear() {
+  if (!import.meta.client) return
+
+  const chatEl = chatSectionRef.value
+  const { gsap } = await import('gsap')
+
+  // 1. Fade out the chat section + blend strip over ~400ms for a graceful exit
+  if (chatEl) {
+    const blendEl = chatEl.nextElementSibling as HTMLElement | null
+    if (blendEl?.classList.contains('chat-hero-blend')) {
+      gsap.to(blendEl, { opacity: 0, duration: 0.3, ease: 'power2.in' })
+    }
+
+    await new Promise<void>((resolve) => {
+      gsap.to(chatEl, {
+        opacity: 0,
+        y: -40,
+        duration: 0.4,
+        ease: 'power2.in',
+        onComplete: resolve,
+      })
+    })
+  }
+
+  // 2. Remember the hero's position before DOM shift
+  const heroEl = heroSectionRef.value?.$el as HTMLElement | undefined
+  const heroDocTop = heroEl ? heroEl.getBoundingClientRect().top + window.scrollY : 0
+
+  // 3. Clear conversation — the v-if removes chat section + blend from DOM,
+  //    and the hero's v-if="!chatHasMessages" renders the prompt+input+chatty line.
+  chatClearConversation()
+
+  await nextTick()
+  await nextTick()
+
+  // 4. Immediately hide the newly-rendered chat area so it doesn't flash
+  const chatAreaEl = heroSectionRef.value?.getChatAreaEl?.()
+  if (chatAreaEl) {
+    gsap.set(chatAreaEl, { opacity: 0 })
+  }
+
+  // 5. Anchor scroll: the chat section was removed, so the hero shifted up.
+  //    Snap scrollTop so the hero stays at the same viewport position (no visual jump),
+  //    then smoothly scroll to the top where the hero now lives.
+  const heroNewDocTop = heroEl ? heroEl.getBoundingClientRect().top + window.scrollY : 0
+  const shift = heroDocTop - heroNewDocTop
+  document.documentElement.scrollTop = Math.max(0, window.scrollY - shift)
+
+  // Refresh ScrollTrigger positions before smooth scroll
+  await refreshScrollTrigger()
+
+  // 6. Smooth scroll to the top (hero) via Lenis.
+  //    Once scroll completes, reveal the chat area with a cohesive entrance.
+  scrollToSection('main', {
+    duration: 1.2,
+    onComplete: () => {
+      if (chatAreaEl) {
+        gsap.to(chatAreaEl, {
+          opacity: 1,
+          duration: 0.6,
+          ease: 'power2.out',
+        })
+      }
+    },
+  })
+}
+
+// ==================== NAVIGATION HELPERS ====================
+
+function scrollToChat() {
+  scrollToSection('chat')
+}
+
+function handleScrollTo(id: string) {
+  // Route through the composable for consistent Lenis-powered scrolling
+  if (id === 'hero' || id === 'main') {
+    scrollToSection('main')
+  } else {
+    scrollToSection(id as any)
+  }
+}
+
+// ==================== PANEL OPENERS ====================
+
+async function closeAllPanels() {
+  await panelClose()
+}
+
+// ==================== SCROLL TRACKING ====================
+
+function onScroll() {
+  hasScrolled.value = window.scrollY > 100
+}
+
+// ==================== LIFECYCLE ====================
 const { initializeTracking, trackVisit } = useGoatCounter()
-const showFallback = ref(false)
 
-// Initialize background and tracking on mount
-onMounted(() => {
-  initializeBackground()
+onMounted(async () => {
   initializeTracking()
   trackVisit('/')
+
+  window.addEventListener('scroll', onScroll, { passive: true })
+
+  // Initialize scroll sections (handles #chat, #posts, #space, #tools)
+  initScrollSections()
+
+  // Initialize focus panel (handles #about, #contact, #gallery)
+  initFocusPanel()
 })
 
 onUnmounted(() => {
-  if (longPressTimer) clearTimeout(longPressTimer)
+  if (import.meta.client) {
+    window.removeEventListener('scroll', onScroll)
+  }
+  destroyScrollSections()
+  destroyFocusPanel()
 })
 
-// SEO meta using centralized config
+// ==================== SEO ====================
 useHead(getPageMeta({
   description: siteConfig.description,
   url: siteConfig.url,
-  type: 'website'
+  type: 'website',
 }))
 </script>
 
 <style scoped>
-.text-shadow-strong {
-  text-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.8),
-    0 4px 8px rgba(0, 0, 0, 0.6),
-    0 8px 16px rgba(0, 0, 0, 0.4);
+/* ==================== Chat Surface (light background above hero) ==================== */
+
+.chat-surface {
+  background: #FEFBF2;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  --chat-bg: #FEFBF2;
+  --chat-text: #1A1A1A;
+  --chat-muted: #6B6B7B;
+  --chat-border: rgba(0, 0, 0, 0.08);
+  --chat-bubble-user: #FFF8E7;
+  --chat-bubble-ai: #FFFFFF;
+  --chat-accent: var(--color-dali-red);
+  color: var(--chat-text);
 }
 
-.text-shadow-medium {
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.8),
-    0 2px 4px rgba(0, 0, 0, 0.6),
-    0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.tooltip-fade-enter-active,
-.tooltip-fade-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s ease;
-}
-
-.tooltip-fade-enter-from,
-.tooltip-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-4px);
+/* Gradual blend from chat cream to the color-flow background.
+   Uses var(--color-flow-bg) so it always matches whatever the
+   color-flow palette is at this scroll position. */
+.chat-hero-blend {
+  height: 200px;
+  background: linear-gradient(to bottom, #FEFBF2, var(--color-flow-bg, #F5E6B8));
+  pointer-events: none;
+  flex-shrink: 0;
 }
 
 </style>

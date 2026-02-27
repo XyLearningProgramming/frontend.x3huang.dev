@@ -1,0 +1,63 @@
+---
+description: Homepage architecture and component layout for x3huang.dev
+globs:
+  - pages/index.vue
+  - components/index/**
+  - composables/useFocusPanel.ts
+  - composables/useCanvasCamera.ts
+  - composables/useScrollSections.ts
+  - composables/useChatty.ts
+---
+
+# Homepage Architecture
+
+The homepage (`pages/index.vue`) is a thin orchestrator. Sections live in `components/index/`.
+
+```
+pages/index.vue                 ← orchestrator: chat transitions, focus panel, lifecycle
+composables/useScrollSections.ts ← scroll-section registry, hash sync, Lenis scrollTo
+components/index/
+  HeroSection.vue                 Hero + GSAP entrance (avatar, name, motto, chat input)
+  PostsSection.vue                Blog posts grid + "View All" expansion/search + GSAP
+  SpaceSection.vue                Gallery, About & Contact cards + GSAP
+  ToolsSection.vue                Dev tools grid + GSAP
+  FooterSection.vue               Footer + GSAP
+  FocusContent.vue                Focus panel content (post/about/contact/gallery)
+  MobileNav.vue                   Mobile nav FAB + overlay
+```
+
+## Section tags (hash routing)
+
+| URL | Section | Notes |
+|-----|---------|-------|
+| `/` (no hash) | Main page (top / hero) | Default. Scrolling back up clears hash. |
+| `/#chat` | Chat | Conditional on `chatHasMessages`. Falls back to `/`. |
+| `/#posts` | Posts | Blog post cards. |
+| `/#space` | Space | Gallery, About, Contact — grouped. |
+| `/#tools` | Tools | Dev tools grid. |
+
+Focus-panel hashes (`#tool/…`) are handled by `useFocusPanel` — the scroll-sections composable ignores them.
+`#about` → redirects to `/about`, `#contact` → redirects to `/contact`, `#gallery` → redirects to `/#space`, `#post/…` → redirects to standalone blog page.
+
+## Key patterns
+
+- **Each section owns its GSAP scroll animations** — colocated in its own `onMounted`.
+  Mobile detection (`window.innerWidth < 1024`) is checked locally per component.
+- **Scroll-attached navigation uses `useScrollSections`** — Lenis-powered `scrollTo`,
+  IntersectionObserver-based active section tracking, and bidirectional hash sync.
+- **Focus panel content loading stays in `index.vue`** — bridges panel openers and FocusContent.
+- **`BlogPost` type** is exported via a regular `<script>` block in PostsSection.vue
+  (since `<script setup>` forbids exports).
+- Components expose only what the parent needs via `defineExpose`:
+  - HeroSection: `getInputEl()` (hero input entrance animation)
+  - PostsSection: `expandAllPosts()`, `scrollToPosts()` (mobile nav)
+
+## Core composables
+
+| Composable | Purpose |
+|---|---|
+| `useScrollSections` | Section registry, active section (IntersectionObserver), hash sync, Lenis `scrollTo` |
+| `useFocusPanel` | Panel stack, hash routing (`#about`, `#post/…`), scroll preservation |
+| `useCanvasCamera` | Horizontal pan between discovery (left) and focus (right) columns |
+| `useChatty` | SSE streaming chat client with localStorage persistence |
+| `useColorFlow` | Scroll-scrubbed background color interpolation |

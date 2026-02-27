@@ -1,54 +1,49 @@
 <template>
-  <div class="video-card-wrapper">
-    <GlassCard
-      variant="primary"
-      class="video-card"
-    >
-      <div class="video-content">
+  <div class="my-4">
+    <div class="video-card relative overflow-hidden cursor-pointer hover:-translate-y-0.5 transition-transform">
+      <div>
         <!-- Video Thumbnail -->
-        <div class="video-thumbnail" @click="handleClick">
+        <div class="relative w-full aspect-video overflow-hidden" @click="handleClick">
           <img
             :src="thumbnailUrl"
             :alt="title"
-            class="thumbnail-image"
+            class="w-full h-full object-cover hover:scale-[1.02] transition-transform"
           >
-          <div class="play-overlay">
-            <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor">
+          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 video-play-btn flex items-center justify-center transition-colors">
+            <svg class="w-5 h-5 ml-0.5 video-play-icon" viewBox="0 0 24 24" fill="currentColor">
               <path d="M8 5v14l11-7z"/>
             </svg>
           </div>
         </div>
         
         <!-- Video Info -->
-        <div class="video-info">
-          <div class="video-header">
-            <h4 class="video-title text-glass">{{ title }}</h4>
+        <div class="video-info p-3">
+          <div class="flex items-start justify-between gap-2 mb-1">
+            <h4 class="video-title text-base font-bold line-clamp-2">{{ title }}</h4>
             <a 
               :href="url" 
               target="_blank" 
               rel="noopener noreferrer"
-              class="external-link"
+              class="video-external-link flex items-center justify-center w-6 h-6 transition-colors flex-shrink-0"
               title="Open in new tab"
             >
-              <svg class="external-icon" viewBox="0 0 24 24" fill="currentColor">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"/>
               </svg>
             </a>
           </div>
-          <div class="video-meta">
-            <span class="video-platform text-glass-muted">{{ platform }}</span>
-            <span v-if="duration" class="video-duration text-glass-subtle">{{ duration }}</span>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="video-platform text-xs font-bold">{{ platform }}</span>
+            <span v-if="duration" class="video-duration text-[10px] font-bold px-2 py-0.5">{{ duration }}</span>
           </div>
-          <p v-if="description" class="video-description text-glass-muted">{{ description }}</p>
+          <p v-if="description" class="video-desc text-xs line-clamp-2">{{ description }}</p>
         </div>
       </div>
-    </GlassCard>
+    </div>
   </div>
 </template>
 
 <script setup>
-import GlassCard from '../ui/GlassCard.vue'
-
 const props = defineProps({
   url: {
     type: String,
@@ -74,11 +69,9 @@ const props = defineProps({
 
 const emit = defineEmits(['play'])
 
-// Extract video platform and ID from URL
 const videoInfo = computed(() => {
   const url = props.url
   
-  // YouTube patterns
   const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
   const youtubeMatch = url.match(youtubeRegex)
   
@@ -90,7 +83,6 @@ const videoInfo = computed(() => {
     }
   }
   
-  // Vimeo patterns
   const vimeoRegex = /(?:vimeo\.com\/)([0-9]+)/
   const vimeoMatch = url.match(vimeoRegex)
   
@@ -116,18 +108,14 @@ const thumbnailUrl = computed(() => {
     return props.thumbnail
   }
   
-  // Generate thumbnail URL based on platform
   if (videoInfo.value.platform === 'YouTube' && videoInfo.value.id) {
     return `https://img.youtube.com/vi/${videoInfo.value.id}/maxresdefault.jpg`
   }
   
   if (videoInfo.value.platform === 'Vimeo' && videoInfo.value.id) {
-    // For Vimeo, we'd need to make an API call to get the thumbnail
-    // For now, return a placeholder
     return `https://vumbnail.com/${videoInfo.value.id}.jpg`
   }
   
-  // Default placeholder
   return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDMyMCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIiBmaWxsPSIjMzMzIi8+CjxwYXRoIGQ9Ik0xNDAgMTAwTDE4MCA4MFYxMjBMMTQwIDEwMFoiIGZpbGw9IiM2NjYiLz4KPC9zdmc+'
 })
 
@@ -137,155 +125,63 @@ const handleClick = () => {
 </script>
 
 <style scoped>
-.video-card-wrapper {
-  margin: 1rem 0;
-}
-
+/* Dark-native video card — works on the dali-focus-surface dark bg */
 .video-card {
-  overflow: hidden;
-  border-radius: 8px;
-  border: 1px solid;
-  transition: all 0.2s ease;
+  background: rgba(240, 237, 229, 0.05) !important;
+  border: 1px solid rgba(240, 237, 229, 0.12) !important;
+  box-shadow: 4px 4px 0px 0px rgba(240, 237, 229, 0.08);
 }
 
 .video-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.video-content {
-  position: relative;
-}
-
-.video-thumbnail {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16/9;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.thumbnail-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.2s ease;
-}
-
-.video-thumbnail:hover .thumbnail-image {
-  transform: scale(1.02);
-}
-
-.play-overlay {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 50px;
-  height: 50px;
-  background: rgba(0, 0, 0, 0.8);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(5px);
-  transition: all 0.2s ease;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-}
-
-.video-thumbnail:hover .play-overlay {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.5);
-  transform: translate(-50%, -50%) scale(1.05);
-}
-
-.play-icon {
-  width: 20px;
-  height: 20px;
-  color: white;
-  margin-left: 2px;
+  background: rgba(240, 237, 229, 0.08) !important;
+  border-color: rgba(240, 237, 229, 0.2) !important;
 }
 
 .video-info {
-  padding: 12px;
-  background: rgba(0, 0, 0, 0.05);
-  backdrop-filter: blur(3px);
-}
-
-.video-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 6px;
+  border-top: 1px solid rgba(240, 237, 229, 0.12) !important;
 }
 
 .video-title {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0;
-  line-height: 1.3;
-  flex: 1;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  line-clamp: 2;
-  overflow: hidden;
-}
-
-.external-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  color: rgba(255, 255, 255, 0.7);
-  text-decoration: none;
-  flex-shrink: 0;
-}
-
-.external-link:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.9);
-  transform: translateY(-1px);
-}
-
-.external-icon {
-  width: 14px;
-  height: 14px;
-}
-
-.video-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
+  color: #F0EDE5 !important;
 }
 
 .video-platform {
-  font-size: 13px;
-  font-weight: 500;
+  color: rgba(240, 237, 229, 0.55) !important;
 }
 
 .video-duration {
-  font-size: 11px;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 2px 6px;
-  border-radius: 3px;
-  backdrop-filter: blur(3px);
+  color: #F0EDE5 !important;
+  background: rgba(212, 168, 67, 0.25) !important;
+  border: 1px solid rgba(212, 168, 67, 0.4) !important;
 }
 
-.video-description {
-  font-size: 13px;
-  line-height: 1.4;
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  line-clamp: 2;
-  overflow: hidden;
+.video-desc {
+  color: rgba(240, 237, 229, 0.65) !important;
+}
+
+.video-external-link {
+  border: 1px solid rgba(240, 237, 229, 0.15) !important;
+  background: rgba(240, 237, 229, 0.05) !important;
+  color: rgba(240, 237, 229, 0.6) !important;
+}
+
+.video-external-link:hover {
+  background: rgba(212, 168, 67, 0.3) !important;
+  border-color: rgba(212, 168, 67, 0.5) !important;
+  color: #F0EDE5 !important;
+}
+
+.video-play-btn {
+  background: var(--color-dali-red, #ED1C24) !important;
+  border: 2px solid rgba(240, 237, 229, 0.9) !important;
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 0.4);
+}
+
+.video-play-btn:hover {
+  background: var(--color-dali-gold, #D4A843) !important;
+}
+
+.video-play-icon {
+  color: #F0EDE5 !important;
 }
 </style>

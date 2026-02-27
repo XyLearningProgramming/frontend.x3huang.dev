@@ -1,5 +1,10 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import { siteConfig, getBaseUrl } from './site.config'
+import tailwindcss from '@tailwindcss/vite'
+
+// Dev without POSTGRES_URL → local SQLite (zero infra needed)
+// Otherwise (prod build / dev with real DB) → Postgres; placeholder for Docker entrypoint sed
+const useDevSQLite = process.env.NODE_ENV === 'development' && !process.env.POSTGRES_URL
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
@@ -52,11 +57,34 @@ export default defineNuxtConfig({
     '@artmizu/nuxt-prometheus',
     '@nuxt/content',
     '@nuxt/eslint',
-    '@nuxtjs/tailwindcss',
     '@nuxt/image',
     'nuxt-llms',
+    '@nuxtjs/google-fonts',
   ],
-  css: ['/assets/css/main.css', '/assets/css/glass-ui.css'],
+  css: ['/assets/css/main.css'],
+  vite: {
+    plugins: [
+      tailwindcss(),
+    ],
+  },
+  googleFonts: {
+    families: {
+      'Space Grotesk': [600, 700],
+      'Inter': [400, 500, 600],
+      'JetBrains Mono': [400],
+    },
+    display: 'swap',
+  },
+  // Strip _dev pages from production builds entirely
+  hooks: {
+    'pages:extend'(pages) {
+      if (process.env.NODE_ENV === 'production') {
+        for (let i = pages.length - 1; i >= 0; i--) {
+          if (pages[i].path.startsWith('/_dev')) pages.splice(i, 1)
+        }
+      }
+    },
+  },
   ssr: true,
   experimental: {
     payloadExtraction: false
@@ -68,33 +96,22 @@ export default defineNuxtConfig({
   },
   routeRules: {
     '/metrics': {
-      prerender: false, // Disable prerendering for this route
+      prerender: false,
       headers: {
-        'cache-control': 'no-cache', // Prevent caching of the response
+        'cache-control': 'no-cache',
       },
     },
   },
   sourcemap: false,
-  // fonts: {
-  //   families: [
-  //     {
-  //       name: 'Roboto',
-  //       weights: [400, 700],
-  //       // styles, subsets, etc., if needed
-  //     }
-  //   ],
-  //   providers: {
-  //     google: false,
-  //     googleicons: false,
-  //   }
-  // },
   nitro: {
     preset: "node-server",
     devProxy: {
-      '/api/v1/chatty': {
-        target: 'http://localhost:8080/api/v1/chatty',
-        changeOrigin: true,
-      },
+      ...(process.env.CHATTY_URL ? {
+        '/api/v1/chatty': {
+          target: `${process.env.CHATTY_URL}/api/v1/chatty`,
+          changeOrigin: true,
+        },
+      } : {}),
     },
     routeRules: {
       '/.well-known/**': { headers: { 'Access-Control-Allow-Origin': '*' } }
@@ -125,17 +142,18 @@ export default defineNuxtConfig({
     provider: 'ipx'
   },
   content: {
-    database: {
-      type: 'postgres',
-      url: process.env.POSTGRES_URL || "postgres_url_default",
-    }, // https://content.nuxtjs.org/api/configuration
-    // @ts-ignore - highlight config is valid but not in types
-    highlight: {
-      theme: 'github-dark',
-      preload: ['java', 'javascript']
+    database: useDevSQLite
+      ? { type: 'sqlite' as const, filename: '.data/content.db' }
+      : { type: 'postgres' as const, url: process.env.POSTGRES_URL || 'postgres_url_default' },
+    build: {
+      markdown: {
+        highlight: {
+          theme: 'catppuccin-mocha',
+          langs: ['csharp', 'c', 'javascript', 'java', 'yaml'],
+        },
+      },
     },
     markdown: {
-      // https://github.com/rehypejs/rehype-external-links
       rehypePlugins: [
         [
           'rehype-external-links',
@@ -146,11 +164,10 @@ export default defineNuxtConfig({
         ]
       ]
     },
-    // Component mapping to fix inline code issue
     renderer: {
       alias: {
-        code: 'ProseCodeInline',  // Map inline code to ProseCodeInline
-        pre: 'ProsePre'          // Map pre blocks to ProsePre
+        code: 'ProseCodeInline',
+        pre: 'ProsePre'
       }
     }
   },
@@ -163,7 +180,7 @@ export default defineNuxtConfig({
       {
         title: `Blog Posts - ${siteConfig.author.name}`,
         description: `Latest blog posts by ${siteConfig.author.name}.`,
-        contentCollection: "blogs",
+        contentCollection: "posts",
         contentFilters: [
           { field: 'published', operator: '=', value: true }
         ]

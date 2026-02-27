@@ -1,46 +1,28 @@
-interface BackgroundImage {
+export interface GalleryImage {
   url: string
   note?: string
   title?: string
+  alt?: string
+  /** Original image width in pixels — used for aspect-ratio hints to prevent layout shift */
+  width?: number
+  /** Original image height in pixels — used for aspect-ratio hints to prevent layout shift */
+  height?: number
 }
 
-export const useBackgroundGallery = () => {
-  const backgroundImages: BackgroundImage[] = [
+export const usePhotoGallery = () => {
+  const images: GalleryImage[] = [
     {
       url: '/images/bg_20250630.jpg',
       note: "Petals cradle the echoes of a temple's chime",
-      title: "Zhenru Temple, photographed by Yu",
+      title: 'Zhenru Temple, photographed by Yu',
+      alt: 'Zhenru Temple flowers',
+      width: 1920,
+      height: 1280,
     },
-    // Add more background images here as needed
-    // {
-    //   url: '/images/bg_20250631.jpg',
-    //   note: 'Your photo description here',
-    //   title: 'Photo Title'
-    // },
+    // Add more photos here as the collection grows
   ]
 
-  const getRandomBackground = (): BackgroundImage | null => {
-    if (backgroundImages.length === 0) return null
-    // For hydration consistency, use the first image instead of random
-    // TODO: Re-enable random selection later with proper hydration handling
-    return backgroundImages[0]
-  }
-
-  // Initialize with the first background to ensure server/client consistency
-  const currentBackground = ref<BackgroundImage | null>(
-    backgroundImages.length > 0 ? backgroundImages[0] : null
-  )
-
-  const initializeBackground = () => {
-    // Only update if not already initialized (to prevent hydration issues)
-    if (!currentBackground.value) {
-      currentBackground.value = getRandomBackground()
-    }
-  }
-
   return {
-    currentBackground,
-    initializeBackground,
-    getRandomBackground
+    images,
   }
 }
