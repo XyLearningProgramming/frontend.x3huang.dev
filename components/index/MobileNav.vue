@@ -35,12 +35,6 @@
             >
               {{ section.label }}
             </button>
-            <button
-              class="dali-btn px-4 py-3 text-sm text-left"
-              @click="open = false; emit('expandPosts')"
-            >
-              All Posts
-            </button>
           </div>
         </div>
       </div>
@@ -51,7 +45,6 @@
 <script setup lang="ts">
 const emit = defineEmits<{
   scrollTo: [sectionId: string]
-  expandPosts: []
 }>()
 
 const open = ref(false)

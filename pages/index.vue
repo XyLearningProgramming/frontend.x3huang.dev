@@ -59,7 +59,6 @@
   <!-- Mobile nav -->
   <IndexMobileNav
     @scroll-to="handleScrollTo"
-    @expand-posts="expandAndScrollToPosts"
   />
 </template>
 
@@ -288,11 +287,6 @@ function handleScrollTo(id: string) {
   } else {
     scrollToSection(id as any)
   }
-}
-
-function expandAndScrollToPosts() {
-  postsSectionRef.value?.showMore()
-  postsSectionRef.value?.scrollToPosts()
 }
 
 // ==================== PANEL OPENERS ====================

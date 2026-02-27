@@ -55,7 +55,6 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@nuxt/image',
     'nuxt-llms',
-    'motion-v/nuxt',
     '@nuxtjs/google-fonts',
   ],
   css: ['/assets/css/main.css'],
