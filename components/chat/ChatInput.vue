@@ -17,7 +17,7 @@
         v-model="input"
         :maxlength="MAX_LENGTH"
         :disabled="disabled"
-        :placeholder="isFocused ? 'Ask me anything!' : ''"
+        placeholder=""
         rows="1"
         class="w-full bg-transparent text-sm resize-none px-4 py-3 pr-20 outline-none max-h-32 overflow-y-auto chat-textarea"
         style="font-family: var(--font-dali-body, inherit);"
@@ -77,14 +77,24 @@ defineExpose({
 
 const charCount = computed(() => input.value.length)
 const canSend = computed(() => input.value.trim().length > 0 && !props.disabled)
-const showDots = computed(() => !isFocused.value && input.value.length === 0)
+const showDots = computed(() => input.value.length === 0)
 
 function send() {
   if (!canSend.value) return
   emit('send', input.value.trim())
   input.value = ''
-  nextTick(() => autoResize())
+  nextTick(() => {
+    autoResize()
+    textareaRef.value?.focus()
+  })
 }
+
+// Re-focus when streaming finishes (disabled goes false)
+watch(() => props.disabled, (disabled, wasDis) => {
+  if (wasDis && !disabled) {
+    nextTick(() => textareaRef.value?.focus())
+  }
+})
 
 function handleKeydown(e: KeyboardEvent) {
   if (e.key === 'Enter' && !e.shiftKey) {

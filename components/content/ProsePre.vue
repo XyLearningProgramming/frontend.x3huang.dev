@@ -136,5 +136,16 @@ const copyCode = async () => {
   display: block !important;
   min-height: 1rem;
   white-space: pre-wrap;
+  padding-left: 1rem;
+  margin-left: -1rem;
+  margin-right: -1rem;
+  padding-right: 1rem;
+}
+
+/* Highlighted lines (```lang{1-3,5} syntax) */
+.code-content :deep(.line.highlight) {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-left: 3px solid var(--color-dali-gold, #D4A843);
+  padding-left: calc(1rem - 3px);
 }
 </style>

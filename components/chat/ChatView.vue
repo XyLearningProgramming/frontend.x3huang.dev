@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col w-full h-full min-h-[100dvh]">
+  <div class="flex flex-col w-full h-full h-[100dvh]">
     <!-- Chat header -->
     <div class="flex flex-col items-center justify-center px-4 py-2.5 border-b shrink-0 gap-0.5" style="border-color: var(--chat-border, rgba(0,0,0,0.08));">
       <span class="text-xs" style="color: var(--chat-muted, #6B6B7B);">
@@ -51,8 +51,8 @@
       <ChatInput ref="chatInputComp" :disabled="isStreaming" @send="(msg: string) => emit('send', msg)" />
     </div>
 
-    <!-- Scroll to explore (below input, at very bottom) -->
-    <div class="flex justify-center items-center gap-1.5 py-3 shrink-0">
+    <!-- Scroll to explore (below input, at bottom of chat section) -->
+    <div class="flex justify-center items-center gap-1.5 pt-2 pb-6 shrink-0">
       <svg class="w-3 h-3 animate-bounce-gentle" style="color: var(--chat-muted, #6B6B7B); opacity: 0.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
       </svg>

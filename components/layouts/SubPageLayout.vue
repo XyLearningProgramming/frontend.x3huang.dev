@@ -94,7 +94,10 @@ function goBack() {
   // Extract the section ID from backTo: '/#tools' → 'tools', '/#posts' → 'posts'
   const hashMatch = props.backTo.match(/#(\w+)/)
   const sectionId = hashMatch ? hashMatch[1] : 'hero'
-  transitionTo(props.backTo, { sectionId, isBack: true })
+  // Only use isBack (index-specific color-flow logic) when returning to the index page.
+  // Sub-page → sub-page transitions (e.g. game → blog post) use forward-style animation.
+  const isBackToIndex = props.backTo === '/' || props.backTo.startsWith('/#') || props.backTo.startsWith('/?')
+  transitionTo(props.backTo, { sectionId, isBack: isBackToIndex })
 }
 </script>
 

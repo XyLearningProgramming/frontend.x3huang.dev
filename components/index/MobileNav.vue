@@ -28,7 +28,7 @@
           </div>
           <div class="grid grid-cols-2 gap-3">
             <button
-              v-for="section in sections"
+              v-for="section in visibleSections"
               :key="section.id"
               class="dali-btn px-4 py-3 text-sm text-left"
               @click="scrollTo(section.id)"
@@ -56,12 +56,42 @@ const emit = defineEmits<{
 
 const open = ref(false)
 
-const sections = [
+const baseSections = [
   { id: 'main', label: 'Home' },
   { id: 'posts', label: 'Posts' },
   { id: 'space', label: 'Space' },
   { id: 'tools', label: 'Tools' },
 ]
+
+// Check if chat section is in the DOM (reactive via MutationObserver)
+const chatVisible = ref(false)
+let observer: MutationObserver | null = null
+
+function checkChat() {
+  if (import.meta.client) {
+    chatVisible.value = !!document.getElementById('chat')
+  }
+}
+
+onMounted(() => {
+  checkChat()
+  // Watch for chat section appearing/disappearing
+  observer = new MutationObserver(() => checkChat())
+  observer.observe(document.body, { childList: true, subtree: true })
+  // Auto-stop after 10s (chat toggle is the main use case)
+  setTimeout(() => observer?.disconnect(), 10_000)
+})
+
+onUnmounted(() => {
+  observer?.disconnect()
+})
+
+const visibleSections = computed(() => {
+  if (chatVisible.value) {
+    return [{ id: 'chat', label: 'Chat' }, ...baseSections]
+  }
+  return baseSections
+})
 
 function scrollTo(id: string) {
   open.value = false

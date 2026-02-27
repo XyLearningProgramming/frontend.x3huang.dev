@@ -1,6 +1,6 @@
 <template>
   <main id="main" class="min-h-screen font-[family-name:var(--font-neo-body)]">
-    <DaliRulerToc />
+    <!-- <DaliRulerToc /> -->
     <NuxtPage />
 
     <!-- Page transition overlay — animated by usePageTransition -->

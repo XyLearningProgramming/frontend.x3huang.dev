@@ -1,8 +1,8 @@
 <template>
   <LayoutsSubPageLayout
     :title="gameTitle"
-    back-to="/"
-    back-label="Home"
+    :back-to="backTo"
+    :back-label="backLabel"
     max-width="wide"
   >
     <!-- Header -->
@@ -89,6 +89,19 @@ import { siteConfig, getPageMeta } from '~/site.config'
 
 const route = useRoute()
 const slug = route.params.slug as string
+
+// ── Smart back navigation ──
+// If the user arrived from a blog post (or other sub-page), go back to it.
+// Otherwise, fall back to the home page.
+const backTo = computed(() => {
+  if (!import.meta.client) return '/'
+  const prev = window.history.state?.back as string | undefined
+  // If we came from a sub-page (not the index), navigate back there
+  if (prev && prev !== '/' && !prev.startsWith('/#') && !prev.startsWith('/?')) return prev
+  return '/'
+})
+
+const backLabel = computed(() => (backTo.value === '/' ? 'Home' : 'Back'))
 
 // Game state
 const loading = ref(true)

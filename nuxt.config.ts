@@ -131,9 +131,13 @@ export default defineNuxtConfig({
       type: 'postgres',
       url: process.env.POSTGRES_URL || "postgres_url_default",
     },
-    highlight: {
-      theme: 'github-dark',
-      preload: ['java', 'javascript']
+    build: {
+      markdown: {
+        highlight: {
+          theme: 'catppuccin-mocha',
+          langs: ['csharp', 'c', 'javascript', 'java', 'yaml'],
+        },
+      },
     },
     markdown: {
       rehypePlugins: [
