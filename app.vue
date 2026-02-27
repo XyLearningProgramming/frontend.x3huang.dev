@@ -1,10 +1,14 @@
 <template>
   <main id="main" class="min-h-screen font-[family-name:var(--font-neo-body)]">
     <NuxtPage />
-
-    <!-- Page transition overlay — animated by usePageTransition -->
-    <div ref="transitionOverlayRef" class="page-transition-overlay" />
   </main>
+
+  <!-- Page transition overlay — Teleported to <body> so it's completely
+       outside <main>'s DOM subtree. This isolates the overlay from DOM
+       mutations caused by NuxtPage component swaps. -->
+  <Teleport to="body">
+    <div ref="transitionOverlayRef" class="page-transition-overlay" />
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -23,31 +27,6 @@ onMounted(() => { overlayEl.value = transitionOverlayRef.value })
 // navigations not already handled by `transitionTo()`, then fades it
 // out once the new page and its color-flow are ready.
 if (import.meta.client) {
-  // #region agent log
-  // Scroll jump detector — fires when scrollY changes by > 200px in one frame
-  let _lastScrollY = window.scrollY
-  let _scrollMonitorActive = false
-  function _startScrollMonitor() {
-    if (_scrollMonitorActive) return
-    _scrollMonitorActive = true
-    let _monitorRafId = 0
-    function _monitorFrame() {
-      const currentY = window.scrollY
-      if (Math.abs(currentY - _lastScrollY) > 200) {
-        fetch('http://127.0.0.1:7245/ingest/13458263-39fc-48cf-b5d3-d5ee70770898',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app.vue:scroll-jump-detector',message:'SCROLL JUMP detected',data:{from:_lastScrollY,to:currentY,delta:currentY-_lastScrollY},timestamp:Date.now(),hypothesisId:'ALL'})}).catch(()=>{});
-      }
-      _lastScrollY = currentY
-      _monitorRafId = requestAnimationFrame(_monitorFrame)
-    }
-    _monitorRafId = requestAnimationFrame(_monitorFrame)
-    // Stop after 10 seconds
-    setTimeout(() => { cancelAnimationFrame(_monitorRafId); _scrollMonitorActive = false }, 10000)
-  }
-  _startScrollMonitor()
-  // Log browser scroll restoration setting
-  fetch('http://127.0.0.1:7245/ingest/13458263-39fc-48cf-b5d3-d5ee70770898',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app.vue:init',message:'Browser scroll restoration setting',data:{scrollRestoration:history.scrollRestoration,scrollY:window.scrollY},timestamp:Date.now(),hypothesisId:'H4'})}).catch(()=>{});
-  // #endregion
-
   const router = useRouter()
 
   // Clean up any previously registered guards (prevents HMR from
@@ -62,12 +41,6 @@ if (import.meta.client) {
   let _browserOverlayActive = false
 
   const _removeBefore = router.beforeEach((to, from) => {
-    // #region agent log
-    fetch('http://127.0.0.1:7245/ingest/13458263-39fc-48cf-b5d3-d5ee70770898',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app.vue:beforeEach',message:'router beforeEach fired',data:{toPath:to.path,fromPath:from.path,toHash:to.hash,scrollY:window.scrollY,isTransitioning:isTransitioning.value},timestamp:Date.now(),hypothesisId:'H2,H4'})}).catch(()=>{});
-    // #endregion
-    // #region agent log
-    _startScrollMonitor() // restart monitor on navigation
-    // #endregion
     // Always keep body dark during transitions
     document.body.style.backgroundColor = '#161622'
 
@@ -80,7 +53,7 @@ if (import.meta.client) {
     // Immediately show a dark overlay — no animation, just display it
     const el = overlayEl.value
     if (el) {
-      el.style.display = 'block'
+      el.style.visibility = 'visible'
       el.style.pointerEvents = 'auto'
       el.style.opacity = '1'
       el.style.backgroundColor = '#161622'
@@ -161,7 +134,7 @@ if (import.meta.client) {
         // Fallback: just hide immediately
         el.style.opacity = '0'
       }
-      el.style.display = 'none'
+      el.style.visibility = 'hidden'
       el.style.pointerEvents = 'none'
     }
 

@@ -56,31 +56,14 @@ const baseSections = [
   { id: 'tools', label: 'Tools' },
 ]
 
-// Check if chat section is in the DOM (reactive via MutationObserver)
-const chatVisible = ref(false)
-let observer: MutationObserver | null = null
+// Injected from index.vue — reactively tracks whether chat messages exist.
+// Falls back to false when rendered outside the index page (shouldn't happen,
+// but keeps the component resilient).
+const chatHasMessages = inject<Ref<boolean>>('chatHasMessages', ref(false))
 
-function checkChat() {
-  if (import.meta.client) {
-    chatVisible.value = !!document.getElementById('chat')
-  }
-}
-
-onMounted(() => {
-  checkChat()
-  // Watch for chat section appearing/disappearing
-  observer = new MutationObserver(() => checkChat())
-  observer.observe(document.body, { childList: true, subtree: true })
-  // Auto-stop after 10s (chat toggle is the main use case)
-  setTimeout(() => observer?.disconnect(), 10_000)
-})
-
-onUnmounted(() => {
-  observer?.disconnect()
-})
-
+// Dynamically add chat to the front when there's chat history
 const visibleSections = computed(() => {
-  if (chatVisible.value) {
+  if (chatHasMessages.value) {
     return [{ id: 'chat', label: 'Chat' }, ...baseSections]
   }
   return baseSections

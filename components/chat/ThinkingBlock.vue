@@ -1,9 +1,8 @@
 <template>
-  <div class="mb-2">
+  <div class="mb-2 thinking-block">
     <button
       @click="expanded = !expanded"
-      class="flex items-center gap-1.5 text-xs transition-colors py-1 cursor-pointer group"
-      style="color: var(--chat-muted, rgba(0,0,0,0.4));"
+      class="thinking-toggle flex items-center gap-2 text-[10px] transition-colors py-1 cursor-pointer group"
     >
       <svg
         class="w-3 h-3 transition-transform duration-200"
@@ -15,8 +14,8 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
       </svg>
       <span v-if="isActive" class="flex items-center gap-1.5">
-        <span class="thinking-brain">🧠</span>
-        <span class="animate-pulse">Thinking... {{ elapsedLabel }}</span>
+        <span class="thinking-indicator" />
+        <span class="animate-pulse">Thinking {{ elapsedLabel }}</span>
       </span>
       <span v-else class="group-hover:text-dali-teal transition-colors">Thought process</span>
     </button>
@@ -68,19 +67,37 @@ onUnmounted(() => stopTimer())
 </script>
 
 <style scoped>
-.thinking-content {
-  border-left: 2px solid var(--chat-border, rgba(0,0,0,0.1));
+.thinking-block {
+  font-family: var(--font-dali-mono, monospace);
+}
+
+.thinking-toggle {
   color: var(--chat-muted, rgba(0,0,0,0.4));
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  font-family: var(--font-dali-mono, monospace);
 }
 
-.thinking-brain {
-  display: inline-block;
-  animation: brainPulse 1.5s ease-in-out infinite;
+.thinking-content {
+  border-left: 3px solid var(--color-dali-red);
+  color: var(--chat-muted, rgba(0,0,0,0.45));
+  font-family: var(--font-dali-body, inherit);
 }
 
-@keyframes brainPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
+/* Small red dot indicator instead of brain emoji */
+.thinking-indicator {
+  width: 6px;
+  height: 6px;
+  background: var(--color-dali-red);
+  border: 1px solid var(--color-dali-red);
+  flex-shrink: 0;
+  animation: indicatorBlink 1.2s ease-in-out infinite;
+}
+
+@keyframes indicatorBlink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.7); }
 }
 
 .thinking-dots::after {
@@ -95,11 +112,11 @@ onUnmounted(() => stopTimer())
 
 /* Expand transition */
 .expand-enter-active {
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
   overflow: hidden;
 }
 .expand-leave-active {
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   overflow: hidden;
 }
 .expand-enter-from,

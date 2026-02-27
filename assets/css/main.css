@@ -308,10 +308,15 @@ code, pre, .font-mono {
   position: fixed;
   inset: 0;
   z-index: 10000; /* above grain (9999) */
-  display: none;
-  opacity: 0; /* start invisible — prevents first-use flash before GSAP sets inline opacity */
+  /* Use visibility:hidden instead of display:none so the browser keeps the
+     compositor layer alive between transitions. */
+  visibility: hidden;
+  opacity: 0;
   pointer-events: none;
-  will-change: transform, background-color, opacity;
+  will-change: opacity, background-color;
+  /* Force own compositor layer so DOM mutations inside <main> (NuxtPage
+     component swap) can't invalidate the overlay's painted state. */
+  isolation: isolate;
 }
 
 /* ============================================================

@@ -134,15 +134,7 @@ export function usePageTransition() {
       return
     }
 
-    // #region agent log
-    fetch('http://127.0.0.1:7245/ingest/13458263-39fc-48cf-b5d3-d5ee70770898', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'usePageTransition.ts:transitionTo-entry', message: 'transitionTo entered, before gsap import', data: { url, scrollY: window.scrollY, isTransitioning: isTransitioning.value, lenisIsStopped: getLenis()?.isStopped }, timestamp: Date.now(), hypothesisId: 'H1' }) }).catch(() => { });
-    // #endregion
-
     const { gsap } = await import('gsap')
-
-    // #region agent log
-    fetch('http://127.0.0.1:7245/ingest/13458263-39fc-48cf-b5d3-d5ee70770898', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'usePageTransition.ts:transitionTo-after-gsap', message: 'gsap imported, about to set isTransitioning=true', data: { url, scrollY: window.scrollY, isTransitioning: isTransitioning.value, lenisIsStopped: getLenis()?.isStopped }, timestamp: Date.now(), hypothesisId: 'H1' }) }).catch(() => { });
-    // #endregion
 
     isTransitioning.value = true
 
@@ -151,8 +143,8 @@ export function usePageTransition() {
 
     // Read the current background color BEFORE showing the overlay.
     // getComputedStyle() forces a synchronous layout flush; doing it while
-    // the overlay is display:none avoids flashing the overlay at its CSS
-    // default state (opacity 1, transparent bg) during that flush.
+    // the overlay is visibility:hidden avoids flashing the overlay at its
+    // CSS default state during that flush.
     const startColor = !isBack
       ? (getCurrentBgColor() || sectionColor)
       : DARK_COLOR
@@ -163,10 +155,9 @@ export function usePageTransition() {
     if (lenis) lenis.stop()
 
     // Ensure the overlay is invisible BEFORE making it visible in layout.
-    // On the very first use, the CSS default opacity is 1 (no inline style
-    // yet). Setting opacity: 0 inline first prevents any single-frame flash.
+    // Setting opacity: 0 inline first prevents any single-frame flash.
     el.style.opacity = '0'
-    el.style.display = 'block'
+    el.style.visibility = 'visible'
     el.style.pointerEvents = 'auto'
 
     // ── Phase 1: Overlay fades in ───────────────────────────────────
@@ -256,18 +247,10 @@ export function usePageTransition() {
       }
     }
 
-    // #region agent log
-    fetch('http://127.0.0.1:7245/ingest/13458263-39fc-48cf-b5d3-d5ee70770898', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'usePageTransition.ts:phase2-pre-navigate', message: 'Phase 2: about to navigateTo, overlay should be opaque', data: { url, scrollY: window.scrollY, overlayOpacity: el.style.opacity, overlayDisplay: el.style.display, lenisIsStopped: getLenis()?.isStopped }, timestamp: Date.now(), hypothesisId: 'H2,H5' }) }).catch(() => { });
-    // #endregion
-
     // ── Phase 2: Navigate while overlay is fully opaque ─────────────
     await navigateTo(url)
     await nextTick()
     await nextTick()
-
-    // #region agent log
-    fetch('http://127.0.0.1:7245/ingest/13458263-39fc-48cf-b5d3-d5ee70770898', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'usePageTransition.ts:phase2-post-navigate', message: 'Phase 2: navigateTo resolved', data: { url, scrollY: window.scrollY, overlayOpacity: el.style.opacity, lenisIsStopped: getLenis()?.isStopped }, timestamp: Date.now(), hypothesisId: 'H2' }) }).catch(() => { });
-    // #endregion
 
     // Wait a few frames for the new page DOM to settle
     // (GSAP ScrollTrigger, async data, Lenis recalculation)
@@ -354,7 +337,7 @@ export function usePageTransition() {
     })
 
     // ── Cleanup ─────────────────────────────────────────────────────
-    el.style.display = 'none'
+    el.style.visibility = 'hidden'
     el.style.pointerEvents = 'none'
     isTransitioning.value = false
 

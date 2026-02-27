@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { marked } from 'marked'
+import { marked, Renderer } from 'marked'
 import type { ChatMessage } from '~/composables/useChatty'
 import ThinkingBlock from './ThinkingBlock.vue'
 
@@ -13,10 +13,64 @@ const emit = defineEmits<{
   retry: []
 }>()
 
+const router = useRouter()
+
+// ── Internal post link detection ──
+const INTERNAL_POST_RE = /^(?:https?:\/\/(?:www\.)?x3huang\.dev)?\/posts\/([^\s?#]+)/
+
+function isInternalPostUrl(href: string): string | null {
+  const m = href.match(INTERNAL_POST_RE)
+  return m ? `/posts/${m[1]}` : null
+}
+
+// ── Custom marked renderer ──
+const chatRenderer = new Renderer()
+chatRenderer.link = ({ href, text }: { href: string; text: string }) => {
+  const internalPath = isInternalPostUrl(href)
+  if (internalPath) {
+    // Emit a specially-tagged anchor for post-processing
+    return `<a href="${internalPath}" data-chat-post-link title="${text}">${text}</a>`
+  }
+  // External links: open in new tab
+  return `<a href="${href}" target="_blank" rel="noopener noreferrer">${text}</a>`
+}
+
+// ── Post-process: upgrade post-link anchors in <p> to card HTML ──
+function postProcessPostCards(html: string): string {
+  // Pattern: <p> containing a data-chat-post-link anchor, optionally followed by ": description"
+  return html.replace(
+    /<p>(<a href="(\/posts\/[^"]+)" data-chat-post-link title="([^"]*)">([^<]*)<\/a>)(?:\s*[:：]\s*([^<]*))?<\/p>/g,
+    (_match, _fullLink, href, _title, linkText, description) => {
+      const descHtml = description
+        ? `<span class="chat-post-card__desc">${description.trim()}</span>`
+        : ''
+      return `<a href="${href}" class="chat-post-card" data-chat-post-link>`
+        + `<span class="chat-post-card__body">`
+        + `<span class="chat-post-card__title">${linkText}</span>`
+        + descHtml
+        + `</span>`
+        + `<span class="chat-post-card__arrow">&rarr;</span>`
+        + `</a>`
+    },
+  )
+}
+
 const renderedContent = computed(() => {
   if (!props.message.content) return ''
-  return marked.parse(props.message.content, { breaks: true }) as string
+  const raw = marked.parse(props.message.content, { breaks: true, renderer: chatRenderer }) as string
+  return postProcessPostCards(raw)
 })
+
+// ── Click interceptor for internal post cards (SPA navigation) ──
+const markdownRef = ref<HTMLElement | null>(null)
+
+function handleMarkdownClick(e: MouseEvent) {
+  const target = (e.target as HTMLElement).closest('a[data-chat-post-link]') as HTMLAnchorElement | null
+  if (!target) return
+  e.preventDefault()
+  const href = target.getAttribute('href')
+  if (href) router.push(href)
+}
 
 const hasError = computed(() => !!props.message.error && !props.message.isStreaming)
 
@@ -155,9 +209,11 @@ const errorIcon = computed(() => {
           <!-- Content with streaming cursor -->
           <div
             v-if="message.content"
+            ref="markdownRef"
             class="chat-markdown text-sm break-words leading-relaxed"
             :class="{ 'streaming-active': message.isStreaming }"
             v-html="renderedContent"
+            @click="handleMarkdownClick"
           />
 
           <!-- Streaming cursor -->
@@ -302,24 +358,29 @@ const errorIcon = computed(() => {
 
 /* ============= Tool call cards ============= */
 .tool-call-card {
-  background: rgba(0,0,0,0.03);
+  background: rgba(0,0,0,0.02);
   border: 1px solid rgba(0,0,0,0.06);
   transition: all 0.3s ease;
 }
 
 .tool-started {
   border-color: rgba(212, 168, 67, 0.3);
-  background: rgba(212, 168, 67, 0.05);
+  background: rgba(212, 168, 67, 0.06);
 }
 
 .tool-completed {
   border-color: rgba(46, 196, 182, 0.3);
-  background: rgba(46, 196, 182, 0.05);
+  background: rgba(46, 196, 182, 0.06);
 }
 
 .tool-error {
   border-color: rgba(237, 28, 36, 0.3);
-  background: rgba(237, 28, 36, 0.05);
+  background: rgba(237, 28, 36, 0.06);
+}
+
+.tool-icon {
+  font-size: 12px;
+  line-height: 1;
 }
 
 .tool-icon--spin {
@@ -338,7 +399,7 @@ const errorIcon = computed(() => {
 .tool-progress {
   flex: 1;
   height: 2px;
-  background: rgba(212, 168, 67, 0.2);
+  background: rgba(212, 168, 67, 0.15);
   border-radius: 1px;
   position: relative;
   overflow: hidden;
@@ -468,5 +529,76 @@ const errorIcon = computed(() => {
   margin: 0.5em 0;
   font-style: italic;
   color: var(--chat-muted, #6B6B7B);
+}
+
+/* ============= Internal Post Link Card ============= */
+.chat-markdown :deep(.chat-post-card) {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  margin: 0.5em 0;
+  background: var(--color-dali-smoke, #1A1A2E);
+  border: 2px solid var(--color-dali-red, #ED1C24);
+  box-shadow: 2px 2px 0 0 var(--color-dali-void, #0B0B0F);
+  border-radius: 12px;
+  text-decoration: none !important;
+  color: var(--color-dali-white, #F0EDE5) !important;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.2s ease;
+}
+
+.chat-markdown :deep(.chat-post-card:hover) {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 0 var(--color-dali-void, #0B0B0F);
+}
+
+.chat-markdown :deep(.chat-post-card:active) {
+  transform: translate(0, 0);
+  box-shadow: 1px 1px 0 0 var(--color-dali-void, #0B0B0F);
+}
+
+.chat-markdown :deep(.chat-post-card__body) {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.chat-markdown :deep(.chat-post-card__title) {
+  font-family: var(--font-dali-heading, 'Space Grotesk', sans-serif);
+  font-weight: 700;
+  font-size: 0.8rem;
+  line-height: 1.3;
+  color: var(--color-dali-white, #F0EDE5) !important;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.chat-markdown :deep(.chat-post-card__desc) {
+  font-size: 0.7rem;
+  line-height: 1.4;
+  color: rgba(240, 237, 229, 0.55) !important;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.chat-markdown :deep(.chat-post-card__arrow) {
+  flex-shrink: 0;
+  font-family: var(--font-dali-mono, monospace);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-dali-red, #ED1C24) !important;
+  transition: transform 0.2s ease;
+}
+
+.chat-markdown :deep(.chat-post-card:hover .chat-post-card__arrow) {
+  transform: translateX(3px);
 }
 </style>

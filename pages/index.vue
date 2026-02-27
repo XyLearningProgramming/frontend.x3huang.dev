@@ -114,6 +114,10 @@ const postsSectionRef = ref<InstanceType<typeof IndexPostsSection> | null>(null)
 // ==================== CHAT STATE ====================
 const chatHasMessages = computed(() => chatMessages.value.length > 0)
 
+// Provide to child components (MobileNav, etc.) so they can reactively
+// show/hide the Chat navigation entry without module-singleton concerns.
+provide('chatHasMessages', chatHasMessages)
+
 // When the chat section appears / disappears, section positions shift.
 // Rebuild the color-flow (so its palette includes/excludes #chat),
 // refresh scroll sections, and set up chat entrance animation.

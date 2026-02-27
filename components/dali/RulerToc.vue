@@ -7,7 +7,8 @@
  *   - A lightweight scan() checks which IDs actually exist in the DOM.
  *   - NO HTMLElement references are stored in reactive state — elements are
  *     looked up by ID at read-time (scroll tracking, navigation clicks).
- *   - A single debounced scan handles all DOM changes (route, chat, transitions).
+ *   - A single debounced scan handles all DOM changes (route, transitions).
+ *   - Chat section visibility is driven by the reactive chatHasMessages signal.
  *   - All event listeners are registered in onMounted, cleaned up in onUnmounted.
  *
  * Visibility:
@@ -25,6 +26,9 @@ const route = useRoute()
 const { isTransitioning } = usePageTransition()
 const { scrollTo: scrollToSection } = useScrollSections()
 const { isFocused } = useCanvasCamera()
+
+// Injected from index.vue — reactively tracks whether chat messages exist.
+const chatHasMessages = inject<Ref<boolean>>('chatHasMessages', ref(false))
 
 // ── Section registry ──────────────────────────────────────────────────
 interface TocItem {
@@ -149,7 +153,6 @@ function handleClick(idx: number) {
 
 // ── Lifecycle ─────────────────────────────────────────────────────────
 let raf = 0
-let observer: MutationObserver | null = null
 
 function loop() {
   updateScroll()
@@ -162,19 +165,11 @@ onMounted(() => {
 
   // Start scroll tracking loop
   raf = requestAnimationFrame(loop)
-
-  // MutationObserver catches the chat section appearing/disappearing
-  observer = new MutationObserver(() => debouncedScan(150))
-  observer.observe(document.body, { childList: true, subtree: true })
-
-  // Auto-stop heavy DOM watching after 10s (chat toggle is the main use case)
-  setTimeout(() => observer?.disconnect(), 10_000)
 })
 
 onUnmounted(() => {
   cancelAnimationFrame(raf)
   if (scanTimer) clearTimeout(scanTimer)
-  observer?.disconnect()
 })
 
 // Re-scan when route changes (SPA navigation)
@@ -187,6 +182,9 @@ watch(isTransitioning, (transitioning) => {
 
 // Re-scan when focus mode changes (index-only sections may appear/disappear)
 watch(isFocused, () => debouncedScan(300))
+
+// Re-scan when chat history appears/disappears (reactive — no MutationObserver needed)
+watch(chatHasMessages, () => debouncedScan(300))
 </script>
 
 <template>
