@@ -24,15 +24,15 @@ export default defineEventHandler(async (event: H3Event) => {
   })
 
   try {
-    const posts = await queryCollection(event, 'blogs')
+    const posts = await queryCollection(event, 'posts')
       .select('title', 'description', 'date', 'path')
       .where('published', '=', true)
       .order('date', 'DESC')
       .all()
 
     for (const post of posts) {
-      const slug = post.path?.replace('/blogs/', '') || ''
-      const url = `${siteUrl}/blogs/${slug}`
+      const slug = post.path?.replace('/posts/', '') || ''
+      const url = `${siteUrl}/posts/${slug}`
 
       feed.addItem({
         title: post.title || '',

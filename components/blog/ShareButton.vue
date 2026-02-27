@@ -58,7 +58,7 @@ const getShareUrl = (): string => {
   if (import.meta.client) {
     return window.location.href
   }
-  return `${siteConfig.url}/blogs/${props.slug}`
+  return `${siteConfig.url}/posts/${props.slug}`
 }
 
 const getShareTitle = (): string => {

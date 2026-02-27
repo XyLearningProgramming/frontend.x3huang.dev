@@ -12,7 +12,7 @@
           </span>
         </h2>
         <a
-          href="/blogs/rss.xml"
+          href="/posts/rss.xml"
           target="_blank"
           class="rss-link group flex items-center gap-2 px-4 py-2 text-sm font-bold border-2 border-white/20 bg-dali-void/50 hover:bg-dali-void hover:text-dali-gold hover:border-dali-gold transition-all shadow-dali-void-sm backdrop-blur-sm"
           style="color: rgba(255,255,255,0.75)"
@@ -160,7 +160,7 @@ const route = useRoute()
 
 // ── Data fetching: recent posts ──
 const { data: rawPosts } = await useAsyncData('recent-posts', () =>
-  queryCollection('blogs')
+  queryCollection('posts')
     .where('published', '=', true)
     .order('date', 'DESC')
     .limit(6)
@@ -250,7 +250,7 @@ async function loadAllPosts() {
   if (allPostsLoaded.value || allPostsLoading.value) return
   allPostsLoading.value = true
   try {
-    const query = queryCollection('blogs')
+    const query = queryCollection('posts')
     if (!import.meta.dev) query.where('published', '=', true)
     const result = await query
       .select('title', 'date', 'description', 'tags', 'image', 'path')

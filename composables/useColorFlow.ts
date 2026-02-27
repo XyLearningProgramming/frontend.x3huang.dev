@@ -61,7 +61,7 @@ export function useColorFlowState() {
   /**
    * Lock the color flow to a specific palette section.
    * Useful for sub-pages that should feel like a continuation of a section
-   * (e.g. the blogs listing panel should match the "posts" section color).
+   * (e.g. the posts listing panel should match the "posts" section color).
    */
   function setSection(sectionId: string) {
     const stop = DEFAULT_PALETTE.find(s => s.sectionId === sectionId)

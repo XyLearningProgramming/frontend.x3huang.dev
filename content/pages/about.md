@@ -26,7 +26,7 @@ Welcome to my digital space where I share insights, experiences, and lessons lea
 
 ### Recent Updates
 
-- **July 2025** - Migrated published blogs from previous site
+- **July 2025** - Migrated published posts from previous site
 - **June 2025** - Complete site refactor with unified design system
 
 ---

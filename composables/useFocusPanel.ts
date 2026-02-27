@@ -17,7 +17,7 @@ import { useCanvasCamera } from '~/composables/useCanvasCamera'
  *   discovery → open('post', blogPost) → back() → discovery
  *
  * ### Hash routing
- * Each `open()` pushes a browser history entry (`#about`, `#post/blogs/…`).
+ * Each `open()` pushes a browser history entry (`#about`, `#post/posts/…`).
  * `popstate` calls `back()`. Direct URL entry on mount calls `syncFromUrl()`.
  *
  * ### Scroll preservation
@@ -25,7 +25,7 @@ import { useCanvasCamera } from '~/composables/useCanvasCamera'
  * on the final `close()` (return to discovery).
  */
 
-export type PanelType = 'post' | 'blogs' | 'about' | 'contact' | 'gallery' | 'tool'
+export type PanelType = 'post' | 'posts' | 'about' | 'contact' | 'gallery' | 'tool'
 
 export interface PanelEntry {
   type: PanelType
@@ -74,7 +74,7 @@ export function useFocusPanel() {
    * @param hash    URL hash fragment (without #). Defaults to `type`.
    */
   async function open(type: PanelType, payload?: any, hash?: string) {
-    // Auto-generate hash for posts: post/blogs/20201002_mecanim
+    // Auto-generate hash for posts: post/posts/20201002_mecanim
     const resolvedHash = hash ?? (type === 'post' && payload?.path ? `post${payload.path}` : type)
 
     // Save discovery scroll position on first open
@@ -216,7 +216,7 @@ export function useFocusPanel() {
   }
 
   /**
-   * Called on mount to handle direct URL entry (e.g. `/#post/blogs/20201002_mecanim`).
+   * Called on mount to handle direct URL entry (e.g. `/#post/posts/20201002_mecanim`).
    */
   async function syncFromUrl(resolver?: (path: string) => Promise<any>) {
     if (!import.meta.client) return

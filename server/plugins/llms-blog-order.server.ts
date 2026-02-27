@@ -5,12 +5,12 @@ import { queryCollection } from '@nuxt/content/nitro'
 export default defineNitroPlugin((nitroApp) => {
   nitroApp.hooks.hook('llms:generate', async (event, options) => {
     const blogSection = options.sections?.find(
-      (s: { contentCollection?: string }) => s.contentCollection === 'blogs'
+      (s: { contentCollection?: string }) => s.contentCollection === 'posts'
     )
     if (!blogSection) return
 
     // Re-query with date so we can sort newest first (content plugin does not order by date)
-    const query = queryCollection(event, 'blogs')
+    const query = queryCollection(event, 'posts')
       .select('path', 'title', 'seo', 'description', 'date')
       .where('path', 'NOT LIKE', '%/.navigation')
       .where('published', '=', true)

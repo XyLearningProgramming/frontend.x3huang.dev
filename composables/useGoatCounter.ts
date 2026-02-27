@@ -297,9 +297,9 @@ export const useGoatCounter = () => {
   const getBlogAnalytics = async (slug: string): Promise<Analytics> => {
     try {
       const [visits, likes, shares] = await Promise.all([
-        getVisitCountOnly(`/blogs/${slug}`),
-        getVisitCountOnly(`/blogs/${slug}-like`),
-        getVisitCountOnly(`/blogs/${slug}-share`)
+        getVisitCountOnly(`/posts/${slug}`),
+        getVisitCountOnly(`/posts/${slug}-like`),
+        getVisitCountOnly(`/posts/${slug}-share`)
       ])
 
       return { visits, likes, shares }
@@ -311,14 +311,14 @@ export const useGoatCounter = () => {
 
   // Track like action
   const trackLike = (slug: string) => {
-    trackEvent('like', `/blogs/${slug}`)
+    trackEvent('like', `/posts/${slug}`)
   }
 
 
   // Track share action
   const trackShare = (slug: string, platform?: string) => {
     const eventName = platform ? `share-${platform}` : 'share'
-    trackEvent(eventName, `/blogs/${slug}`)
+    trackEvent(eventName, `/posts/${slug}`)
   }
 
   // Clear request queue and failed requests (useful on page navigation)

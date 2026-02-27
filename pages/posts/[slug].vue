@@ -107,7 +107,7 @@
       <!-- Comments -->
       <CommentSection
         :title="post.title"
-        :thread-id="`/blogs/${slug}`"
+        :thread-id="`/posts/${slug}`"
         form-title="Share your thoughts"
       />
     </template>
@@ -132,19 +132,19 @@ const backToUrl = computed(() => {
 
 // ── Fetch blog post content ──
 const { data: post, pending, error } = await useAsyncData(`blog-${slug}`, () =>
-  queryCollection('blogs').path(`/blogs/${slug}`).first(),
+  queryCollection('posts').path(`/posts/${slug}`).first(),
 )
 
 // ── Surround (prev/next) posts ──
 const { data: surroundData } = await useAsyncData(`blog-surround-${slug}`, async () => {
   try {
-    const allPosts = await queryCollection('blogs')
+    const allPosts = await queryCollection('posts')
       .where('published', '=', true)
       .select('title', 'path', 'date')
       .order('date', 'DESC')
       .all()
 
-    const currentIdx = allPosts.findIndex((p: any) => p.path === `/blogs/${slug}`)
+    const currentIdx = allPosts.findIndex((p: any) => p.path === `/posts/${slug}`)
     if (currentIdx === -1) return []
 
     const results: any[] = []
@@ -229,7 +229,7 @@ onMounted(async () => {
   try {
     const { initializeTracking, trackVisit, getBlogAnalytics } = useGoatCounter()
     initializeTracking()
-    trackVisit(`/blogs/${slug}`)
+    trackVisit(`/posts/${slug}`)
     analytics.value = await getBlogAnalytics(slug)
   } catch (e) {
     console.warn('Failed to load analytics:', e)
@@ -277,7 +277,7 @@ function formatDate(dateStr: string): string {
 useHead(getPageMeta({
   title: post.value?.title ? `${post.value.title} - ${siteConfig.name}` : siteConfig.title,
   description: (post.value as any)?.description || siteConfig.description,
-  url: `${siteConfig.url}/blogs/${slug}`,
+  url: `${siteConfig.url}/posts/${slug}`,
   type: 'article',
 }))
 </script>

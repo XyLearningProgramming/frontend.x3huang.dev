@@ -165,7 +165,7 @@ export default defineNuxtConfig({
       {
         title: `Blog Posts - ${siteConfig.author.name}`,
         description: `Latest blog posts by ${siteConfig.author.name}.`,
-        contentCollection: "blogs",
+        contentCollection: "posts",
         contentFilters: [
           { field: 'published', operator: '=', value: true }
         ]

@@ -111,4 +111,4 @@ With this setup, my initial goals were met by combining a few key tools, each wi
 
 ### What's Next?
 
-This setup provides a solid, automated foundation for my projects. But the real magic is in the details. In the [next article](/blogs/from-bare-metal-to-kubernetes-3-cicd-tips-for-managing-configs-and-secrets), I'll dive into how I manage environment-specific configurations and handle secrets securely within this pipeline.
+This setup provides a solid, automated foundation for my projects. But the real magic is in the details. In the [next article](/posts/from-bare-metal-to-kubernetes-3-cicd-tips-for-managing-configs-and-secrets), I'll dive into how I manage environment-specific configurations and handle secrets securely within this pipeline.
