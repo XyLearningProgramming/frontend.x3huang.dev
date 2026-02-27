@@ -1,82 +1,91 @@
 <template>
-  <div class="min-h-screen bg-neo-bg text-neo-black py-16 px-4">
-    <div class="container mx-auto max-w-screen-xl">
-      <!-- Back button -->
-      <div class="mb-6">
-        <NuxtLink :to="returnPath"
-          class="inline-flex items-center gap-2 text-neo-black/70 hover:text-neo-black transition-colors">
-          <IconsArrowLeft class="w-4 h-4" />
-          Back to {{ returnTitle }}
-        </NuxtLink>
+  <LayoutsSubPageLayout
+    :title="gameTitle"
+    back-to="/"
+    back-label="Home"
+    max-width="wide"
+  >
+    <!-- Header -->
+    <template #header>
+      <div>
+        <h1 class="text-dali-white mb-3">{{ gameTitle }}</h1>
+        <p class="text-sm text-dali-white/60">
+          {{ gameDescription }}
+        </p>
       </div>
+    </template>
 
-      <!-- Game content -->
-      <div v-if="gameExists" class="max-w-none">
-        <!-- Game Header -->
-        <header class="mb-6 text-center">
-          <h1 class="font-neo-heading text-h2-sm md:text-h2 font-bold mb-2">
-            {{ gameTitle }}
-          </h1>
-          <p class="text-lg text-neo-black/70">
-            {{ gameDescription }}
-          </p>
-        </header>
-
-        <!-- Main Game Container -->
-        <div class="neo-border bg-neo-bg p-4 relative" style="box-shadow: 6px 6px 0px 0px #000;">
-          <div class="text-center">
-            <div class="relative w-full min-h-[70vh] max-h-[85vh] overflow-hidden neo-border">
-              <iframe ref="gameFrame" :src="gameUrl" class="absolute inset-0 w-full h-full"
-                frameborder="0" allowfullscreen title="Game Frame" @load="onGameLoad"></iframe>
-            </div>
-
-            <!-- Game controls -->
-            <div class="mt-4 flex justify-center gap-4">
-              <button @click="requestFullscreen"
-                class="px-4 py-2 neo-border bg-neo-bg hover:bg-neo-yellow text-neo-black transition-colors rounded-none"
-                style="box-shadow: 2px 2px 0px 0px #000;"
-                title="Fullscreen">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
-                </svg>
-              </button>
-
-              <button @click="refreshGame"
-                class="px-4 py-2 neo-border bg-neo-bg hover:bg-neo-yellow text-neo-black transition-colors rounded-none"
-                style="box-shadow: 2px 2px 0px 0px #000;"
-                title="Refresh Game">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Loading state -->
-      <div v-else-if="loading" class="text-center py-12">
-        <div class="neo-border bg-neo-bg p-8 max-w-md mx-auto" style="box-shadow: 4px 4px 0px 0px #000;">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-neo-black/60 mx-auto mb-4"></div>
-          <p class="text-neo-black">Loading game...</p>
-        </div>
-      </div>
-
-      <!-- Game not found -->
-      <div v-else class="text-center py-12">
-        <div class="neo-border bg-neo-bg p-8 max-w-md mx-auto" style="box-shadow: 4px 4px 0px 0px #000;">
-          <h2 class="text-xl font-bold text-neo-black mb-4">Game Not Found</h2>
-          <p class="text-neo-black/70">The requested game could not be found.</p>
-        </div>
-      </div>
+    <!-- Loading state -->
+    <div v-if="loading" class="flex items-center justify-center py-24">
+      <div class="w-8 h-8 border-4 border-dali-red border-t-dali-gold rounded-full animate-spin" />
     </div>
-  </div>
+
+    <!-- Game not found -->
+    <div v-else-if="!gameExists" class="text-center py-24">
+      <div class="text-4xl mb-4">404</div>
+      <h2 class="text-xl font-bold text-dali-white mb-2">Game Not Found</h2>
+      <p class="text-dali-muted mb-6">The requested game could not be found.</p>
+      <NuxtLink to="/" class="dali-btn px-6 py-2">
+        Back to Home
+      </NuxtLink>
+    </div>
+
+    <!-- Game content -->
+    <template v-else>
+      <!-- Main Game Container -->
+      <div class="border-2 border-dali-white/15 bg-dali-white/5 p-4 relative mb-8">
+        <div class="relative w-full min-h-[70vh] max-h-[85vh] overflow-hidden border border-dali-white/10">
+          <iframe
+            ref="gameFrame"
+            :src="gameUrl"
+            class="absolute inset-0 w-full h-full"
+            frameborder="0"
+            allowfullscreen
+            title="Game Frame"
+            @load="onGameLoad"
+          />
+        </div>
+
+        <!-- Game controls -->
+        <div class="mt-4 flex justify-center gap-4">
+          <button
+            class="dali-btn bg-transparent text-dali-white border-dali-white/40 px-4 py-2 text-sm font-bold flex items-center gap-2 hover:border-dali-gold transition-colors"
+            title="Fullscreen"
+            @click="requestFullscreen"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
+            </svg>
+            Fullscreen
+          </button>
+
+          <button
+            class="dali-btn bg-transparent text-dali-white border-dali-white/40 px-4 py-2 text-sm font-bold flex items-center gap-2 hover:border-dali-gold transition-colors"
+            title="Refresh Game"
+            @click="refreshGame"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Comments -->
+      <CommentSection
+        :title="gameTitle"
+        :thread-id="`/games/${slug}`"
+        form-title="Share your thoughts on this game"
+      />
+    </template>
+  </LayoutsSubPageLayout>
 </template>
 
 <script setup lang="ts">
-import IconsArrowLeft from '~/components/icons/arrowLeft.vue'
+import { siteConfig, getPageMeta } from '~/site.config'
 
 const route = useRoute()
 const slug = route.params.slug as string
@@ -87,43 +96,38 @@ const gameExists = ref(false)
 const gameFrame = ref<HTMLIFrameElement | null>(null)
 
 // Game info mapping
-const gameInfo = {
+const gameInfo: Record<string, { title: string; description: string }> = {
   'glitch_garden': {
     title: 'Glitch Garden',
-    description: 'A tower defense game where you defend your garden from glitched invaders using various plant defenders.'
+    description: 'A tower defense game where you defend your garden from glitched invaders using various plant defenders.',
   },
   'tile_vania': {
     title: 'Tile Vania',
-    description: 'A classic 2D platformer adventure through mystical tile-based worlds filled with challenges and secrets.'
+    description: 'A classic 2D platformer adventure through mystical tile-based worlds filled with challenges and secrets.',
   },
   'flight_controller': {
     title: 'Flight Controller',
-    description: 'A minimal demo showing control of a paper plane',
-  }
+    description: 'A minimal demo showing control of a paper plane.',
+  },
 }
 
 // Computed properties
 const gameTitle = computed(() => {
-  const info = gameInfo[slug as keyof typeof gameInfo]
+  const info = gameInfo[slug]
   return info?.title || slug.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
 })
 
 const gameDescription = computed(() => {
-  const info = gameInfo[slug as keyof typeof gameInfo]
+  const info = gameInfo[slug]
   return info?.description || 'An interactive Unity WebGL game experience.'
 })
 
 const gameUrl = computed(() => `/gamescontent/${slug}/`)
 
-// History stack for back button
-const returnPath = ref('/')
-const returnTitle = ref('Home')
-
 // Check if game exists
 const checkGameExists = async () => {
   try {
-    // Check if this is a known game first
-    const knownGames = ['glitch_garden', 'tile_vania']
+    const knownGames = ['glitch_garden', 'tile_vania', 'flight_controller']
     if (knownGames.includes(slug)) {
       gameExists.value = true
       loading.value = false
@@ -133,7 +137,7 @@ const checkGameExists = async () => {
     // For unknown games, try to fetch
     const response = await fetch(gameUrl.value)
     gameExists.value = response.ok
-  } catch (error) {
+  } catch {
     gameExists.value = false
   } finally {
     loading.value = false
@@ -146,10 +150,8 @@ const onGameLoad = () => {
 }
 
 const requestFullscreen = () => {
-  if (gameFrame.value) {
-    if (gameFrame.value.requestFullscreen) {
-      gameFrame.value.requestFullscreen()
-    }
+  if (gameFrame.value?.requestFullscreen) {
+    gameFrame.value.requestFullscreen()
   }
 }
 
@@ -159,61 +161,15 @@ const refreshGame = () => {
   }
 }
 
-// Map of route patterns to page titles
-const getPageTitle = (path: string, search: string = '') => {
-  if (path === '/') return 'Home'
-  if (path === '/games') return 'Games'
-  if (search && search.includes('tag=')) {
-    const params = new URLSearchParams(search)
-    const tag = params.get('tag')
-    return tag ? `Posts tagged: ${tag}` : 'Blog'
-  }
-  return 'Previous Page'
-}
-
-// Initialize return path
-onMounted(() => {
-  if (import.meta.client) {
-    // Check session storage for return path
-    const savedReturnPath = sessionStorage.getItem('gameReturnPath')
-    const savedReturnTitle = sessionStorage.getItem('gameReturnTitle')
-
-    if (savedReturnPath) {
-      returnPath.value = savedReturnPath
-      returnTitle.value = savedReturnTitle || 'Previous Page'
-      sessionStorage.removeItem('gameReturnPath')
-      sessionStorage.removeItem('gameReturnTitle')
-    } else {
-      // Use referrer if available
-      const referrer = document.referrer
-      if (referrer) {
-        try {
-          const referrerUrl = new URL(referrer)
-          if (referrerUrl.origin === window.location.origin) {
-            const referrerPath = referrerUrl.pathname
-            const referrerSearch = referrerUrl.search
-
-            returnPath.value = referrerPath + referrerSearch
-            returnTitle.value = getPageTitle(referrerPath, referrerSearch)
-          }
-        } catch (e) {
-          // Invalid referrer, use default
-        }
-      }
-    }
-  }
-})
-
 // Check game availability on client side only
 onMounted(() => {
   checkGameExists()
 })
 
-// SEO meta
-useHead({
-  title: computed(() => gameTitle.value),
-  meta: [
-    { name: 'description', content: computed(() => gameDescription.value) }
-  ]
-})
+// SEO
+useHead(getPageMeta({
+  title: `${gameTitle.value} - ${siteConfig.name}`,
+  description: gameDescription.value,
+  url: `${siteConfig.url}/games/${slug}`,
+}))
 </script>

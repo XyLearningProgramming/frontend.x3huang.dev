@@ -1,222 +1,137 @@
 <script setup lang="ts">
 /**
- * RulerToc — Transparent ruler on the left edge of every page.
+ * RulerToc — Minimal ruler navigation on the left edge of the page.
  *
- * Detects context automatically:
- *  1. Canvas focus mode with a post open: scans blog headings in .dali-focus
- *  2. Canvas focus mode with other panels (about, contact, gallery, blogs listing): no TOC
- *  3. Discovery mode: scans <section id> landmarks (excluding footer)
+ * Architecture:
+ *   - Sections are defined in a static registry (SECTION_ORDER / SECTION_LABELS).
+ *   - A lightweight scan() checks which IDs actually exist in the DOM.
+ *   - NO HTMLElement references are stored in reactive state — elements are
+ *     looked up by ID at read-time (scroll tracking, navigation clicks).
+ *   - A single debounced scan handles all DOM changes (route, chat, transitions).
+ *   - All event listeners are registered in onMounted, cleaned up in onUnmounted.
  *
- * Uses MutationObserver to catch late-rendered <ClientOnly> content.
- * Reads useFocusPanel's activePanel to determine what's shown in focus.
+ * Visibility:
+ *   - Index page in discovery mode: shows section markers.
+ *   - Blog pages: hidden (they have their own sidebar TOC).
+ *   - Sub-pages / focus mode: hidden.
+ *   - Mobile (<1024px): hidden via CSS.
  */
 
-import { useCanvasCamera } from '~/composables/useCanvasCamera'
-import { useFocusPanel } from '~/composables/useFocusPanel'
 import { usePageTransition } from '~/composables/usePageTransition'
 import { useScrollSections, type SectionId } from '~/composables/useScrollSections'
+import { useCanvasCamera } from '~/composables/useCanvasCamera'
 
 const route = useRoute()
 const { isTransitioning } = usePageTransition()
-const { isFocused, focusTarget } = useCanvasCamera()
-const { activePanel } = useFocusPanel()
-const { scrollTo: scrollToSection, sectionIds } = useScrollSections()
+const { scrollTo: scrollToSection } = useScrollSections()
+const { isFocused } = useCanvasCamera()
 
-// ——— Detected sections ———
+// ── Section registry ──────────────────────────────────────────────────
 interface TocItem {
   id: string
   label: string
-  el: HTMLElement
 }
 
-const items = ref<TocItem[]>([])
+const SECTION_LABELS: Record<string, string> = {
+  chat: 'Chat',
+  hero: 'Home',
+  posts: 'Posts',
+  space: 'Space',
+  tools: 'Tools',
+}
+
+/** DOM order of sections on the index page */
+const SECTION_ORDER = ['chat', 'hero', 'posts', 'space', 'tools'] as const
+
+// ── Reactive state ────────────────────────────────────────────────────
+const items = shallowRef<TocItem[]>([])
 const activeIdx = ref(0)
 const scrollProgress = ref(0)
 const hoveredIdx = ref<number | null>(null)
-
-// Whether the labels panel is currently open (state machine, not raw proximity)
 const labelsOpen = ref(false)
 const navRef = ref<HTMLElement | null>(null)
 
-// IDs to exclude from section-based TOC (non-content sections)
-const EXCLUDED_SECTIONS = new Set(['footer'])
+// ── Visibility ────────────────────────────────────────────────────────
+const isIndexPage = computed(() => route.path === '/' || route.path === '')
+const visible = computed(() =>
+  isIndexPage.value && !isFocused.value && items.value.length >= 2,
+)
 
-// Clean up extracted text: normalize whitespace and strip leading anchor chars
-function cleanLabel(raw: string): string {
-  return raw.replace(/\s+/g, ' ').replace(/^#\s*/, '').trim()
-}
+// ── DOM scanning (lightweight: only checks which section IDs exist) ──
+let scanTimer: ReturnType<typeof setTimeout> | null = null
 
-// ——— Determine current mode ———
-type TocMode = 'discovery' | 'focus-post' | 'focus-other' | 'inline-post' | 'blog-page'
-
-function getMode(): TocMode {
-  // Standalone blog page (e.g. /blogs/20250713_cicd_tips_and_tricks)
-  if (route.path.startsWith('/blogs/') && route.path !== '/blogs/') {
-    return 'blog-page'
-  }
-
-  // When the focus panel has a post open (about/contact/gallery), no TOC
-  if (isFocused.value) {
-    return 'focus-other'
-  }
-
-  // Check if an inline blog reader is open (rendered in the discovery column)
-  if (import.meta.client && document.getElementById('reader')) {
-    return 'inline-post'
-  }
-
-  return 'discovery'
-}
-
-// ——— DOM scanning ———
 function scan() {
   if (!import.meta.client) return
-  // Don't scan while a page transition overlay is active — the DOM is
-  // about to be torn down/rebuilt, so any element refs would be stale.
+  // Don't scan during transitions — the DOM is in flux
   if (isTransitioning.value) return
 
-  const mode = getMode()
+  if (!isIndexPage.value) {
+    items.value = []
+    return
+  }
+
   const found: TocItem[] = []
-
-  if (mode === 'focus-other') {
-    // No meaningful TOC for about/contact/gallery focus panels
-    items.value = []
-    return
-  }
-
-  if (mode === 'blog-page') {
-    // Standalone blog pages have their own sidebar TOC — skip ruler
-    items.value = []
-    return
-  }
-
-  if (mode === 'discovery') {
-    // Strategy: <section id> landmarks on index page — skip excluded IDs
-    const sections = document.querySelectorAll('section[id]')
-    sections.forEach((el) => {
-      const id = el.id
-      if (EXCLUDED_SECTIONS.has(id)) return
-
-      const heading = el.querySelector('h1, h2, h3')
-      let label = cleanLabel(heading?.textContent || '')
-      if (!label) label = id.charAt(0).toUpperCase() + id.slice(1)
-      found.push({ id, label, el: el as HTMLElement })
-    })
-  }
-
-  if (mode === 'inline-post') {
-    // Strategy: headings in the inline blog reader section
-    const container = document.getElementById('reader') || document
-
-    const headings = container.querySelectorAll(
-      '.blog-content h2[id], .blog-content h3[id], article h2[id], article h3[id]',
-    )
-    headings.forEach((el) => {
-      const id = (el as HTMLElement).id
-      const label = cleanLabel(el.textContent || '') || id
-      found.push({ id, label, el: el as HTMLElement })
-    })
-
-    // Prepend a "Top" item for the post title
-    if (found.length > 0) {
-      const pageTitle = container.querySelector('article h1, h1')
-      if (pageTitle) {
-        const topLabel = cleanLabel(pageTitle.textContent || '') || 'Top'
-        found.unshift({
-          id: '__top',
-          label: topLabel,
-          el: pageTitle as HTMLElement,
-        })
-      }
+  for (const id of SECTION_ORDER) {
+    if (document.getElementById(id)) {
+      found.push({ id, label: SECTION_LABELS[id] || id })
     }
   }
 
-  items.value = found
+  // Only update if the set of IDs actually changed (prevents needless re-renders)
+  const prev = items.value
+  const changed =
+    prev.length !== found.length ||
+    prev.some((p, i) => p.id !== found[i]?.id)
+  if (changed) {
+    items.value = found
+  }
 }
 
-// Retry scan with MutationObserver (catches <ClientOnly> rendered content)
-let observer: MutationObserver | null = null
-let scanRetries = 0
-
-function startObserving() {
-  if (!import.meta.client) return
-  observer?.disconnect()
-  scanRetries = 0
-
-  observer = new MutationObserver(() => {
-    scanRetries++
-    scan()
-    if (items.value.length >= 2 || scanRetries > 30) {
-      observer?.disconnect()
-    }
-  })
-
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true,
-  })
-
-  // Auto-stop after 8 seconds regardless
-  setTimeout(() => observer?.disconnect(), 8000)
+function debouncedScan(delay = 200) {
+  if (scanTimer) clearTimeout(scanTimer)
+  scanTimer = setTimeout(scan, delay)
 }
 
-function resetAndRescan(delay = 300) {
-  observer?.disconnect()
-  items.value = []
-  activeIdx.value = 0
-  scrollProgress.value = 0
-  setTimeout(() => {
-    scan()
-    startObserving()
-  }, delay)
-}
-
-// ——— Scroll tracking ———
+// ── Scroll tracking ───────────────────────────────────────────────────
+/** Reads element positions from the live DOM each frame — never stale. */
 function updateScroll() {
   if (!import.meta.client || items.value.length === 0) return
 
-  const mode = getMode()
-  const focusEl: HTMLElement | null = null // No separate scroll container for inline posts
-
   const vh = window.innerHeight
-  let foundIdx = 0
-  let progress = 0
-
-  const containerRect = focusEl?.getBoundingClientRect()
-  const scrollY = focusEl ? focusEl.scrollTop : window.scrollY
-
-  // Use "inside" detection: a section is active if its top is above the
-  // threshold line AND its bottom is still visible. This prevents
-  // sections that have been fully scrolled past (e.g. #chat above the
-  // hero) from staying "active" when we're already in a later section.
+  const scrollY = window.scrollY
   const topThreshold = scrollY + vh * 0.3
   const bottomThreshold = scrollY + vh * 0.1
 
+  let foundIdx = 0
+  let progress = 0
+
   for (let i = 0; i < items.value.length; i++) {
-    const el = items.value[i].el
-    const elRect = el.getBoundingClientRect()
+    const el = document.getElementById(items.value[i].id)
+    if (!el) continue
 
-    const top = focusEl && containerRect
-      ? elRect.top - containerRect.top + focusEl.scrollTop
-      : elRect.top + window.scrollY
+    const rect = el.getBoundingClientRect()
+    const top = rect.top + scrollY
 
-    // Compute the bottom of this section's area (either next section's top or document end)
+    // Section bottom = next section's top, or document end
     let sectionBottom: number
     if (i + 1 < items.value.length) {
-      const nextRect = items.value[i + 1].el.getBoundingClientRect()
-      sectionBottom = focusEl && containerRect
-        ? nextRect.top - containerRect.top + focusEl.scrollTop
-        : nextRect.top + window.scrollY
+      const nextEl = document.getElementById(items.value[i + 1].id)
+      sectionBottom = nextEl
+        ? nextEl.getBoundingClientRect().top + scrollY
+        : document.documentElement.scrollHeight
     } else {
-      sectionBottom = focusEl ? focusEl.scrollHeight : document.documentElement.scrollHeight
+      sectionBottom = document.documentElement.scrollHeight
     }
 
-    // Section is active if we've scrolled past its top AND haven't fully scrolled past it
+    // Section is active: scrolled past its top AND not fully past its bottom
     if (topThreshold >= top && bottomThreshold < sectionBottom) {
       foundIdx = i
       const sectionHeight = sectionBottom - top
       const scrolledInto = topThreshold - top
-      progress = sectionHeight > 0 ? Math.min(1, Math.max(0, scrolledInto / sectionHeight)) : 0
+      progress =
+        sectionHeight > 0
+          ? Math.min(1, Math.max(0, scrolledInto / sectionHeight))
+          : 0
     }
   }
 
@@ -224,7 +139,7 @@ function updateScroll() {
   scrollProgress.value = progress
 }
 
-// ——— Marker position ———
+// ── Marker position (percentage along the ruler) ──────────────────────
 const markerPercent = computed(() => {
   const count = items.value.length
   if (count === 0) return 0
@@ -232,59 +147,50 @@ const markerPercent = computed(() => {
   return activeIdx.value * segSize + scrollProgress.value * segSize
 })
 
-// ——— Proximity tracking (state machine) ———
-// Open when mouse approaches ruler track; close when mouse moves far beyond the panel
-const OPEN_THRESHOLD = 36      // px from left to trigger open (≈ ruler track width + margin)
-const CLOSE_THRESHOLD = 260    // px from left to close (ruler 16 + labels 220 + margin 24)
+// ── Proximity state machine (labels panel open/close) ─────────────────
+const OPEN_THRESHOLD = 36
+const CLOSE_THRESHOLD = 260
 
 function onMouseMove(e: MouseEvent) {
-  const x = e.clientX
-  const y = e.clientY
-
   if (!labelsOpen.value) {
-    // Closed → open when mouse is near the ruler track
-    if (x <= OPEN_THRESHOLD) labelsOpen.value = true
+    if (e.clientX <= OPEN_THRESHOLD) labelsOpen.value = true
   } else {
-    // Open → close when mouse moves past the panel's right edge
-    if (x > CLOSE_THRESHOLD) {
+    if (e.clientX > CLOSE_THRESHOLD) {
       labelsOpen.value = false
       return
     }
-    // Also close if mouse is vertically outside the ruler area (with some grace)
     if (navRef.value) {
       const rect = navRef.value.getBoundingClientRect()
-      if (y < rect.top - 30 || y > rect.bottom + 30) {
+      if (e.clientY < rect.top - 30 || e.clientY > rect.bottom + 30) {
         labelsOpen.value = false
       }
     }
   }
 }
 
-const labelsVisible = computed(() => labelsOpen.value)
-
-// ——— Navigation ———
-function scrollTo(idx: number) {
+// ── Navigation ────────────────────────────────────────────────────────
+function handleClick(idx: number) {
   const item = items.value[idx]
   if (!item) return
 
-  if (item.id === '__top') {
-    // For inline posts, scroll to the reader section top
-    const readerEl = document.getElementById('reader')
-    if (readerEl) {
-      readerEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    } else {
-      scrollToSection('main')
-    }
-  } else if ((sectionIds as readonly string[]).includes(item.id)) {
-    // Use Lenis-powered scroll for known page sections
-    scrollToSection(item.id as SectionId)
+  if (item.id === 'hero') {
+    scrollToSection('main')
   } else {
-    item.el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    scrollToSection(item.id as SectionId)
   }
 }
 
-// ——— Lifecycle ———
+// ── Adaptive height ───────────────────────────────────────────────────
+const rulerHeight = computed(() => {
+  const count = items.value.length
+  if (count <= 4) return '35vh'
+  if (count <= 8) return '45vh'
+  return '60vh'
+})
+
+// ── Lifecycle ─────────────────────────────────────────────────────────
 let raf = 0
+let observer: MutationObserver | null = null
 
 function loop() {
   updateScroll()
@@ -292,129 +198,140 @@ function loop() {
 }
 
 onMounted(() => {
-  setTimeout(scan, 200)
-  startObserving()
+  // Initial scan (slight delay lets async sections mount)
+  setTimeout(scan, 150)
+
+  // Start scroll tracking loop
   raf = requestAnimationFrame(loop)
+
+  // Mouse proximity for labels
   window.addEventListener('mousemove', onMouseMove, { passive: true })
+
+  // MutationObserver catches the chat section appearing/disappearing
+  observer = new MutationObserver(() => debouncedScan(150))
+  observer.observe(document.body, { childList: true, subtree: true })
+
+  // Auto-stop heavy DOM watching after 10s (chat toggle is the main use case)
+  setTimeout(() => observer?.disconnect(), 10_000)
 })
 
 onUnmounted(() => {
   cancelAnimationFrame(raf)
+  if (scanTimer) clearTimeout(scanTimer)
   observer?.disconnect()
   window.removeEventListener('mousemove', onMouseMove)
-  if (_hashChangeHandler) {
-    window.removeEventListener('hashchange', _hashChangeHandler)
-  }
 })
 
-// Re-scan on route change (full navigation)
-watch(() => route.fullPath, () => {
-  resetAndRescan(300)
+// Re-scan when route changes (SPA navigation)
+watch(() => route.path, () => debouncedScan(300))
+
+// Re-scan after a page transition completes (new DOM)
+watch(isTransitioning, (transitioning) => {
+  if (!transitioning) debouncedScan(400)
 })
 
-// Re-scan when focus panel state changes (hash-based transitions)
-watch([isFocused, activePanel], () => {
-  // Give the focus panel content time to render
-  resetAndRescan(isFocused.value ? 800 : 200)
-})
-
-// Re-scan on hash changes (inline blog posts use hash routing)
-let _hashChangeHandler: (() => void) | null = null
-if (import.meta.client) {
-  _hashChangeHandler = () => resetAndRescan(500)
-  window.addEventListener('hashchange', _hashChangeHandler)
-}
-
-const visible = computed(() => items.value.length >= 2)
-
-// Adaptive height: scale ruler based on item count (min 30vh, max 60vh)
-const rulerHeight = computed(() => {
-  const count = items.value.length
-  if (count <= 4) return '35vh'
-  if (count <= 8) return '45vh'
-  return '60vh'
-})
+// Re-scan when focus mode changes (index-only sections may appear/disappear)
+watch(isFocused, () => debouncedScan(300))
 </script>
 
 <template>
-  <nav
-    ref="navRef"
-    v-if="visible"
-    class="ruler-toc"
-    :style="{ height: rulerHeight }"
-    aria-label="Page navigation"
-  >
-    <!-- Ruler track -->
-    <div class="ruler-track">
-      <div
-        v-for="(item, idx) in items"
-        :key="item.id"
-        class="ruler-seg"
-        :class="{
-          'ruler-seg--active': idx === activeIdx,
-          'ruler-seg--hovered': hoveredIdx === idx,
-        }"
-        :style="{ height: `${100 / items.length}%` }"
-        @click="scrollTo(idx)"
-        @mouseenter="hoveredIdx = idx"
-        @mouseleave="hoveredIdx = null"
-      >
-        <!-- Tick at top edge -->
-        <div class="ruler-tick" :class="{ 'ruler-tick--active': idx === activeIdx }" />
-        <!-- Minor ticks -->
-        <div class="ruler-minor" style="top: 33%;" />
-        <div class="ruler-minor" style="top: 66%;" />
-      </div>
-
-      <!-- Red dot -->
-      <div
-        class="ruler-dot"
-        :style="{ top: `${markerPercent}%` }"
-      >
-        <div class="ruler-dot__circle" />
-      </div>
-    </div>
-
-    <!-- Labels column: all labels always rendered, opacity controlled by proximity -->
-    <div
-      class="ruler-labels"
-      :style="{ opacity: labelsVisible ? 1 : 0, pointerEvents: labelsVisible ? 'auto' : 'none' }"
+  <Teleport to="body">
+    <nav
+      ref="navRef"
+      class="ruler-toc"
+      :class="{ 'ruler-toc--visible': visible }"
+      :style="{ height: rulerHeight }"
+      aria-label="Page navigation"
     >
-      <button
-        v-for="(item, idx) in items"
-        :key="item.id"
-        class="ruler-label"
-        :class="{
-          'ruler-label--active': idx === activeIdx,
-          'ruler-label--hovered': hoveredIdx === idx,
-          'ruler-label--dimmed': hoveredIdx !== null && hoveredIdx !== idx && idx !== activeIdx,
-        }"
-        :style="{ height: `${100 / items.length}%` }"
-        :title="item.label"
-        @click="scrollTo(idx)"
-        @mouseenter="hoveredIdx = idx"
-        @mouseleave="hoveredIdx = null"
+      <!-- Ruler track (thin vertical bar, always present when visible) -->
+      <div class="ruler-track">
+        <div
+          v-for="(item, idx) in items"
+          :key="item.id"
+          class="ruler-seg"
+          :class="{
+            'ruler-seg--active': idx === activeIdx,
+            'ruler-seg--hovered': hoveredIdx === idx,
+          }"
+          :style="{ height: `${100 / items.length}%` }"
+          @click="handleClick(idx)"
+          @mouseenter="hoveredIdx = idx"
+          @mouseleave="hoveredIdx = null"
+        >
+          <!-- Major tick at top edge -->
+          <div
+            class="ruler-tick"
+            :class="{ 'ruler-tick--active': idx === activeIdx }"
+          />
+          <!-- Minor ticks for ruler texture -->
+          <div class="ruler-minor" style="top: 33%;" />
+          <div class="ruler-minor" style="top: 66%;" />
+        </div>
+
+        <!-- Red dot — position tracks scroll progress -->
+        <div class="ruler-dot" :style="{ top: `${markerPercent}%` }">
+          <div class="ruler-dot__circle" />
+        </div>
+      </div>
+
+      <!-- Labels column (revealed on hover/proximity) -->
+      <div
+        class="ruler-labels"
+        :class="{ 'ruler-labels--open': labelsOpen }"
       >
-        <span class="ruler-label__num">{{ String(idx + 1).padStart(2, '0') }}</span>
-        <span class="ruler-label__text">{{ item.label }}</span>
-      </button>
-    </div>
-  </nav>
+        <button
+          v-for="(item, idx) in items"
+          :key="item.id"
+          class="ruler-label"
+          :class="{
+            'ruler-label--active': idx === activeIdx,
+            'ruler-label--hovered': hoveredIdx === idx,
+            'ruler-label--dimmed':
+              hoveredIdx !== null && hoveredIdx !== idx && idx !== activeIdx,
+          }"
+          :style="{ height: `${100 / items.length}%` }"
+          :title="item.label"
+          @click="handleClick(idx)"
+          @mouseenter="hoveredIdx = idx"
+          @mouseleave="hoveredIdx = null"
+        >
+          <span class="ruler-label__num">
+            {{ String(idx + 1).padStart(2, '0') }}
+          </span>
+          <span class="ruler-label__text">{{ item.label }}</span>
+        </button>
+      </div>
+    </nav>
+  </Teleport>
 </template>
 
 <style scoped>
+/* ═══════════════════════════════════════════════════════════════
+   Ruler TOC — left-edge navigation
+   Dalí "Midnight Carnival" art style:
+   - hard edges, no blur, monospace type
+   - red accent dot, cream labels panel with void border
+   ═══════════════════════════════════════════════════════════════ */
+
 .ruler-toc {
   position: fixed;
   left: 0;
   top: 50%;
   transform: translateY(-50%);
   z-index: 80;
-  /* height set dynamically via :style */
   display: flex;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.ruler-toc--visible {
+  opacity: 1;
   pointer-events: auto;
 }
 
-/* ——— Ruler track (always visible, thin) ——— */
+/* ── Ruler track (thin vertical bar) ─────────────────────────── */
+
 .ruler-track {
   position: relative;
   width: 16px;
@@ -433,6 +350,7 @@ const rulerHeight = computed(() => {
   background: rgba(237, 28, 36, 0.06);
 }
 
+/* Major tick */
 .ruler-tick {
   position: absolute;
   top: 0;
@@ -450,6 +368,7 @@ const rulerHeight = computed(() => {
   background: var(--color-dali-red, #ed1c24);
 }
 
+/* Minor ticks (ruler texture) */
 .ruler-minor {
   position: absolute;
   right: 0;
@@ -459,7 +378,8 @@ const rulerHeight = computed(() => {
   opacity: 0.1;
 }
 
-/* ——— Red dot ——— */
+/* ── Red dot (scroll position indicator) ─────────────────────── */
+
 .ruler-dot {
   position: absolute;
   left: 0;
@@ -475,23 +395,32 @@ const rulerHeight = computed(() => {
   border-radius: 50%;
   background: var(--color-dali-red, #ed1c24);
   margin-left: 4px;
-  border: 1px solid var(--color-dali-void, #0B0B0F);
+  border: 1px solid var(--color-dali-void, #0b0b0f);
 }
 
-/* ——— Labels column — neobrutalism: solid bg, hard border, no blur ——— */
+/* ── Labels column ───────────────────────────────────────────── */
+/* Neobrutalism: solid bg, hard border, no blur, Dalí red shadow */
+
 .ruler-labels {
   display: flex;
   flex-direction: column;
   width: 220px;
-  transition: opacity 0.25s ease;
-  padding-left: 6px;
-  background: var(--color-dali-cream, #FDF6E3);
-  border: 2px solid var(--color-dali-void, #0B0B0F);
+  padding: 4px 0 4px 6px;
+  background: var(--color-dali-cream, #fdf6e3);
+  border: 2px solid var(--color-dali-void, #0b0b0f);
   border-left: none;
-  box-shadow: var(--shadow-dali-sm, 2px 2px 0px 0px #ED1C24);
-  padding-top: 4px;
-  padding-bottom: 4px;
+  box-shadow: var(--shadow-dali-sm, 2px 2px 0px 0px #ed1c24);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
 }
+
+.ruler-labels--open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── Label button ────────────────────────────────────────────── */
 
 .ruler-label {
   position: relative;
@@ -512,18 +441,15 @@ const rulerHeight = computed(() => {
     opacity 0.2s ease;
 }
 
-/* Active: red accent border */
 .ruler-label--active {
   border-left-color: var(--color-dali-red, #ed1c24);
 }
 
-/* Hovered: scales up, white text */
 .ruler-label--hovered {
   transform: translateX(4px) scale(1.08);
   border-left-color: var(--color-dali-red, #ed1c24);
 }
 
-/* Dimmed: when something else is hovered */
 .ruler-label--dimmed {
   opacity: 0.35;
 }
@@ -534,7 +460,7 @@ const rulerHeight = computed(() => {
   font-size: 8px;
   min-width: 14px;
   flex-shrink: 0;
-  color: var(--color-dali-void, #0B0B0F);
+  color: var(--color-dali-void, #0b0b0f);
   opacity: 0.35;
   transition: color 0.2s ease, opacity 0.2s ease;
 }
@@ -556,10 +482,14 @@ const rulerHeight = computed(() => {
   font-weight: 500;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: var(--color-dali-void, #0B0B0F);
+  color: var(--color-dali-void, #0b0b0f);
   opacity: 0.6;
   line-height: 1.3;
-  transition: color 0.2s ease, font-size 0.2s ease, font-weight 0.2s ease, opacity 0.2s ease;
+  transition:
+    color 0.2s ease,
+    font-size 0.2s ease,
+    font-weight 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .ruler-label--active .ruler-label__text {
@@ -569,16 +499,16 @@ const rulerHeight = computed(() => {
 }
 
 .ruler-label--hovered .ruler-label__text {
-  color: var(--color-dali-void, #0B0B0F);
+  color: var(--color-dali-void, #0b0b0f);
   font-weight: 700;
   font-size: 11px;
   opacity: 1;
 }
 
-/* ——— Hide on mobile ——— */
+/* ── Hide on mobile ──────────────────────────────────────────── */
 @media (max-width: 1023px) {
   .ruler-toc {
-    display: none;
+    display: none !important;
   }
 }
 </style>

@@ -1,14 +1,46 @@
 <script setup lang="ts">
-import { usePageTransition } from '~/composables/usePageTransition'
-
 const { images } = usePhotoGallery()
-const { transitionTo } = usePageTransition()
 
-function handleClick(index: number) {
-  transitionTo(`/gallery?img=${index}`, { sectionId: 'space' })
+const emit = defineEmits<{
+  open: [index: number]
+}>()
+
+// ── Scroll state ──
+const scrollRef = ref<HTMLElement | null>(null)
+const canScrollLeft = ref(false)
+const canScrollRight = ref(false)
+
+function updateScrollState() {
+  const el = scrollRef.value
+  if (!el) return
+  canScrollLeft.value = el.scrollLeft > 4
+  canScrollRight.value = el.scrollLeft < el.scrollWidth - el.clientWidth - 4
 }
 
-// GSAP entrance animation (replaces v-motion which breaks SSR)
+function scrollBy(direction: -1 | 1) {
+  const el = scrollRef.value
+  if (!el) return
+  // Scroll by roughly one card width (320px) + gap (24px)
+  el.scrollBy({ left: direction * 344, behavior: 'smooth' })
+}
+
+const showButtons = computed(() => images.length > 1)
+
+onMounted(() => {
+  updateScrollState()
+  // Re-check on resize (e.g. if the container width changes)
+  if (import.meta.client) {
+    window.addEventListener('resize', updateScrollState)
+  }
+})
+
+onUnmounted(() => {
+  if (import.meta.client) {
+    window.removeEventListener('resize', updateScrollState)
+  }
+})
+
+// ── GSAP entrance animation ──
 const galleryRef = ref<HTMLElement | null>(null)
 
 onMounted(async () => {
@@ -38,24 +70,29 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="relative">
-    <!-- Horizontal scroll gallery -->
+  <div ref="galleryRef" class="relative group/gallery">
+    <!-- Horizontal scroll strip -->
     <div
-      ref="galleryRef"
-      class="flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth"
-      style="scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent;"
+      ref="scrollRef"
+      class="flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth gallery-scrollbar"
+      @scroll="updateScrollState"
     >
       <div
         v-for="(image, index) in images"
         :key="index"
         class="dali-card flex-shrink-0 w-72 md:w-80 cursor-pointer overflow-hidden snap-center card-gallery opacity-0"
         style="border-color: var(--color-dali-muted);"
-        @click="handleClick(index)"
+        @click="emit('open', index)"
       >
         <ClientOnly>
           <NuxtImg
             :src="image.url"
             :alt="image.alt || image.title || 'Gallery image'"
+            :width="400"
+            :height="260"
+            fit="cover"
+            sizes="xs:280px sm:320px"
+            format="webp"
             class="w-full h-48 object-cover"
             loading="lazy"
           />
@@ -69,10 +106,39 @@ onMounted(async () => {
         </div>
       </div>
     </div>
+
+    <!-- Left scroll button (desktop only, hidden at start) -->
+    <button
+      v-if="showButtons && canScrollLeft"
+      class="gallery-nav-btn left-0 hidden lg:flex"
+      aria-label="Scroll gallery left"
+      @click="scrollBy(-1)"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+    </button>
+
+    <!-- Right scroll button (desktop only, hidden at end) -->
+    <button
+      v-if="showButtons && canScrollRight"
+      class="gallery-nav-btn right-0 hidden lg:flex"
+      aria-label="Scroll gallery right"
+      @click="scrollBy(1)"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
   </div>
 </template>
 
 <style scoped>
+.gallery-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
+}
+
 .card-gallery {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -83,5 +149,31 @@ onMounted(async () => {
 .card-gallery:active {
   transform: translate(0, 0);
   box-shadow: var(--shadow-dali-void-sm);
+}
+
+/* Navigation arrow buttons */
+.gallery-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(107, 107, 123, 0.5);
+  color: rgba(240, 237, 229, 0.8);
+  border: 1px solid rgba(240, 237, 229, 0.15);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+}
+.gallery-nav-btn:hover {
+  background: rgba(107, 107, 123, 0.75);
+  color: rgba(240, 237, 229, 1);
+}
+.gallery-nav-btn:active {
+  background: rgba(107, 107, 123, 0.9);
 }
 </style>

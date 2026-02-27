@@ -333,7 +333,7 @@ DoorWayTriggerLeave(other.GetComponent<DoorControllerUsingAction>().ID);
 }
 ```
 
-区别：EventHandler个人觉得还是更加方便，传参的时候要么是EventArgs.Empty 要么是自己定义的派生类。加入或者减少变量不会很麻烦地改变声明内容public event EventHandler<T> SomeEvent；而Action则需要随参数改变声明，虽然也可以写类，但是前者不香么。附[stackoverflow的讨论](https://stackoverflow.com/questions/1431359/event-action-vs-event-eventhandler)。
+区别：EventHandler个人觉得还是更加方便，传参的时候要么是EventArgs.Empty 要么是自己定义的派生类。加入或者减少变量不会很麻烦地改变声明内容`public event EventHandler<T> SomeEvent`；而Action则需要随参数改变声明，虽然也可以写类，但是前者不香么。附[stackoverflow的讨论](https://stackoverflow.com/questions/1431359/event-action-vs-event-eventhandler)。
 
 UnityEvent在编辑模式中有方面的交互界面，有时候直接拖拽也很方便。
 

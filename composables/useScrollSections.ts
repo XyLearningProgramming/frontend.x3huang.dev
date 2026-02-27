@@ -132,7 +132,8 @@ export function useScrollSections() {
     if (!import.meta.client) return
     const current = window.location.hash.slice(1)
     if (current === id) return
-    window.history.replaceState(null, '', `#${id}`)
+    // Preserve existing query params (e.g. ?posts=6) when updating the hash
+    window.history.replaceState(null, '', window.location.pathname + window.location.search + `#${id}`)
   }
 
   function _clearHash() {
@@ -266,7 +267,18 @@ export function useScrollSections() {
         _updateActiveSectionFromScroll()
       }, 120)
     }
-    const hash = window.location.hash.slice(1)
+    let hash = window.location.hash.slice(1)
+
+    // Infer hash from query params: ?posts=N implies #posts.
+    // This handles the case where the URL was saved/shared without a hash
+    // (e.g. /?posts=6) — the user expects to land on the posts section.
+    if (!hash) {
+      const params = new URLSearchParams(window.location.search)
+      if (params.has('posts')) {
+        hash = 'posts'
+        _setHash('posts')
+      }
+    }
 
     // No hash: if a chat section exists above the hero, the browser starts at
     // scroll 0 = chat. Snap to the hero so the landing page is always "Home".
@@ -299,14 +311,17 @@ export function useScrollSections() {
         const el = document.getElementById(hash)
         if (el) {
           const lenis = getLenis()
+          // Small negative offset so the section heading has breathing room
+          const offset = -40
           if (lenis) {
             // Reset stale Lenis state (may be left over from a previous page),
             // then immediately scroll to the target. Both calls are synchronous
             // with immediate:true, so only the final position is painted.
             lenis.scrollTo(0, { immediate: true })
-            lenis.scrollTo(el, { immediate: true })
+            lenis.scrollTo(el, { immediate: true, offset })
           } else {
-            el.scrollIntoView({ behavior: 'instant', block: 'start' })
+            const top = el.getBoundingClientRect().top + window.scrollY + offset
+            window.scrollTo({ top, behavior: 'instant' })
           }
           reenableHashSync()
           return true

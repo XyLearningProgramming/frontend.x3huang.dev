@@ -201,8 +201,8 @@ export function useFocusPanel() {
       if (import.meta.client) navigateTo('/#space')
       return
     } else if (hash === 'gallery') {
-      // Gallery is now a standalone page
-      if (import.meta.client) navigateTo('/gallery')
+      // Gallery is inline in the space section with a lightbox overlay
+      if (import.meta.client) navigateTo('/#space')
       return
     } else if (hash.startsWith('post/')) {
       // Blog post deep links now redirect to standalone blog page

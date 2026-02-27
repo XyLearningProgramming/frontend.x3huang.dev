@@ -18,34 +18,17 @@
 
     <!-- Focus content -->
     <div class="px-6 md:px-12 py-8 max-w-4xl mx-auto">
-      <!-- ===== Gallery ===== -->
-      <template v-if="activePanel === 'gallery' && selectedGalleryImage">
-        <div class="flex flex-col items-center">
-          <div class="overflow-hidden mb-4 max-w-3xl w-full border-2 border-dali-white/20">
-            <NuxtImg
-              :src="selectedGalleryImage.url"
-              :alt="selectedGalleryImage.alt || selectedGalleryImage.title || 'Photo'"
-              class="w-full object-contain max-h-[70vh]"
-            />
-          </div>
-          <div v-if="selectedGalleryImage.title || selectedGalleryImage.note" class="text-center max-w-xl">
-            <p v-if="selectedGalleryImage.title" class="font-bold text-lg mb-1 text-dali-white">{{ selectedGalleryImage.title }}</p>
-            <p v-if="selectedGalleryImage.note" class="text-sm text-dali-white/60 italic">{{ selectedGalleryImage.note }}</p>
-          </div>
-        </div>
-      </template>
+      <!-- Gallery is now handled by the lightbox overlay in SpaceSection -->
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { GalleryImage } from '~/composables/useBackgroundGallery'
 import type { PanelType } from '~/composables/useFocusPanel'
 
 defineProps<{
   activePanel: PanelType | null
   panelPayload: any
-  selectedGalleryImage: GalleryImage | null
   focusPanelTitle: string
 }>()
 

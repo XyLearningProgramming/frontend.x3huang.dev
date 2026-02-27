@@ -7,7 +7,7 @@
         class="space-heading opacity-0 mb-12"
       >
         <span class="inline-block bg-dali-violet px-5 py-2 text-dali-white border-2 border-dali-white/20 rotate-1 shadow-dali-void">
-          My Digital Space
+          Xinyu's Digital Space
         </span>
       </h2>
 
@@ -17,8 +17,14 @@
         class="mb-12 opacity-0"
       >
         <h3 class="text-lg font-bold mb-4 text-dali-gold">Gallery</h3>
-        <NeoPhotoGallery />
+        <NeoPhotoGallery @open="openLightbox" />
       </div>
+
+      <!-- Gallery lightbox overlay -->
+      <NeoGalleryLightbox
+        v-model="lightboxIndex"
+        :images="galleryImages"
+      />
 
       <!-- About & Resume cards — scattered -->
       <div class="space-cards grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -75,6 +81,14 @@ import { usePageTransition } from '~/composables/usePageTransition'
 const { transitionTo } = usePageTransition()
 
 const resumePath = '/resume/20260111.pdf'
+
+// ── Gallery lightbox state ──
+const { images: galleryImages } = usePhotoGallery()
+const lightboxIndex = ref<number | null>(null)
+
+function openLightbox(index: number) {
+  lightboxIndex.value = index
+}
 
 // ── Template refs ──
 const spaceHeadingRef = ref<HTMLElement | null>(null)

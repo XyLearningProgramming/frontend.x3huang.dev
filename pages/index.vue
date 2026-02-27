@@ -50,7 +50,6 @@
       <IndexFocusContent
         :active-panel="activePanel"
         :panel-payload="panelPayload"
-        :selected-gallery-image="null"
         :focus-panel-title="focusPanelTitle"
         @back="panelBack"
       />

@@ -8,7 +8,7 @@
           class="posts-heading opacity-0"
         >
           <span class="inline-block bg-dali-red px-5 py-2 text-dali-white border-2 border-dali-white/20 -rotate-2 shadow-dali-void">
-            Latest Posts
+            Xinyu's Latest Posts
           </span>
         </h2>
         <a
@@ -220,9 +220,10 @@ function syncState() {
   } else {
     url.searchParams.delete('posts')
   }
-  // Strip the hash so the URL stays clean (e.g. /?posts=6, not /?posts=6#posts)
-  url.hash = ''
-  window.history.replaceState(history.state, '', url.pathname + url.search)
+  // Preserve the #posts hash so the page stays anchored to the posts section.
+  // Without it, reloading /?posts=6 would land at the hero instead of posts.
+  url.hash = 'posts'
+  window.history.replaceState(history.state, '', url.pathname + url.search + url.hash)
 
   // sessionStorage — survives cross-page navigation (blog → home)
   if (visibleExtra.value > 0) {
