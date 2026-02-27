@@ -81,7 +81,7 @@ onUnmounted(() => stopTimer())
 
 .thinking-content {
   border-left: 3px solid var(--color-dali-red);
-  color: var(--chat-muted, rgba(0,0,0,0.45));
+  color: var(--chat-muted, rgba(0,0,0,0.65));
   font-family: var(--font-dali-body, inherit);
 }
 

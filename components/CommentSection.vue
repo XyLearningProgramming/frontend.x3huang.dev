@@ -38,8 +38,82 @@ onMounted(() => {
     script.setAttribute('data-isso', '/isso/')
     script.async = true
     document.head.appendChild(script)
+  } else if (import.meta.dev) {
+    // Inject mock Isso DOM so :deep() styles render during dev
+    injectMockIssoDOM()
   }
 })
+
+function injectMockIssoDOM() {
+  const thread = document.getElementById('isso-thread')
+  if (!thread) return
+  thread.innerHTML = `
+    <h4 class="isso-thread-heading">Comments</h4>
+    <div class="isso-postbox">
+      <div class="isso-form-wrapper">
+        <div class="isso-textarea-wrapper">
+          <textarea class="isso-textarea" placeholder="Type comment here (dev mock)"></textarea>
+        </div>
+        <div class="isso-auth-section">
+          <div class="isso-input-wrapper"><label>Name</label><input placeholder="Name (optional)"></div>
+          <div class="isso-input-wrapper"><label>E-mail</label><input placeholder="E-mail (optional)"></div>
+          <div class="isso-post-action"><input type="submit" value="Submit"></div>
+        </div>
+      </div>
+    </div>
+    <div id="isso-root">
+      <div class="isso-comment">
+        <div class="isso-comment-header">
+          <span class="isso-author">Dev User</span>
+          <span class="isso-spacer">&bull;</span>
+          <a class="isso-permalink" href="#">2 hours ago</a>
+        </div>
+        <div class="isso-text">
+          <p>This is a <strong>mock comment</strong> with <code>inline code</code> for testing the Dalí theme.</p>
+          <pre><code>console.log("hello isso")</code></pre>
+        </div>
+        <div class="isso-comment-footer">
+          <span class="isso-votes">3</span>
+          <a class="isso-upvote">&#9650;</a>
+          <a class="isso-downvote">&#9660;</a>
+          <a class="isso-reply">Reply</a>
+        </div>
+        <div class="isso-follow-up">
+          <div class="isso-comment">
+            <div class="isso-comment-header">
+              <span class="isso-author">Reply Author</span>
+              <span class="isso-spacer">&bull;</span>
+              <a class="isso-permalink" href="#">1 hour ago</a>
+            </div>
+            <div class="isso-text"><p>A nested reply to test follow-up styling.</p></div>
+            <div class="isso-comment-footer">
+              <span class="isso-votes">1</span>
+              <a class="isso-upvote isso-upvoted">&#9650;</a>
+              <a class="isso-downvote">&#9660;</a>
+              <a class="isso-reply">Reply</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="isso-comment">
+        <div class="isso-comment-header">
+          <span class="isso-author">Another Commenter</span>
+          <span class="isso-spacer">&bull;</span>
+          <a class="isso-permalink" href="#">30 minutes ago</a>
+        </div>
+        <div class="isso-text">
+          <p>Testing <em>multiple</em> comments and <a href="#">link styling</a>.</p>
+        </div>
+        <div class="isso-comment-footer">
+          <span class="isso-votes">0</span>
+          <a class="isso-upvote">&#9650;</a>
+          <a class="isso-downvote isso-downvoted">&#9660;</a>
+          <a class="isso-reply">Reply</a>
+        </div>
+      </div>
+    </div>
+  `
+}
 </script>
 
 <style scoped>

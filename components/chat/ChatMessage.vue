@@ -15,21 +15,35 @@ const emit = defineEmits<{
 
 const router = useRouter()
 
-// ── Internal post link detection ──
-const INTERNAL_POST_RE = /^(?:https?:\/\/(?:www\.)?x3huang\.dev)?\/posts\/([^\s?#]+)/
+// ── Internal link detection (domain-agnostic, SSR-safe) ──
+const siteOrigin = useRequestURL().origin
 
-function isInternalPostUrl(href: string): string | null {
-  const m = href.match(INTERNAL_POST_RE)
-  return m ? `/posts/${m[1]}` : null
+function toInternalPath(href: string): string | null {
+  // Relative paths starting with / are always internal
+  if (href.startsWith('/')) return href
+  // Absolute URLs — check if same origin
+  try {
+    const url = new URL(href)
+    if (url.origin === siteOrigin) return url.pathname
+  } catch { /* not a valid absolute URL */ }
+  return null
+}
+
+function isPostPath(path: string): boolean {
+  return path.startsWith('/posts/')
 }
 
 // ── Custom marked renderer ──
 const chatRenderer = new Renderer()
 chatRenderer.link = ({ href, text }: { href: string; text: string }) => {
-  const internalPath = isInternalPostUrl(href)
-  if (internalPath) {
-    // Emit a specially-tagged anchor for post-processing
+  const internalPath = toInternalPath(href)
+  if (internalPath && isPostPath(internalPath)) {
+    // Post link — tagged for card upgrade in postProcessPostCards
     return `<a href="${internalPath}" data-chat-post-link title="${text}">${text}</a>`
+  }
+  if (internalPath) {
+    // Other internal link — SPA navigation, no card
+    return `<a href="${internalPath}" data-chat-internal-link>${text}</a>`
   }
   // External links: open in new tab
   return `<a href="${href}" target="_blank" rel="noopener noreferrer">${text}</a>`
@@ -65,7 +79,9 @@ const renderedContent = computed(() => {
 const markdownRef = ref<HTMLElement | null>(null)
 
 function handleMarkdownClick(e: MouseEvent) {
-  const target = (e.target as HTMLElement).closest('a[data-chat-post-link]') as HTMLAnchorElement | null
+  const target = (e.target as HTMLElement).closest(
+    'a[data-chat-post-link], a[data-chat-internal-link]',
+  ) as HTMLAnchorElement | null
   if (!target) return
   e.preventDefault()
   const href = target.getAttribute('href')
@@ -485,12 +501,25 @@ const errorIcon = computed(() => {
 }
 
 /* ============= Markdown ============= */
+.chat-markdown { color: var(--chat-text, #1A1A1A); }
+.chat-markdown :deep(*) { color: inherit; }
 .chat-markdown :deep(p) { margin-bottom: 0.5em; }
 .chat-markdown :deep(p:last-child) { margin-bottom: 0; }
-.chat-markdown :deep(strong) { font-weight: 700; }
+.chat-markdown :deep(h1),
+.chat-markdown :deep(h2),
+.chat-markdown :deep(h3),
+.chat-markdown :deep(h4) {
+  font-weight: 700;
+  margin-top: 0.75em;
+  margin-bottom: 0.4em;
+  color: var(--chat-text, #1A1A1A);
+}
+.chat-markdown :deep(h2) { font-size: 1.15em; }
+.chat-markdown :deep(h3) { font-size: 1.05em; }
+.chat-markdown :deep(strong) { font-weight: 700; color: var(--chat-text, #1A1A1A); }
 .chat-markdown :deep(em) { font-style: italic; }
 .chat-markdown :deep(code) {
-  background: rgba(0,0,0,0.05);
+  background: rgba(0,0,0,0.06);
   border: 1px solid rgba(0,0,0,0.1);
   padding: 0.1em 0.4em;
   font-size: 0.85em;
@@ -498,8 +527,8 @@ const errorIcon = computed(() => {
   color: var(--color-dali-red);
 }
 .chat-markdown :deep(pre) {
-  background: #1A1A2E;
-  color: #F0EDE5;
+  background: rgba(0,0,0,0.05);
+  color: var(--chat-text, #1A1A1A);
   border: 1px solid rgba(0,0,0,0.1);
   padding: 0.75em;
   overflow-x: auto;
@@ -538,12 +567,12 @@ const errorIcon = computed(() => {
   gap: 0.75rem;
   padding: 0.75rem 1rem;
   margin: 0.5em 0;
-  background: var(--color-dali-smoke, #1A1A2E);
+  background: #FFF8E7;
   border: 2px solid var(--color-dali-red, #ED1C24);
-  box-shadow: 2px 2px 0 0 var(--color-dali-void, #0B0B0F);
+  box-shadow: 2px 2px 0 0 rgba(0,0,0,0.08);
   border-radius: 12px;
   text-decoration: none !important;
-  color: var(--color-dali-white, #F0EDE5) !important;
+  color: var(--chat-text, #1A1A1A) !important;
   cursor: pointer;
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
               box-shadow 0.2s ease;
@@ -551,12 +580,12 @@ const errorIcon = computed(() => {
 
 .chat-markdown :deep(.chat-post-card:hover) {
   transform: translate(-2px, -2px);
-  box-shadow: 4px 4px 0 0 var(--color-dali-void, #0B0B0F);
+  box-shadow: 4px 4px 0 0 rgba(0,0,0,0.1);
 }
 
 .chat-markdown :deep(.chat-post-card:active) {
   transform: translate(0, 0);
-  box-shadow: 1px 1px 0 0 var(--color-dali-void, #0B0B0F);
+  box-shadow: 1px 1px 0 0 rgba(0,0,0,0.06);
 }
 
 .chat-markdown :deep(.chat-post-card__body) {
@@ -572,7 +601,7 @@ const errorIcon = computed(() => {
   font-weight: 700;
   font-size: 0.8rem;
   line-height: 1.3;
-  color: var(--color-dali-white, #F0EDE5) !important;
+  color: var(--chat-text, #1A1A1A) !important;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -582,7 +611,7 @@ const errorIcon = computed(() => {
 .chat-markdown :deep(.chat-post-card__desc) {
   font-size: 0.7rem;
   line-height: 1.4;
-  color: rgba(240, 237, 229, 0.55) !important;
+  color: var(--chat-muted, #6B6B7B) !important;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;

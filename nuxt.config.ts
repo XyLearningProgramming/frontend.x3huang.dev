@@ -2,6 +2,10 @@
 import { siteConfig, getBaseUrl } from './site.config'
 import tailwindcss from '@tailwindcss/vite'
 
+// Dev without POSTGRES_URL → local SQLite (zero infra needed)
+// Otherwise (prod build / dev with real DB) → Postgres; placeholder for Docker entrypoint sed
+const useDevSQLite = process.env.NODE_ENV === 'development' && !process.env.POSTGRES_URL
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
   devtools: { enabled: true },
@@ -71,6 +75,16 @@ export default defineNuxtConfig({
     },
     display: 'swap',
   },
+  // Strip _dev pages from production builds entirely
+  hooks: {
+    'pages:extend'(pages) {
+      if (process.env.NODE_ENV === 'production') {
+        for (let i = pages.length - 1; i >= 0; i--) {
+          if (pages[i].path.startsWith('/_dev')) pages.splice(i, 1)
+        }
+      }
+    },
+  },
   ssr: true,
   experimental: {
     payloadExtraction: false
@@ -92,10 +106,12 @@ export default defineNuxtConfig({
   nitro: {
     preset: "node-server",
     devProxy: {
-      '/api/v1/chatty': {
-        target: 'http://localhost:8080/api/v1/chatty',
-        changeOrigin: true,
-      },
+      ...(process.env.CHATTY_URL ? {
+        '/api/v1/chatty': {
+          target: `${process.env.CHATTY_URL}/api/v1/chatty`,
+          changeOrigin: true,
+        },
+      } : {}),
     },
     routeRules: {
       '/.well-known/**': { headers: { 'Access-Control-Allow-Origin': '*' } }
@@ -126,10 +142,9 @@ export default defineNuxtConfig({
     provider: 'ipx'
   },
   content: {
-    database: {
-      type: 'postgres',
-      url: process.env.POSTGRES_URL || "postgres_url_default",
-    },
+    database: useDevSQLite
+      ? { type: 'sqlite' as const, filename: '.data/content.db' }
+      : { type: 'postgres' as const, url: process.env.POSTGRES_URL || 'postgres_url_default' },
     build: {
       markdown: {
         highlight: {
