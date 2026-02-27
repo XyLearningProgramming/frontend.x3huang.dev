@@ -26,8 +26,8 @@
         :images="galleryImages"
       />
 
-      <!-- About & Resume cards — scattered -->
-      <div class="space-cards grid grid-cols-1 md:grid-cols-2 gap-8">
+      <!-- About, Resume & Nihongo cards — scattered -->
+      <div class="space-cards grid grid-cols-1 md:grid-cols-3 gap-8">
         <a href="/about" class="block" @click.prevent="transitionTo('/about', { sectionId: 'space' })">
           <DaliIrregularCard
             ref="aboutCardRef"
@@ -69,6 +69,27 @@
             </span>
           </DaliIrregularCard>
         </a>
+
+        <a :href="nihongoUrl" target="_blank" rel="noopener noreferrer" class="block">
+          <DaliIrregularCard
+            ref="nihongoCardRef"
+            :seed="202"
+            :rotation="-1.5"
+            accent-color="var(--color-dali-red)"
+            class="space-card opacity-0 cursor-pointer"
+          >
+            <h3 class="text-lg font-bold mb-2 text-dali-white">勉強中</h3>
+            <p class="text-sm text-dali-muted">
+              Japanese Grammar Notes from "新标日" — my language learning journey.
+            </p>
+            <span class="mt-3 text-xs font-bold text-dali-red flex items-center gap-1">
+              View notes
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </span>
+          </DaliIrregularCard>
+        </a>
       </div>
     </div>
   </section>
@@ -81,6 +102,7 @@ import { usePageTransition } from '~/composables/usePageTransition'
 const { transitionTo } = usePageTransition()
 
 const resumePath = '/resume/20260111.pdf'
+const nihongoUrl = 'https://xylearningprogramming.github.io/nihongo_pages/'
 
 // ── Gallery lightbox state ──
 const { images: galleryImages } = usePhotoGallery()
@@ -95,6 +117,7 @@ const spaceHeadingRef = ref<HTMLElement | null>(null)
 const galleryRef = ref<HTMLElement | null>(null)
 const aboutCardRef = ref<any>(null)
 const resumeCardRef = ref<any>(null)
+const nihongoCardRef = ref<any>(null)
 
 // ── GSAP scroll animations ──
 onMounted(async () => {
@@ -160,20 +183,38 @@ onMounted(async () => {
       )
     }
 
-    const contactEl = resumeCardRef.value?.$el || resumeCardRef.value
-    if (contactEl) {
-      gsap.fromTo(contactEl,
+    const resumeEl = resumeCardRef.value?.$el || resumeCardRef.value
+    if (resumeEl) {
+      gsap.fromTo(resumeEl,
         { opacity: 0, x: isMobile ? 40 : 120, rotation: isMobile ? 0 : 5 },
         {
           opacity: 1, x: 0, rotation: 0,
           duration: 0.7,
           ease: 'back.out(1.2)',
           scrollTrigger: {
-            trigger: contactEl,
+            trigger: resumeEl,
             start: 'top 85%',
             toggleActions: ta,
           },
           delay: 0.15,
+        },
+      )
+    }
+
+    const nihongoEl = nihongoCardRef.value?.$el || nihongoCardRef.value
+    if (nihongoEl) {
+      gsap.fromTo(nihongoEl,
+        { opacity: 0, y: isMobile ? 40 : 80, rotation: isMobile ? 0 : -3 },
+        {
+          opacity: 1, y: 0, rotation: 0,
+          duration: 0.7,
+          ease: 'back.out(1.2)',
+          scrollTrigger: {
+            trigger: nihongoEl,
+            start: 'top 85%',
+            toggleActions: ta,
+          },
+          delay: 0.3,
         },
       )
     }

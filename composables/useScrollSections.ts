@@ -133,13 +133,13 @@ export function useScrollSections() {
     const current = window.location.hash.slice(1)
     if (current === id) return
     // Preserve existing query params (e.g. ?posts=6) when updating the hash
-    window.history.replaceState(null, '', window.location.pathname + window.location.search + `#${id}`)
+    window.history.replaceState(history.state, '', window.location.pathname + window.location.search + `#${id}`)
   }
 
   function _clearHash() {
     if (!import.meta.client) return
     if (!window.location.hash) return
-    window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    window.history.replaceState(history.state, '', window.location.pathname + window.location.search)
   }
 
   // ─── IntersectionObserver for active section tracking ──────────────

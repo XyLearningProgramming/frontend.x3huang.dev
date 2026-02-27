@@ -33,7 +33,7 @@ onMounted(() => {
     issoThread.setAttribute('data-isso-id', threadId.value)
   }
 
-  if (!document.querySelector('script[src*="isso"]')) {
+  if (!import.meta.dev && !document.querySelector('script[src*="isso"]')) {
     const script = document.createElement('script')
     script.src = '/isso/js/embed.min.js'
     script.setAttribute('data-isso', '/isso/')

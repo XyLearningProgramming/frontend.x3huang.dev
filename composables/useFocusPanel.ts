@@ -99,7 +99,7 @@ export function useFocusPanel() {
 
     // Update browser hash
     if (import.meta.client) {
-      window.history.pushState({ focusPanel: true }, '', `#${resolvedHash}`)
+      window.history.pushState({ ...history.state, focusPanel: true }, '', `#${resolvedHash}`)
     }
 
     // Pan camera to focus (no-op if already focused)
@@ -139,7 +139,7 @@ export function useFocusPanel() {
       // Restore the previous panel's hash and scroll position
       const prev = newStack[newStack.length - 1]
       if (import.meta.client) {
-        window.history.replaceState({ focusPanel: true }, '', `#${prev.hash}`)
+        window.history.replaceState({ ...history.state, focusPanel: true }, '', `#${prev.hash}`)
         // Restore focus column scroll position
         await nextTick()
         const focusEl = document.querySelector('.dali-focus') as HTMLElement | null
@@ -162,7 +162,7 @@ export function useFocusPanel() {
   async function _returnToDiscovery() {
     // Clear hash
     if (import.meta.client) {
-      window.history.replaceState(null, '', window.location.pathname)
+      window.history.replaceState(history.state, '', window.location.pathname)
     }
 
     // Wait for the camera animation to fully complete before restoring scroll
