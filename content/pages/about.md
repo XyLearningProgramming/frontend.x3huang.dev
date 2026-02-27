@@ -26,6 +26,7 @@ Welcome to my digital space where I share insights, experiences, and lessons lea
 
 ### Recent Updates
 
+- **February 2026** - Major site redesign adopting the surrealist "Persona Dalí" design system — irregular clip-path cards, chromatic offset shadows, the Midnight Carnival palette, and scroll-driven color-flow backgrounds; rebuilt as a single-scroll homepage with revamped blog/chat/gallery and Lenis smooth scrolling.
 - **July 2025** - Migrated published posts from previous site
 - **June 2025** - Complete site refactor with unified design system
 
