@@ -1,18 +1,18 @@
 <template>
   <div class="flex flex-col w-full h-full h-[100dvh]">
     <!-- Chat header -->
-    <div class="flex flex-col items-center justify-center px-4 py-2.5 border-b shrink-0 gap-0.5" style="border-color: var(--chat-border, rgba(0,0,0,0.08));">
-      <span class="text-xs" style="color: var(--chat-muted, #6B6B7B);">
+    <div class="flex flex-col items-center justify-center px-4 py-2 border-b shrink-0 gap-0.5" style="border-color: var(--chat-border, rgba(0,0,0,0.08));">
+      <span class="text-[10px] font-mono tracking-wide" style="color: var(--chat-muted, #6B6B7B);">
         Powered by
         <a
           href="https://github.com/XyLearningProgramming/chatty"
           target="_blank"
           rel="noopener noreferrer"
-          class="underline font-bold text-dali-teal"
+          class="underline font-medium text-dali-teal"
         >chatty</a>
-        <span class="text-[10px] opacity-60 ml-1">— responses may take 10-60 s</span>
+        <span class="opacity-50 ml-0.5">· 10-60 s response time</span>
       </span>
-      <span class="text-[10px] opacity-40" style="color: var(--chat-muted, #6B6B7B);">
+      <span class="text-[10px] font-mono tracking-wide opacity-35" style="color: var(--chat-muted, #6B6B7B);">
         Responses are AI-generated and may not always be accurate.
       </span>
     </div>
