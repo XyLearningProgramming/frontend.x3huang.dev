@@ -1,8 +1,8 @@
 <template>
   <LayoutsSubPageLayout
     :title="aboutContent?.title || 'About'"
-    back-to="/#space"
-    back-label="Home"
+    :back-to="backTo"
+    :back-label="backLabel"
     max-width="default"
   >
     <!-- Loading -->
@@ -61,6 +61,23 @@
 
 <script setup lang="ts">
 import AnalyticsDisplay from '~/components/blog/AnalyticsDisplay.vue'
+
+// ── Smart back navigation ──
+// If the user arrived from a sub-page (e.g. a blog post), go back there.
+// Otherwise, fall back to the home page space section.
+const backTo = computed(() => {
+  if (!import.meta.client) return '/#space'
+  const prev = window.history.state?.back as string | undefined
+  if (prev && prev !== '/' && !prev.startsWith('/#') && !prev.startsWith('/?')) return prev
+  return '/#space'
+})
+
+const backLabel = computed(() => {
+  const to = backTo.value
+  if (to === '/' || to.startsWith('/#') || to.startsWith('/?')) return 'Home'
+  if (to.startsWith('/posts/')) return 'Post'
+  return 'Back'
+})
 
 const { data: allPages, error } = await useAsyncData('all-pages', () =>
   queryCollection('pages').all(),

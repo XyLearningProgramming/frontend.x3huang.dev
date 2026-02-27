@@ -1,4 +1,4 @@
-import { ref, readonly } from 'vue'
+import { ref, readonly, type Ref } from 'vue'
 import { refreshColorFlow, waitForColorFlowReady } from '~/composables/useColorFlow'
 
 /**
@@ -32,8 +32,13 @@ const SECTION_COLORS: Record<string, string> = {
 const DARK_COLOR = '#161622'
 
 // ─── Singleton state ────────────────────────────────────────────────────
-const overlayEl = ref<HTMLElement | null>(null)
-const isTransitioning = ref(false)
+// Persist refs on window so they survive HMR module re-evaluation.
+// Without this, HMR creates new refs and stale router guards (from the
+// previous module instance) check the old ref — missing the transition
+// flag and prematurely fading out the overlay.
+const _g = (typeof window !== 'undefined' ? window : globalThis) as any
+const overlayEl: Ref<HTMLElement | null> = _g.__pt_overlayEl ?? (_g.__pt_overlayEl = ref<HTMLElement | null>(null))
+const isTransitioning: Ref<boolean> = _g.__pt_isTransitioning ?? (_g.__pt_isTransitioning = ref(false))
 
 /** Check whether a page transition is currently in progress (usable outside the composable). */
 export function isPageTransitioning(): boolean {
@@ -129,7 +134,15 @@ export function usePageTransition() {
       return
     }
 
+    // #region agent log
+    fetch('http://127.0.0.1:7245/ingest/13458263-39fc-48cf-b5d3-d5ee70770898', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'usePageTransition.ts:transitionTo-entry', message: 'transitionTo entered, before gsap import', data: { url, scrollY: window.scrollY, isTransitioning: isTransitioning.value, lenisIsStopped: getLenis()?.isStopped }, timestamp: Date.now(), hypothesisId: 'H1' }) }).catch(() => { });
+    // #endregion
+
     const { gsap } = await import('gsap')
+
+    // #region agent log
+    fetch('http://127.0.0.1:7245/ingest/13458263-39fc-48cf-b5d3-d5ee70770898', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'usePageTransition.ts:transitionTo-after-gsap', message: 'gsap imported, about to set isTransitioning=true', data: { url, scrollY: window.scrollY, isTransitioning: isTransitioning.value, lenisIsStopped: getLenis()?.isStopped }, timestamp: Date.now(), hypothesisId: 'H1' }) }).catch(() => { });
+    // #endregion
 
     isTransitioning.value = true
 
@@ -188,9 +201,10 @@ export function usePageTransition() {
       // and "navigateTo" where the browser could de-composite the layer and
       // flash the underlying content.
       gsap.set(el, { opacity: 0, backgroundColor: startColor })
+      let phase1Tween: ReturnType<typeof gsap.to> | null = null
       await new Promise<void>((resolve) => {
         let resolved = false
-        const tween = gsap.to(el, {
+        phase1Tween = gsap.to(el, {
           opacity: 1,
           backgroundColor: DARK_COLOR,
           duration: 0.55,
@@ -198,7 +212,7 @@ export function usePageTransition() {
           onUpdate() {
             // At 85% progress with power2.inOut easing the rendered
             // opacity is ~0.96 — content is essentially invisible.
-            if (!resolved && tween.progress() >= 0.85) {
+            if (!resolved && phase1Tween!.progress() >= 0.85) {
               resolved = true
               resolve()
             }
@@ -212,16 +226,48 @@ export function usePageTransition() {
       if (import.meta.client) {
         document.body.style.backgroundColor = DARK_COLOR
       }
+
+      // Kill the Phase 1 tween so it can't overwrite our forced opacity=1
+      // on subsequent frames, then snap the overlay to fully opaque + dark.
+      // This prevents the ~0.5% transparency that lets the browser's
+      // scroll-position clamping (tall index → short sub-page) flash through.
+      if (phase1Tween) {
+        (phase1Tween as any).kill()
+      }
+      gsap.set(el, { opacity: 1, backgroundColor: DARK_COLOR })
     }
 
     // Back: wait for the overlay to be fully painted before navigating.
     // Forward: we already resolved early, so just one extra frame for safety.
     await waitFrames(isBack ? 2 : 1)
 
+    // For forward navigation, pre-scroll to 0 while overlay is opaque.
+    // Without this, the browser clamps scroll when the tall index DOM is
+    // swapped for the shorter sub-page, causing a 1-frame compositor
+    // glitch visible even through a fully opaque overlay.
+    if (!isBack) {
+      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
+      const l = getLenis()
+      if (l) {
+        const wasStopped = l.isStopped
+        if (wasStopped) l.start()
+        l.scrollTo(0, { immediate: true })
+        if (wasStopped) l.stop()
+      }
+    }
+
+    // #region agent log
+    fetch('http://127.0.0.1:7245/ingest/13458263-39fc-48cf-b5d3-d5ee70770898', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'usePageTransition.ts:phase2-pre-navigate', message: 'Phase 2: about to navigateTo, overlay should be opaque', data: { url, scrollY: window.scrollY, overlayOpacity: el.style.opacity, overlayDisplay: el.style.display, lenisIsStopped: getLenis()?.isStopped }, timestamp: Date.now(), hypothesisId: 'H2,H5' }) }).catch(() => { });
+    // #endregion
+
     // ── Phase 2: Navigate while overlay is fully opaque ─────────────
     await navigateTo(url)
     await nextTick()
     await nextTick()
+
+    // #region agent log
+    fetch('http://127.0.0.1:7245/ingest/13458263-39fc-48cf-b5d3-d5ee70770898', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'usePageTransition.ts:phase2-post-navigate', message: 'Phase 2: navigateTo resolved', data: { url, scrollY: window.scrollY, overlayOpacity: el.style.opacity, lenisIsStopped: getLenis()?.isStopped }, timestamp: Date.now(), hypothesisId: 'H2' }) }).catch(() => { });
+    // #endregion
 
     // Wait a few frames for the new page DOM to settle
     // (GSAP ScrollTrigger, async data, Lenis recalculation)

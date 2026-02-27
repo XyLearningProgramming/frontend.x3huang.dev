@@ -2,8 +2,8 @@
   <div class="comment-section w-full max-w-4xl mx-auto mt-8 mb-8">
     <section id="isso-thread" :data-title="props.title">
       <noscript>
-        <div class="neo-border bg-neo-bg p-6">
-          <p class="text-neo-black text-center m-0">Comments require JavaScript to be enabled.</p>
+        <div class="border-2 border-dali-white/15 bg-dali-white/5 p-6">
+          <p class="text-dali-muted text-center m-0">Comments require JavaScript to be enabled.</p>
         </div>
       </noscript>
     </section>
@@ -29,7 +29,6 @@ const threadId = computed(() => props.threadId || route.path)
 onMounted(() => {
   const issoThread = document.getElementById('isso-thread')
   if (issoThread) {
-    issoThread.setAttribute('data-title', props.title || document.title || '')
     issoThread.setAttribute('data-isso-id', threadId.value)
   }
 
@@ -44,13 +43,16 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Neobrutalism styling for Isso comments */
+/* ============================================================
+   Dalí-themed styling for Isso comments
+   Dark surface compatible (dali-focus-surface)
+   ============================================================ */
 
 :deep(.isso-thread-heading) {
-  color: var(--color-neo-black);
+  color: var(--color-dali-white);
   font-size: 18px;
   font-weight: 700;
-  font-family: var(--font-neo-heading);
+  font-family: var(--font-dali-heading);
   margin-bottom: 16px;
   text-align: left;
 }
@@ -74,31 +76,31 @@ onMounted(() => {
   width: 100%;
   min-height: 100px;
   padding: 12px;
-  background: var(--color-neo-bg);
-  border: 2px solid var(--color-neo-black);
+  background: rgba(240, 237, 229, 0.05);
+  border: 2px solid rgba(240, 237, 229, 0.15);
   border-radius: 0;
   resize: vertical;
   outline: none;
   transition: all 0.2s;
-  color: var(--color-neo-black);
-  box-shadow: 4px 4px 0px 0px var(--color-neo-black);
+  color: var(--color-dali-white);
+  box-shadow: var(--shadow-dali-void-sm);
 }
 
 :deep(.isso-textarea:focus) {
-  box-shadow: 2px 2px 0px 0px var(--color-neo-black);
-  transform: translate(2px, 2px);
+  border-color: var(--color-dali-red);
+  box-shadow: var(--shadow-dali-void-sm);
 }
 
 :deep(.isso-textarea::placeholder) {
-  color: rgba(0, 0, 0, 0.4);
+  color: var(--color-dali-muted);
 }
 
 /* Preview styling */
 :deep(.isso-preview) {
   margin-top: 12px;
   padding: 12px;
-  background: var(--color-neo-bg);
-  border: 2px solid var(--color-neo-black);
+  background: rgba(240, 237, 229, 0.05);
+  border: 2px solid rgba(240, 237, 229, 0.15);
   border-radius: 0;
 }
 
@@ -107,12 +109,12 @@ onMounted(() => {
 }
 
 :deep(.isso-preview .isso-text-wrapper) {
-  color: var(--color-neo-black);
+  color: var(--color-dali-white);
 }
 
 :deep(.isso-preview .isso-text p) {
   margin: 0;
-  color: var(--color-neo-black);
+  color: rgba(240, 237, 229, 0.85);
 }
 
 :deep(.isso-auth-section) {
@@ -133,28 +135,28 @@ onMounted(() => {
   margin-bottom: 4px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-neo-black);
+  color: var(--color-dali-white);
 }
 
 :deep(.isso-input-wrapper input) {
   width: 100%;
   padding: 8px 12px;
-  background: var(--color-neo-bg);
-  border: 2px solid var(--color-neo-black);
+  background: rgba(240, 237, 229, 0.05);
+  border: 2px solid rgba(240, 237, 229, 0.15);
   border-radius: 0;
   outline: none;
   transition: all 0.2s;
-  color: var(--color-neo-black);
-  box-shadow: 2px 2px 0px 0px var(--color-neo-black);
+  color: var(--color-dali-white);
+  box-shadow: var(--shadow-dali-void-sm);
 }
 
 :deep(.isso-input-wrapper input:focus) {
-  box-shadow: 1px 1px 0px 0px var(--color-neo-black);
-  transform: translate(1px, 1px);
+  border-color: var(--color-dali-red);
+  box-shadow: var(--shadow-dali-void-sm);
 }
 
 :deep(.isso-input-wrapper input::placeholder) {
-  color: rgba(0, 0, 0, 0.4);
+  color: var(--color-dali-muted);
 }
 
 :deep(.isso-post-action) {
@@ -163,19 +165,22 @@ onMounted(() => {
 
 :deep(.isso-post-action input) {
   padding: 8px 16px;
-  background: var(--color-neo-yellow);
-  border: 2px solid var(--color-neo-black);
+  background: var(--color-dali-red);
+  border: 2px solid var(--color-dali-red);
   border-radius: 0;
   cursor: pointer;
   transition: all 0.2s;
-  color: var(--color-neo-black);
+  color: var(--color-dali-white);
   font-weight: 700;
-  box-shadow: 4px 4px 0px 0px var(--color-neo-black);
+  box-shadow: var(--shadow-dali-void-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 :deep(.isso-post-action input:hover:not(:disabled)) {
-  background: var(--color-neo-orange);
-  box-shadow: 2px 2px 0px 0px var(--color-neo-black);
+  background: var(--color-dali-gold);
+  border-color: var(--color-dali-gold);
+  box-shadow: none;
   transform: translate(2px, 2px);
 }
 
@@ -184,9 +189,16 @@ onMounted(() => {
   cursor: not-allowed;
 }
 
-/* Comments layout */
+/* ── Comments layout ── */
 :deep(#isso-root) {
   margin-top: 16px;
+}
+
+:deep(.isso-comment) {
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(240, 237, 229, 0.1);
+  background: rgba(240, 237, 229, 0.03);
 }
 
 :deep(.isso-comment-header) {
@@ -198,30 +210,30 @@ onMounted(() => {
 
 :deep(.isso-author) {
   font-weight: 700;
-  color: var(--color-neo-black);
+  color: var(--color-dali-white);
 }
 
 :deep(.isso-spacer) {
   font-size: 12px;
-  color: rgba(0, 0, 0, 0.5);
+  color: var(--color-dali-muted);
 }
 
 :deep(.isso-permalink) {
   font-size: 12px;
   text-decoration: none;
   transition: color 0.2s;
-  color: rgba(0, 0, 0, 0.5);
+  color: var(--color-dali-muted);
 }
 
 :deep(.isso-permalink:hover) {
-  color: var(--color-neo-black);
+  color: var(--color-dali-gold);
   text-decoration: underline;
 }
 
 :deep(.isso-text) {
   margin-bottom: 12px;
   line-height: 1.6;
-  color: var(--color-neo-black);
+  color: rgba(240, 237, 229, 0.85);
 }
 
 :deep(.isso-text p) {
@@ -233,34 +245,34 @@ onMounted(() => {
 }
 
 :deep(.isso-text strong) {
-  color: var(--color-neo-black);
+  color: var(--color-dali-white);
   font-weight: 700;
 }
 
 :deep(.isso-text code) {
-  background: var(--color-neo-black);
-  color: var(--color-neo-bg);
+  background: rgba(240, 237, 229, 0.1);
+  color: var(--color-dali-gold);
   padding: 2px 6px;
   border-radius: 0;
   font-size: 14px;
 }
 
 :deep(.isso-text pre) {
-  background: var(--color-neo-black);
-  color: var(--color-neo-bg);
-  border: 2px solid var(--color-neo-black);
+  background: var(--color-dali-void);
+  color: var(--color-dali-white);
+  border: 1px solid rgba(240, 237, 229, 0.1);
   border-radius: 0;
   padding: 16px;
   margin: 16px 0;
   overflow-x: auto;
-  box-shadow: 4px 4px 0px 0px var(--color-neo-black);
+  box-shadow: var(--shadow-dali-void-sm);
 }
 
 :deep(.isso-text pre code) {
   background: transparent;
   border: none;
   padding: 0;
-  color: var(--color-neo-bg);
+  color: var(--color-dali-white);
 }
 
 :deep(.isso-comment-footer) {
@@ -272,7 +284,7 @@ onMounted(() => {
 
 :deep(.isso-votes) {
   font-weight: 700;
-  color: var(--color-neo-black);
+  color: var(--color-dali-white);
 }
 
 :deep(.isso-upvote),
@@ -283,32 +295,37 @@ onMounted(() => {
   border-radius: 0;
   text-decoration: none;
   transition: all 0.2s;
+  color: var(--color-dali-muted);
 }
 
 :deep(.isso-upvote:hover) {
-  background: rgba(168, 230, 207, 0.3);
+  background: rgba(46, 196, 182, 0.15);
+  color: var(--color-dali-teal);
 }
 
 :deep(.isso-downvote:hover) {
-  background: rgba(255, 107, 107, 0.3);
+  background: rgba(237, 28, 36, 0.15);
+  color: var(--color-dali-red);
 }
 
 :deep(.isso-upvote.isso-upvoted) {
-  background: rgba(168, 230, 207, 0.3);
+  background: rgba(46, 196, 182, 0.15);
+  color: var(--color-dali-teal);
 }
 
 :deep(.isso-downvote.isso-downvoted) {
-  background: rgba(255, 107, 107, 0.3);
+  background: rgba(237, 28, 36, 0.15);
+  color: var(--color-dali-red);
 }
 
 :deep(.isso-reply) {
   text-decoration: none;
   transition: color 0.2s;
-  color: rgba(0, 0, 0, 0.5);
+  color: var(--color-dali-muted);
 }
 
 :deep(.isso-reply:hover) {
-  color: var(--color-neo-black);
+  color: var(--color-dali-gold);
   text-decoration: underline;
 }
 
@@ -317,16 +334,18 @@ onMounted(() => {
   margin-top: 12px;
 }
 
-/* No JS fallback */
-.no-js-message {
-  text-align: center;
+/* ── Isso avatar SVG — blend with dark surface ── */
+:deep(.isso-avatar svg) {
+  border-radius: 0;
+  border: 1px solid rgba(240, 237, 229, 0.1);
 }
 
-/* Mobile responsive */
+/* ── Mobile responsive ── */
 @media (max-width: 640px) {
   :deep(.isso-comment) {
     column-gap: 8px;
-    margin-bottom: 16px;
+    padding: 12px;
+    margin-bottom: 12px;
   }
 
   :deep(.isso-avatar svg) {

@@ -16,7 +16,7 @@
         v-if="githubLink"
         :href="githubLink"
         target="_blank"
-        class="neo-btn bg-neo-green px-3 py-1 text-xs font-bold flex items-center gap-1"
+        class="github-view-btn"
       >
         <svg class="w-3 h-3" viewBox="0 0 16 16" fill="currentColor">
           <path d="M3.75 2A1.75 1.75 0 002 3.75v8.5c0 .966.784 1.75 1.75 1.75h8.5A1.75 1.75 0 0014 12.25v-3.5a.75.75 0 00-1.5 0v3.5a.25.25 0 01-.25.25h-8.5a.25.25 0 01-.25-.25v-8.5a.25.25 0 01.25-.25h3.5a.75.75 0 000-1.5h-3.5z" />
@@ -27,7 +27,7 @@
     </div>
 
     <!-- Code block -->
-    <div ref="codeContainer" class="code-content" :style="{ maxHeight: (maxHeight || 500) + 'px' }">
+    <div ref="codeContainer" class="code-content" @wheel="onWheel" :style="{ maxHeight: (maxHeight || 500) + 'px' }">
       <div v-if="isLoading" class="p-4 text-center text-neo-text-muted font-mono text-sm">Loading code...</div>
       <pre v-else-if="code" class="code-pre"><code>{{ code }}</code></pre>
       <div v-else class="p-4 text-center text-neo-red font-mono text-sm">{{ errorMessage }}</div>
@@ -109,6 +109,34 @@ const fetchCode = async () => {
   }
 }
 
+/**
+ * Intercept wheel events so Lenis doesn't fight the inner scroll.
+ * When the container can scroll in the wheel direction, we stop the event
+ * from reaching Lenis (which listens on `window`). When the container hits
+ * its scroll boundary, the event propagates normally and Lenis handles
+ * page scroll as usual.
+ */
+function onWheel(e: WheelEvent) {
+  const el = codeContainer.value
+  if (!el) return
+
+  const { scrollTop, scrollHeight, clientHeight } = el
+  const atTop = scrollTop <= 0
+  const atBottom = scrollTop + clientHeight >= scrollHeight - 1
+
+  // Container has no vertical overflow — let everything through
+  if (scrollHeight <= clientHeight) return
+
+  const scrollingDown = e.deltaY > 0
+  const scrollingUp = e.deltaY < 0
+
+  if ((scrollingDown && !atBottom) || (scrollingUp && !atTop)) {
+    // Container can scroll in this direction — keep the event here
+    e.stopPropagation()
+  }
+  // At boundary → event propagates to Lenis for page scroll
+}
+
 onMounted(() => { fetchCode() })
 </script>
 
@@ -143,8 +171,54 @@ onMounted(() => { fetchCode() })
   gap: 2px;
 }
 
+.github-view-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-neo-mono);
+  color: #a6adc8;
+  background: #313244;
+  border: 1px solid #45475a;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.github-view-btn:hover {
+  background: #45475a;
+  color: #cdd6f4;
+}
+
 .code-content {
   overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.code-content::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.code-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.code-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+.code-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.code-content::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 .code-pre {

@@ -26,6 +26,27 @@
           </span>
         </div>
 
+        <!-- Author byline -->
+        <NuxtLink
+          v-if="post.author"
+          to="/about"
+          class="flex items-center gap-3 py-3 my-4 border-t border-b border-dali-white/10 group transition-colors hover:border-dali-white/25"
+        >
+          <img
+            src="/images/profile.png"
+            :alt="siteConfig.author.name"
+            class="w-9 h-9 rounded-full object-cover border border-dali-white/20 group-hover:border-dali-gold/60 transition-colors"
+          >
+          <div class="min-w-0">
+            <span class="block text-sm font-bold text-dali-white group-hover:text-dali-gold transition-colors">
+              {{ siteConfig.author.name }}
+            </span>
+            <span class="block text-xs text-dali-muted truncate">
+              {{ siteConfig.author.bio }}
+            </span>
+          </div>
+        </NuxtLink>
+
         <!-- Analytics -->
         <AnalyticsDisplay
           :slug="slug"

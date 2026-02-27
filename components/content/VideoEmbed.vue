@@ -1,6 +1,6 @@
 <template>
   <div class="video-embed-container my-4">
-    <div class="neo-border bg-neo-bg relative overflow-hidden" style="box-shadow: 4px 4px 0px 0px #000;">
+    <div class="video-card relative overflow-hidden">
       <div class="video-content">
         <!-- Video Display -->
         <div class="relative w-full aspect-video overflow-hidden">
@@ -11,19 +11,18 @@
               :alt="title"
               class="w-full h-full object-cover"
             >
-            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 neo-border bg-neo-yellow flex items-center justify-center hover:bg-neo-orange transition-colors"
-              style="box-shadow: 4px 4px 0px 0px #000;">
-              <svg class="w-6 h-6 text-neo-black ml-1" viewBox="0 0 24 24" fill="currentColor">
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 video-play-btn flex items-center justify-center transition-colors">
+              <svg class="w-6 h-6 ml-1 video-play-icon" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M8 5v14l11-7z"/>
               </svg>
             </div>
           </div>
           
           <!-- Video Player when playing -->
-          <div v-else class="relative w-full h-full bg-neo-black">
+          <div v-else class="relative w-full h-full" style="background: #0B0B0F;">
             <div class="absolute top-0 right-0 z-10 p-2">
               <button
-                class="neo-border bg-neo-bg text-neo-black p-1 hover:bg-neo-yellow transition-colors"
+                class="video-close-btn p-1 transition-colors"
                 aria-label="Close video"
                 @click="handleClose"
               >
@@ -43,26 +42,26 @@
         </div>
         
         <!-- Video Info -->
-        <div class="p-3 border-t-2 border-neo-black">
+        <div class="video-info p-3">
           <div class="flex items-start justify-between gap-2 mb-1">
-            <h4 class="text-base font-bold text-neo-black line-clamp-2">{{ title }}</h4>
+            <h4 class="video-title text-base font-bold line-clamp-2">{{ title }}</h4>
             <a 
               :href="url" 
               target="_blank" 
               rel="noopener noreferrer"
-              class="flex items-center justify-center w-6 h-6 neo-border bg-neo-bg hover:bg-neo-yellow transition-colors flex-shrink-0"
+              class="video-external-link flex items-center justify-center w-6 h-6 transition-colors flex-shrink-0"
               title="Open in new tab"
             >
-              <svg class="w-3.5 h-3.5 text-neo-black" viewBox="0 0 24 24" fill="currentColor">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"/>
               </svg>
             </a>
           </div>
           <div class="flex items-center gap-2 mb-1">
-            <span class="text-xs font-bold text-neo-black/70">{{ platform }}</span>
-            <span v-if="duration" class="text-[10px] font-bold px-2 py-0.5 bg-neo-yellow/40 border border-neo-black">{{ duration }}</span>
+            <span class="video-platform text-xs font-bold">{{ platform }}</span>
+            <span v-if="duration" class="video-duration text-[10px] font-bold px-2 py-0.5">{{ duration }}</span>
           </div>
-          <p v-if="description" class="text-xs text-neo-black/70 line-clamp-2">{{ description }}</p>
+          <p v-if="description" class="video-desc text-xs line-clamp-2">{{ description }}</p>
         </div>
       </div>
     </div>
@@ -189,3 +188,76 @@ onMounted(() => {
   })
 })
 </script>
+
+<style scoped>
+/* Dark-native video card — works on the dali-focus-surface dark bg */
+.video-card {
+  background: rgba(240, 237, 229, 0.05) !important;
+  border: 1px solid rgba(240, 237, 229, 0.12) !important;
+  box-shadow: 4px 4px 0px 0px rgba(240, 237, 229, 0.08);
+}
+
+.video-card:hover {
+  background: rgba(240, 237, 229, 0.08) !important;
+  border-color: rgba(240, 237, 229, 0.2) !important;
+}
+
+.video-info {
+  border-top: 1px solid rgba(240, 237, 229, 0.12) !important;
+}
+
+.video-title {
+  color: #F0EDE5 !important;
+}
+
+.video-platform {
+  color: rgba(240, 237, 229, 0.55) !important;
+}
+
+.video-duration {
+  color: #F0EDE5 !important;
+  background: rgba(212, 168, 67, 0.25) !important;
+  border: 1px solid rgba(212, 168, 67, 0.4) !important;
+}
+
+.video-desc {
+  color: rgba(240, 237, 229, 0.65) !important;
+}
+
+.video-external-link {
+  border: 1px solid rgba(240, 237, 229, 0.15) !important;
+  background: rgba(240, 237, 229, 0.05) !important;
+  color: rgba(240, 237, 229, 0.6) !important;
+}
+
+.video-external-link:hover {
+  background: rgba(212, 168, 67, 0.3) !important;
+  border-color: rgba(212, 168, 67, 0.5) !important;
+  color: #F0EDE5 !important;
+}
+
+.video-play-btn {
+  background: var(--color-dali-red, #ED1C24) !important;
+  border: 2px solid rgba(240, 237, 229, 0.9) !important;
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 0.4);
+}
+
+.video-play-btn:hover {
+  background: var(--color-dali-gold, #D4A843) !important;
+}
+
+.video-play-icon {
+  color: #F0EDE5 !important;
+}
+
+.video-close-btn {
+  border: 1px solid rgba(240, 237, 229, 0.2) !important;
+  background: rgba(11, 11, 15, 0.7) !important;
+  color: rgba(240, 237, 229, 0.8) !important;
+}
+
+.video-close-btn:hover {
+  background: var(--color-dali-red, #ED1C24) !important;
+  color: #F0EDE5 !important;
+}
+</style>

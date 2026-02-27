@@ -240,6 +240,10 @@ export function useScrollSections() {
   function _resolveHashOnLoad() {
     if (!import.meta.client) return
 
+    // #region agent log
+    fetch('http://127.0.0.1:7245/ingest/13458263-39fc-48cf-b5d3-d5ee70770898', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'useScrollSections.ts:_resolveHashOnLoad', message: '_resolveHashOnLoad called', data: { hash: window.location.hash, path: window.location.pathname, scrollY: window.scrollY, isPageTransitioning: isPageTransitioning() }, timestamp: Date.now(), hypothesisId: 'H3' }) }).catch(() => { });
+    // #endregion
+
     // If a page transition (usePageTransition) is in progress, skip all scroll
     // logic here — transitionTo() handles scroll restoration itself (Phases 2.5
     // and 2.8). Running both would race: _resolveHashOnLoad resets Lenis to 0
@@ -366,6 +370,9 @@ export function useScrollSections() {
 
   // ─── Lifecycle ─────────────────────────────────────────────────────
   function init() {
+    // #region agent log
+    fetch('http://127.0.0.1:7245/ingest/13458263-39fc-48cf-b5d3-d5ee70770898', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'useScrollSections.ts:init', message: 'scrollSections init called', data: { alreadyInitialized: _initialized, path: window.location.pathname, hash: window.location.hash, scrollY: window.scrollY }, timestamp: Date.now(), hypothesisId: 'H3' }) }).catch(() => { });
+    // #endregion
     if (!import.meta.client || _initialized) return
     _initialized = true
 
