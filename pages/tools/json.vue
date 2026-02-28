@@ -17,7 +17,7 @@
         <div class="h-full flex">
           <!-- Left panel -->
           <div class="flex-1 flex flex-col">
-            <div ref="leftEditorContainer" class="flex-1 border-2 border-dali-muted/30"></div>
+            <div ref="leftEditorContainer" class="flex-1 border-2 border-dali-muted/30 jse-theme-dark"></div>
           </div>
 
           <!-- Action buttons between panels -->
@@ -43,7 +43,7 @@
 
           <!-- Right panel -->
           <div class="flex-1 flex flex-col">
-            <div ref="rightEditorContainer" class="flex-1 border-2 border-dali-muted/30"></div>
+            <div ref="rightEditorContainer" class="flex-1 border-2 border-dali-muted/30 jse-theme-dark"></div>
           </div>
         </div>
       </div>
@@ -68,6 +68,7 @@
 
 <script setup lang="ts">
 import { createJSONEditor } from 'vanilla-jsoneditor'
+import 'vanilla-jsoneditor/themes/jse-theme-dark.css'
 
 const leftEditorContainer = ref<HTMLElement>()
 const rightEditorContainer = ref<HTMLElement>()
@@ -394,3 +395,66 @@ useHead({
   ]
 })
 </script>
+
+<style>
+/*
+ * dali-focus-surface forces white text via !important on all elements.
+ * .sub-page and .dali-focus-surface are on the SAME element (no space),
+ * giving specificity 0,3,1 which beats all dali-focus-surface color rules.
+ */
+
+.sub-page.dali-focus-surface .jse-theme-dark {
+  color: var(--jse-text-color, #d4d4d4) !important;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.sub-page.dali-focus-surface .jse-theme-dark div,
+.sub-page.dali-focus-surface .jse-theme-dark span,
+.sub-page.dali-focus-surface .jse-theme-dark p,
+.sub-page.dali-focus-surface .jse-theme-dark button,
+.sub-page.dali-focus-surface .jse-theme-dark a,
+.sub-page.dali-focus-surface .jse-theme-dark label,
+.sub-page.dali-focus-surface .jse-theme-dark input,
+.sub-page.dali-focus-surface .jse-theme-dark textarea,
+.sub-page.dali-focus-surface .jse-theme-dark select,
+.sub-page.dali-focus-surface .jse-theme-dark svg {
+  color: inherit !important;
+}
+
+.sub-page.dali-focus-surface .jse-theme-dark .jse-key {
+  color: var(--jse-key-color, #9cdcfe) !important;
+}
+
+.sub-page.dali-focus-surface .jse-theme-dark .jse-value.jse-string {
+  color: var(--jse-value-color-string, #ce9178) !important;
+}
+
+.sub-page.dali-focus-surface .jse-theme-dark .jse-value.jse-boolean {
+  color: var(--jse-value-color-boolean, #569cd6) !important;
+}
+
+.sub-page.dali-focus-surface .jse-theme-dark .jse-value.jse-number {
+  color: var(--jse-value-color-number, #b5cea8) !important;
+}
+
+.sub-page.dali-focus-surface .jse-theme-dark .jse-value.jse-null {
+  color: var(--jse-value-color-null, #569cd6) !important;
+}
+
+.sub-page.dali-focus-surface .jse-theme-dark .jse-separator {
+  color: var(--jse-delimiter-color, #949494) !important;
+}
+
+.sub-page.dali-focus-surface .jse-theme-dark .jse-bracket {
+  color: var(--jse-delimiter-color, #949494) !important;
+}
+
+.sub-page.dali-focus-surface .jse-theme-dark .jse-tag {
+  color: var(--jse-tag-color, #bdbdbd) !important;
+}
+
+.sub-page.dali-focus-surface .jse-theme-dark .jse-url {
+  color: var(--jse-value-color-url, #ce9178) !important;
+}
+</style>
