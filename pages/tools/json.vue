@@ -14,10 +14,10 @@
     <!-- JSON Editor -->
     <div>
       <div class="dali-card dali-card--static p-4 relative h-[calc(100vh-280px)]" style="border-color: var(--color-dali-teal);">
-        <div class="h-full flex">
+        <div class="h-full flex min-h-0">
           <!-- Left panel -->
-          <div class="flex-1 flex flex-col">
-            <div ref="leftEditorContainer" class="flex-1 border-2 border-dali-muted/30 jse-theme-dark"></div>
+          <div class="flex-1 flex flex-col min-h-0">
+            <div ref="leftEditorContainer" class="flex-1 min-h-0 border-2 border-dali-muted/30 jse-theme-dark" data-lenis-prevent></div>
           </div>
 
           <!-- Action buttons between panels -->
@@ -42,8 +42,8 @@
           </div>
 
           <!-- Right panel -->
-          <div class="flex-1 flex flex-col">
-            <div ref="rightEditorContainer" class="flex-1 border-2 border-dali-muted/30 jse-theme-dark"></div>
+          <div class="flex-1 flex flex-col min-h-0">
+            <div ref="rightEditorContainer" class="flex-1 min-h-0 border-2 border-dali-muted/30 jse-theme-dark" data-lenis-prevent></div>
           </div>
         </div>
       </div>
