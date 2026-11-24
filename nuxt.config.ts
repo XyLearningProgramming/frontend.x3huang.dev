@@ -8,6 +8,12 @@ const useDevSQLite = process.env.NODE_ENV === 'development' && !process.env.POST
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
+  // Nuxt 4 defaults srcDir to `app/`. This project keeps its v3 layout
+  // (pages/, components/, composables/, app.vue at root) while
+  // app/router.options.ts lives in `app/` — so pin the v3 source root and
+  // point the app dir at `app/` for router.options resolution.
+  srcDir: '.',
+  dir: { app: 'app' },
   devtools: { enabled: true },
   runtimeConfig: {
     public: {
@@ -58,22 +64,21 @@ export default defineNuxtConfig({
     '@nuxt/content',
     '@nuxt/eslint',
     '@nuxt/image',
+    '@nuxt/fonts',
     'nuxt-llms',
-    '@nuxtjs/google-fonts',
   ],
-  css: ['/assets/css/main.css'],
+  css: ['~/assets/css/main.css'],
   vite: {
     plugins: [
       tailwindcss(),
     ],
   },
-  googleFonts: {
-    families: {
-      'Space Grotesk': [600, 700],
-      'Inter': [400, 500, 600],
-      'JetBrains Mono': [400],
-    },
-    display: 'swap',
+  fonts: {
+    families: [
+      { name: 'Space Grotesk', weights: [600, 700], display: 'swap' },
+      { name: 'Inter', weights: [400, 500, 600], display: 'swap' },
+      { name: 'JetBrains Mono', weights: [400], display: 'swap' },
+    ],
   },
   // Strip _dev pages from production builds entirely
   hooks: {
